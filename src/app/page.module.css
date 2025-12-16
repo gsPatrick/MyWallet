@@ -1,0 +1,99 @@
+/* Landing Page Styles */
+.page {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+/* Loader */
+.loaderContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.loader {
+    text-align: center;
+}
+
+.loadingBar {
+    width: 200px;
+    height: 3px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loadingProgress {
+    height: 100%;
+    width: 30%;
+    background: #1a1a2e;
+    border-radius: 2px;
+    animation: loading 1s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(400%);
+    }
+}
+
+/* CTA Section */
+.ctaSection {
+    padding: 6rem 2rem;
+    background: #0a0a0f;
+}
+
+.ctaContent {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ctaTitle {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.ctaSubtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 2rem;
+}
+
+.ctaButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2.5rem;
+    background: #ffffff;
+    color: #1a1a2e;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.ctaButton:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .ctaSection {
+        padding: 4rem 1.5rem;
+    }
+
+    .ctaTitle {
+        font-size: 1.75rem;
+    }
+}

@@ -1,0 +1,110 @@
+.container {
+    margin-bottom: 1.5rem;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.editBtn {
+    font-size: 0.75rem;
+    color: #22c55e;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.editBtn:hover {
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.medalsRow {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.medalSlot {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color, #FFD700), rgba(0, 0, 0, 0.3));
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px var(--color);
+}
+
+.medalSlot.empty {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.medalIcon {
+    font-size: 1.5rem;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+.medalSlot:hover .tooltip {
+    opacity: 1;
+}
+
+@media (max-width: 480px) {
+    .medalSlot {
+        width: 48px;
+        height: 48px;
+    }
+
+    .medalIcon {
+        font-size: 1.25rem;
+    }
+
+    .medalsRow {
+        gap: 0.5rem;
+    }
+}

@@ -1,0 +1,360 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + var(--spacing-lg));
+}
+
+.main {
+    padding-top: calc(var(--header-height) + var(--spacing-lg));
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.backBtn:hover {
+    color: var(--text-primary);
+}
+
+.assetHeader {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.assetBadge {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+}
+
+.pageTitle {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.assetName {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Summary Grid */
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.summaryCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.summaryLabel {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.summaryValue {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Profit Card */
+.profitCard {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.profitCard.positive {
+    background: var(--accent-success-light);
+    border-color: var(--accent-success);
+}
+
+.profitCard.negative {
+    background: var(--accent-danger-light);
+    border-color: var(--accent-danger);
+}
+
+.profitIcon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    font-size: 1.5rem;
+}
+
+.profitCard.positive .profitIcon {
+    background: var(--accent-success);
+    color: white;
+}
+
+.profitCard.negative .profitIcon {
+    background: var(--accent-danger);
+    color: white;
+}
+
+.profitInfo {
+    flex: 1;
+}
+
+.profitLabel {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.profitValues {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-md);
+}
+
+.profitAmount {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.profitCard.positive .profitAmount {
+    color: var(--accent-success);
+}
+
+.profitCard.negative .profitAmount {
+    color: var(--accent-danger);
+}
+
+.profitPercent {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.profitCard.positive .profitPercent {
+    color: var(--accent-success);
+}
+
+.profitCard.negative .profitPercent {
+    color: var(--accent-danger);
+}
+
+/* Content Grid */
+.contentGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Price Chart */
+.priceChart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 160px;
+    padding-top: var(--spacing-md);
+}
+
+.chartColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    height: 100%;
+}
+
+.chartBar {
+    width: 40px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    margin-top: auto;
+}
+
+.chartLabel {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+/* Dividends */
+.dividendsList {
+    display: flex;
+    flex-direction: column;
+}
+
+.dividendItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.dividendItem:last-child {
+    border-bottom: none;
+}
+
+.dividendInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.dividendType {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.dividendDate {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.dividendAmount {
+    font-weight: 600;
+    color: var(--accent-success);
+}
+
+.emptyMessage {
+    text-align: center;
+    color: var(--text-tertiary);
+    padding: var(--spacing-lg);
+}
+
+/* Operations List */
+.operationsList {
+    display: flex;
+    flex-direction: column;
+}
+
+.operationItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.operationItem:last-child {
+    border-bottom: none;
+}
+
+.operationIcon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.operationIcon.buy {
+    background: var(--accent-success-light);
+    color: var(--accent-success);
+}
+
+.operationIcon.sell {
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
+}
+
+.operationInfo {
+    flex: 1;
+}
+
+.operationType {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.operationDetails {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.operationMeta {
+    text-align: right;
+}
+
+.operationTotal {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.operationDate {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pageHeader {
+        flex-wrap: wrap;
+    }
+
+    .assetHeader {
+        order: 1;
+        width: 100%;
+    }
+
+    .backBtn {
+        order: 0;
+        width: auto;
+    }
+
+    .pageHeader>a {
+        order: 2;
+        width: 100%;
+    }
+
+    .summaryGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contentGrid {
+        grid-template-columns: 1fr;
+    }
+}

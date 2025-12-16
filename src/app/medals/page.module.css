@@ -1,0 +1,89 @@
+.page {
+    min-height: 100vh;
+    background: #0a0a0f;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #0a0a0f;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Header */
+.header {
+    margin-bottom: 2rem;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+}
+
+.backBtn:hover {
+    color: white;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.titleIcon {
+    font-size: 1.75rem;
+    color: #FFD700;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+}
+
+.subtitle {
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .page {
+        padding: 1rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+}

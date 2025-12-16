@@ -1,0 +1,53 @@
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+/* Sizes */
+.small {
+    width: 32px;
+    height: 32px;
+}
+
+.medium {
+    width: 48px;
+    height: 48px;
+}
+
+.large {
+    width: 80px;
+    height: 80px;
+}
+
+.xlarge {
+    width: 120px;
+    height: 120px;
+}
+
+/* SVG */
+.avatarSvg {
+    width: 100%;
+    height: 100%;
+}
+
+.head {
+    fill: var(--skin-tone);
+}
+
+.body {
+    fill: #1a1a2e;
+}
+
+.hair {
+    fill: #2d2d2d;
+    stroke: none;
+}
+
+.hairLong {
+    fill: #2d2d2d;
+    stroke: none;
+}

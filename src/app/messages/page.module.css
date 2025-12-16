@@ -1,0 +1,309 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + var(--spacing-lg));
+}
+
+.main {
+    padding-top: var(--header-height);
+    height: calc(100vh - var(--dock-height));
+}
+
+.container {
+    max-width: 1400px;
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 320px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebarTitle {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.conversationsList {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversationItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    text-align: left;
+}
+
+.conversationItem:hover {
+    background: var(--bg-tertiary);
+}
+
+.conversationItem.active {
+    background: var(--accent-primary-light);
+}
+
+.convAvatar {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.convInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.convName {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.convPreview {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.convMeta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-xs);
+}
+
+.convTime {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+.unreadBadge {
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-primary);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    padding: 0 4px;
+}
+
+/* Chat Area */
+.chatArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.chatHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.chatAvatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+}
+
+.chatName {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.moreBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+
+.moreBtn:hover {
+    background: var(--bg-tertiary);
+}
+
+/* Messages Area */
+.messagesArea {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.message {
+    display: flex;
+    max-width: 70%;
+}
+
+.userMessage {
+    align-self: flex-end;
+}
+
+.botMessage {
+    align-self: flex-start;
+}
+
+.messageBubble {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    position: relative;
+}
+
+.userMessage .messageBubble {
+    background: var(--accent-primary);
+    color: white;
+    border-bottom-right-radius: var(--radius-sm);
+}
+
+.botMessage .messageBubble {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.messageBubble p {
+    white-space: pre-wrap;
+    line-height: 1.5;
+    font-size: 0.9375rem;
+}
+
+.messageTime {
+    display: block;
+    font-size: 0.625rem;
+    opacity: 0.7;
+    text-align: right;
+    margin-top: var(--spacing-xs);
+}
+
+/* Composer */
+.composer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-primary);
+}
+
+.attachBtn,
+.emojiBtn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+
+.attachBtn:hover,
+.emojiBtn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.messageInput {
+    flex: 1;
+    height: 40px;
+    padding: 0 var(--spacing-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+}
+
+.messageInput:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.sendBtn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-normal);
+}
+
+.sendBtn:hover:not(:disabled) {
+    background: var(--accent-primary-hover);
+}
+
+.sendBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    .message {
+        max-width: 85%;
+    }
+}

@@ -1,0 +1,1075 @@
+.page {
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--header-height) + 12px) 20px 72px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 12px;
+}
+
+/* Top Controls */
+.topControls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 3px;
+    border-radius: 8px;
+}
+
+[data-theme="light"] .tabs {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.tab {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    transition: all 0.15s ease;
+}
+
+.tab:hover {
+    color: var(--text-secondary);
+}
+
+.tab.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .tab.active {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+/* Date Filter */
+.dateFilter {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 3px;
+    border-radius: 8px;
+}
+
+[data-theme="light"] .dateFilter {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.dateBtn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    transition: all 0.15s ease;
+}
+
+.dateBtn:hover {
+    color: var(--text-secondary);
+}
+
+.dateBtn.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Date Picker Modal */
+.datePickerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.datePickerModal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 16px;
+    width: 300px;
+}
+
+.datePickerModal h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.dateInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.dateInput {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dateInput label {
+    font-size: 0.625rem;
+    color: var(--text-tertiary);
+}
+
+.dateInput input {
+    padding: 8px 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+}
+
+.datePickerActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.datePickerActions button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.datePickerActions button.primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.heroLabel {
+    display: block;
+    font-size: 0.625rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.heroValue {
+    font-size: 2.25rem;
+    font-weight: 300;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.heroPeriod {
+    display: block;
+    font-size: 0.5625rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.heroPeriod.profit {
+    color: #22c55e;
+}
+
+/* Geral Tab Grid */
+.geralGrid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    min-height: 0;
+}
+
+/* Allocation Card */
+.allocationCard {
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .allocationCard {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.allocationHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.allocationHeader h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.editLink {
+    font-size: 0.75rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.allocationBar {
+    display: flex;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.allocSegment {
+    min-width: 0;
+}
+
+.allocationList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.allocItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.allocDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.allocName {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    min-width: 110px;
+}
+
+.allocProgress {
+    flex: 1;
+}
+
+.progressBar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+[data-theme="light"] .progressBar {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.allocSpent {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 70px;
+    text-align: right;
+}
+
+.allocTarget {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+    min-width: 70px;
+}
+
+/* Chart Toggle */
+.chartToggle {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-tertiary);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.chartBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+}
+
+.chartBtn:hover {
+    color: var(--text-primary);
+}
+
+.chartBtn.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Pie Chart */
+.pieChartContainer {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    margin: 20px 0;
+    flex: 1;
+}
+
+.pieChart {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+}
+
+.pieSvg {
+    width: 100%;
+    height: 100%;
+}
+
+.pieSlice {
+    transition: opacity var(--transition-fast);
+}
+
+.pieSlice:hover {
+    opacity: 0.8;
+}
+
+.pieCenter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.pieCenterValue {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pieCenterLabel {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.pieLegend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legendName {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.legendPercent {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Empty Legend State */
+.emptyLegend {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+}
+
+.emptyLegendHint {
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+/* Bar Chart */
+.barChartContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.barItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.barLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.barDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.barTrack {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+[data-theme="light"] .barTrack {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.barFill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.barTarget {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--text-tertiary);
+}
+
+.barValues {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    font-size: 0.6875rem;
+}
+
+.barValues span:first-child {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.barTargetValue {
+    color: var(--text-tertiary);
+}
+
+.overBudget {
+    color: #ef4444 !important;
+}
+
+/* Quick Actions */
+.quickActions {
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .quickActions {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.quickActions h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.quickGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.quickItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+    transition: all 0.15s ease;
+}
+
+[data-theme="light"] .quickItem {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.quickItem:hover {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.quickItem svg {
+    font-size: 1.25rem;
+}
+
+.quickStats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+}
+
+[data-theme="light"] .statItem {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.statIconSuccess {
+    font-size: 1.25rem;
+    color: #22c55e;
+}
+
+.statIconPrimary {
+    font-size: 1.25rem;
+    color: var(--accent-primary);
+}
+
+.statValue {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.statLabel {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+/* Goals Preview Section */
+.goalsPreview {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="light"] .goalsPreview {
+    border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.goalsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.goalsHeader h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Ghost Goal Card */
+.ghostGoalCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ghostGoalCard:hover {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+[data-theme="light"] .ghostGoalCard {
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .ghostGoalCard:hover {
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.ghostGoalIcon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 10px;
+    color: var(--accent-primary);
+    font-size: 1.25rem;
+}
+
+.ghostGoalContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ghostGoalTitle {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.ghostGoalHint {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+.ghostGoalProgress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+}
+
+.ghostProgressBar {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+[data-theme="light"] .ghostProgressBar {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.ghostProgressFill {
+    height: 100%;
+    background: var(--accent-primary);
+    border-radius: 3px;
+}
+
+/* Summary Row */
+.summaryRow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.summaryCard {
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        0 6px 24px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+[data-theme="light"] .summaryCard {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.04),
+        0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardLabel {
+    font-size: 0.5625rem;
+    color: var(--text-tertiary);
+}
+
+.cardValue {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.cardNote {
+    font-size: 0.5rem;
+    color: var(--text-tertiary);
+}
+
+.iconSuccess {
+    color: #22c55e;
+    font-size: 0.875rem;
+}
+
+.iconDanger {
+    color: #ef4444;
+    font-size: 0.875rem;
+}
+
+.iconWarning {
+    color: #f59e0b;
+    font-size: 0.875rem;
+}
+
+.iconPrimary {
+    color: var(--accent-primary);
+    font-size: 0.875rem;
+}
+
+.iconMuted {
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+}
+
+/* Bottom Grid */
+.bottomGrid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 240px;
+    gap: 10px;
+    min-height: 0;
+}
+
+.largeCard {
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        0 6px 24px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+[data-theme="light"] .largeCard {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.largeCardTitle {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.emptyState {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+    text-align: center;
+}
+
+/* Action Card */
+.actionCard {
+    background: linear-gradient(145deg, rgba(30, 40, 60, 0.8), rgba(20, 30, 50, 0.9));
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        0 6px 24px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.actionCardInner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.actionText {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.actionBtn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.actionBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Positions List */
+.positionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+}
+
+.positionItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.positionItem:last-child {
+    border-bottom: none;
+}
+
+.posTicker {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 50px;
+}
+
+.posValue {
+    flex: 1;
+    font-size: 0.6875rem;
+    color: var(--text-secondary);
+}
+
+.profit {
+    color: #22c55e;
+    font-size: 0.6875rem;
+}
+
+.loss {
+    color: #ef4444;
+    font-size: 0.6875rem;
+}
+
+/* Accounts List */
+.accountsList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.accountItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.accountItem:last-child {
+    border-bottom: none;
+}
+
+.accName {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.accInst {
+    flex: 1;
+    font-size: 0.5625rem;
+    color: var(--text-tertiary);
+}
+
+.accBalance {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .topControls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .summaryRow {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bottomGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .actionCard {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        /* No header on mobile, dock at bottom */
+        padding: var(--spacing-lg) var(--spacing-md);
+        padding-bottom: calc(var(--dock-height) + var(--spacing-lg));
+        overflow-y: auto;
+    }
+
+    .page {
+        max-height: none;
+        overflow: auto;
+    }
+
+    .topControls {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .tabs {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .dateFilter {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .hero {
+        text-align: center;
+    }
+
+    .heroValue {
+        font-size: 1.75rem;
+    }
+
+    .summaryRow {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .cardValue {
+        font-size: 1rem;
+    }
+
+    .geralGrid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .allocationHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .pieChartContainer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .pieLegend {
+        width: 100%;
+    }
+
+    .bottomGrid {
+        grid-template-columns: 1fr;
+        flex: none;
+    }
+
+    .largeCard {
+        min-height: 160px;
+    }
+
+    .quickGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .main {
+        padding: var(--spacing-md);
+        padding-bottom: calc(var(--dock-height) + var(--spacing-md));
+    }
+
+    .summaryRow {
+        grid-template-columns: 1fr;
+    }
+
+    .quickGrid {
+        grid-template-columns: 1fr;
+    }
+}

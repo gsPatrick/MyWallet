@@ -1,0 +1,154 @@
+/* Hero Section - Simple & Elegant */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* Subtle Background */
+.background {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.gradientOrb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.04) 0%, transparent 60%);
+    filter: blur(40px);
+}
+
+/* Content */
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 700px;
+    position: relative;
+    z-index: 1;
+}
+
+.logo {
+    margin-bottom: 3rem;
+    object-fit: contain;
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: #64748b;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+}
+
+/* CTA */
+.cta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.primaryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: #1a1a2e;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.primaryBtn:hover {
+    background: #0f0f1a;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(26, 26, 46, 0.25);
+}
+
+.secondaryBtn {
+    padding: 1rem 2rem;
+    color: #64748b;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.secondaryBtn:hover {
+    color: #1a1a2e;
+}
+
+/* Scroll Hint */
+.scrollHint {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.scrollLine {
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, #d1d5db 0%, transparent 100%);
+    border-radius: 1px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero {
+        padding: 5rem 1.5rem;
+    }
+
+    .logo {
+        width: 160px;
+        height: auto;
+    }
+
+    .title {
+        font-size: 2.25rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .subtitle br {
+        display: none;
+    }
+
+    .cta {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .primaryBtn,
+    .secondaryBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .scrollHint {
+        display: none;
+    }
+}

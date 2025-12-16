@@ -1,0 +1,272 @@
+.cardWrapper {
+    cursor: pointer;
+    perspective: 1000px;
+}
+
+.card {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 1.586 / 1;
+    padding: 16px 20px;
+    border-radius: 16px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Pattern Overlay */
+.pattern {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.bankName {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.contactlessIcon {
+    transform: rotate(90deg);
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+/* Chip */
+.chip {
+    width: 36px;
+    height: 28px;
+    background: linear-gradient(135deg, #e8d5a3 0%, #c9a961 50%, #b8923e 100%);
+    border-radius: 5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.chipLines {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    width: 20px;
+    height: 14px;
+}
+
+.chipLines span {
+    background: linear-gradient(to right, #a08040, #c9a961, #a08040);
+    border-radius: 1px;
+}
+
+/* Card Number */
+.cardNumber {
+    display: flex;
+    gap: 10px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    margin-bottom: auto;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.dots {
+    opacity: 0.65;
+}
+
+.lastDigits {
+    opacity: 1;
+}
+
+/* Bottom Section */
+.bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.holderInfo {
+    display: flex;
+    gap: 20px;
+}
+
+.labelGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 0.4375rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 1px;
+}
+
+.value {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Brand Logos */
+.brandLogo {
+    height: 18px;
+    width: auto;
+    fill: white;
+}
+
+.visaLogo {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.mastercardLogo {
+    display: flex;
+    position: relative;
+    width: 40px;
+    height: 24px;
+}
+
+.mcCircle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+}
+
+.mcCircle:first-child {
+    left: 0;
+}
+
+.mcCircle:last-child {
+    left: 16px;
+    mix-blend-mode: multiply;
+    opacity: 0.85;
+}
+
+.brandText {
+    font-size: 1rem;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.02em;
+}
+
+.brandIcon {
+    font-size: 1.5rem;
+    opacity: 0.85;
+}
+
+/* Info Panel */
+.infoPanel {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+}
+
+.limitSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.limitRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.limitLabel {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+.limitValue {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.limitValue.available {
+    color: var(--accent-success);
+}
+
+.limitValue.used {
+    color: var(--accent-warning);
+}
+
+/* Usage Bar */
+.usageBar {
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.usageFill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.4s ease;
+}
+
+.usageInfo {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.625rem;
+    color: var(--text-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .card {
+        max-width: 100%;
+        padding: 14px 16px;
+    }
+
+    .cardNumber {
+        font-size: 0.8125rem;
+        gap: 8px;
+    }
+
+    .holderInfo {
+        gap: 14px;
+    }
+
+    .value {
+        font-size: 0.5625rem;
+    }
+}

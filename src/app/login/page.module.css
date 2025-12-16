@@ -1,0 +1,335 @@
+.page {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Left Branding Side - Dark */
+.brandingSide {
+    flex: 1;
+    background: #0a0a0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle gradient overlay */
+.brandingSide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.brandingContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.logo {
+    margin-bottom: 3rem;
+    object-fit: contain;
+}
+
+.tagline {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-align: center;
+}
+
+/* Right Form Side - Light with Glass */
+.formSide {
+    flex: 1;
+    background: linear-gradient(145deg, #f5f5f7 0%, #e8e8ed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    position: relative;
+}
+
+/* Subtle pattern */
+.formSide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    pointer-events: none;
+}
+
+.formContainer {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+/* Override input styles for light theme */
+.formContainer :global(.inputWrapper) {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+
+.formContainer :global(.inputWrapper:focus-within) {
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+}
+
+.formContainer :global(.input) {
+    color: #1a1a2e;
+}
+
+.formContainer :global(.input::placeholder) {
+    color: #94a3b8;
+}
+
+.formContainer :global(.leftIcon),
+.formContainer :global(.rightIcon) {
+    color: #94a3b8;
+}
+
+.formContainer :global(.label) {
+    color: #334155;
+}
+
+.formHeader {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.formTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+.formSubtitle {
+    font-size: 0.9375rem;
+    color: #64748b;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.passwordWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.forgotLink {
+    align-self: flex-end;
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.forgotLink:hover {
+    color: #1a1a2e;
+    text-decoration: underline;
+}
+
+.submitBtn {
+    margin-top: 0.5rem;
+    height: 52px;
+    font-size: 1rem;
+    background: #1a1a2e;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.submitBtn:hover {
+    background: #0f0f1a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 26, 46, 0.3);
+}
+
+.footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9375rem;
+    color: #64748b;
+}
+
+.signupLink {
+    color: #1a1a2e;
+    font-weight: 600;
+    margin-left: 0.25rem;
+    transition: all 0.2s;
+}
+
+.signupLink:hover {
+    color: #0f0f1a;
+    text-decoration: underline;
+}
+
+/* Full Screen Animation Overlay */
+.fullScreenAnimation {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(145deg, #0a0a0f 0%, #1a1a2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.animationContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.successCircle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    box-shadow:
+        0 0 0 20px rgba(255, 255, 255, 0.1),
+        0 0 0 40px rgba(255, 255, 255, 0.05),
+        0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.successLogo {
+    object-fit: contain;
+}
+
+.welcomeText {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.welcomeSubtext {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 2.5rem;
+}
+
+.loadingBar {
+    width: 200px;
+    height: 4px;
+    background: #ffffff;
+    border-radius: 2px;
+    transform-origin: left;
+}
+
+.redirectOverlay {
+    position: absolute;
+    inset: 0;
+    background: #0a0a0f;
+    z-index: 10;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+    .page {
+        flex-direction: column;
+    }
+
+    .brandingSide {
+        flex: 0;
+        padding: 2rem;
+        min-height: 200px;
+    }
+
+    .logo {
+        width: 180px;
+        height: auto;
+        margin-bottom: 1.5rem;
+    }
+
+    .tagline {
+        font-size: 1.75rem;
+    }
+
+    .formSide {
+        flex: 1;
+        padding: 2rem 1.5rem;
+    }
+
+    .formContainer {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .brandingSide {
+        min-height: 160px;
+        padding: 1.5rem;
+    }
+
+    .logo {
+        width: 140px;
+        margin-bottom: 1rem;
+    }
+
+    .tagline {
+        font-size: 1.5rem;
+    }
+
+    .formContainer {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+
+    .formTitle {
+        font-size: 1.5rem;
+    }
+
+    .welcomeText {
+        font-size: 1.75rem;
+    }
+
+    .successCircle {
+        width: 80px;
+        height: 80px;
+    }
+
+    .successIcon {
+        font-size: 2.5rem;
+    }
+}

@@ -1,0 +1,264 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + var(--spacing-lg));
+}
+
+.main {
+    padding-top: calc(var(--header-height) + var(--spacing-lg));
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.pageHeader {
+    margin-bottom: var(--spacing-xl);
+}
+
+.pageTitle {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pageSubtitle {
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+}
+
+.reportsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.cardTitle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Summary Card */
+.summaryCard {
+    grid-column: span 2;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.summaryItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.summaryLabel {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.summaryValue {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profit {
+    color: var(--accent-success);
+}
+
+/* Allocation */
+.allocationChart {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.allocationBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    min-height: 40px;
+}
+
+/* Evolution Chart */
+.evolutionCard {
+    grid-column: span 2;
+}
+
+.chartPlaceholder {
+    height: 200px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.barChart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+}
+
+.barWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    height: 100%;
+}
+
+.bar {
+    width: 48px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.barLabel {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+/* Performers List */
+.performersList {
+    display: flex;
+    flex-direction: column;
+}
+
+.performerItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.performerItem:last-child {
+    border-bottom: none;
+}
+
+.performerRank {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.performerInfo {
+    flex: 1;
+}
+
+.performerTicker {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.performerName {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.performerPercent {
+    font-weight: 600;
+    color: var(--accent-success);
+}
+
+/* Dividends */
+.dividendsTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--accent-success-light);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.dividendsValue {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-success);
+}
+
+.dividendsList {
+    display: flex;
+    flex-direction: column;
+}
+
+.dividendItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.dividendItem:last-child {
+    border-bottom: none;
+}
+
+.dividendAsset {
+    font-weight: 600;
+    color: var(--text-primary);
+    width: 80px;
+}
+
+.dividendType {
+    flex: 1;
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.dividendAmount {
+    font-weight: 500;
+    color: var(--accent-success);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .reportsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .summaryCard,
+    .evolutionCard {
+        grid-column: span 1;
+    }
+
+    .summaryGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+}

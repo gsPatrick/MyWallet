@@ -1,0 +1,168 @@
+.card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+}
+
+/* Complete State */
+.card.complete {
+    background: linear-gradient(135deg, rgba(var(--rarity-rgb), 0.1) 0%, transparent 100%);
+    border-color: var(--rarity-color);
+}
+
+/* Locked State */
+.card.locked {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.card.locked:hover {
+    transform: none;
+}
+
+/* Sizes */
+.small {
+    padding: 0.75rem;
+    gap: 0.75rem;
+}
+
+.large {
+    padding: 1.5rem;
+    gap: 1.25rem;
+}
+
+/* Icon */
+.iconWrapper {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    background: rgba(var(--rarity-rgb), 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.small .iconWrapper {
+    width: 36px;
+    height: 36px;
+}
+
+.medalIcon {
+    font-size: 1.5rem;
+    color: var(--rarity-color);
+}
+
+.lockIcon {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.completeBadge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    color: white;
+    font-weight: 700;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    min-width: 0;
+}
+
+.name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.small .name {
+    font-size: 0.875rem;
+}
+
+.description {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+.small .description {
+    font-size: 0.75rem;
+}
+
+/* Progress */
+.progressWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.progressBar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--rarity-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.progressText {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+}
+
+/* Badges */
+.rarityBadge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--rarity-color);
+    color: #1a1a2e;
+    font-size: 0.625rem;
+    font-weight: 700;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.xpBadge {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.6875rem;
+    color: #22c55e;
+    font-weight: 600;
+}

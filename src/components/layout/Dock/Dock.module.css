@@ -1,0 +1,353 @@
+.dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-dock);
+    padding: var(--spacing-sm) var(--spacing-md);
+    padding-bottom: env(safe-area-inset-bottom, 12px);
+    pointer-events: none;
+}
+
+.dockContainer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    /* Transparent with 80% blur */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(80px) saturate(180%);
+    -webkit-backdrop-filter: blur(80px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 22px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    pointer-events: auto;
+}
+
+/* Light Mode */
+[data-theme="light"] .dockContainer {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Divider between sections */
+.dockDivider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 4px;
+}
+
+[data-theme="light"] .dockDivider {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.dockItemWrapper {
+    text-decoration: none;
+}
+
+.dockItem {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.dockItem:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .dockItem:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.dockItem.active {
+    background: var(--accent-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.dockItem.active:hover {
+    background: var(--accent-primary-hover);
+}
+
+/* Privacy and Quick Actions buttons */
+.privacyBtn,
+.quickActionsBtn {
+    color: var(--text-tertiary);
+}
+
+.privacyBtn:hover,
+.quickActionsBtn:hover {
+    color: var(--text-primary);
+}
+
+.icon {
+    font-size: 1.25rem;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    box-shadow: var(--shadow-lg);
+    pointer-events: none;
+    opacity: 0;
+}
+
+/* Quick Actions Modal */
+.quickActionsBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9998;
+}
+
+.quickActionsModal {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    /* Glass effect */
+    background: rgba(30, 30, 40, 0.85);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 9999;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .quickActionsModal {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.quickActionsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.quickActionsHeader h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.closeBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.25rem;
+    transition: all 0.15s ease;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .closeBtn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.quickActionsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.quickActionItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.quickActionItem:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+[data-theme="light"] .quickActionItem {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .quickActionItem:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.quickActionIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+.quickActionItem span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* MOBILE - Dock stays dock-style but centered at bottom */
+@media (max-width: 768px) {
+    .dock {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        padding-bottom: env(safe-area-inset-bottom, 8px);
+    }
+
+    .dockContainer {
+        gap: 3px;
+        padding: 8px 10px;
+        border-radius: 18px;
+        max-width: calc(100vw - 24px);
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(80px) saturate(180%);
+        -webkit-backdrop-filter: blur(80px) saturate(180%);
+    }
+
+    [data-theme="light"] .dockContainer {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .dockItem {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+
+    .icon {
+        font-size: 1rem;
+    }
+
+    .tooltip {
+        display: none;
+    }
+
+    .dockDivider {
+        height: 18px;
+        margin: 0 2px;
+    }
+
+    .quickActionsModal {
+        bottom: 80px;
+        width: 95%;
+        padding: 16px;
+    }
+
+    .quickActionsGrid {
+        gap: 8px;
+    }
+
+    .quickActionItem {
+        padding: 12px 6px;
+    }
+
+    .quickActionIcon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+}
+
+/* Small phones - even more compact */
+@media (max-width: 480px) {
+    .dockContainer {
+        gap: 2px;
+        padding: 6px 8px;
+        border-radius: 16px;
+    }
+
+    .dockItem {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+    }
+
+    .icon {
+        font-size: 0.9375rem;
+    }
+
+    .dockDivider {
+        height: 16px;
+        margin: 0 1px;
+    }
+}
+
+/* Very small screens - hide dividers and maximize space */
+@media (max-width: 380px) {
+    .dockContainer {
+        width: calc(100% - 12px);
+        justify-content: space-around;
+        padding: 6px;
+        gap: 0;
+    }
+
+    .dockItem {
+        width: 30px;
+        height: 30px;
+    }
+
+    .icon {
+        font-size: 0.875rem;
+    }
+
+    .dockDivider {
+        display: none;
+    }
+}

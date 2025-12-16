@@ -1,0 +1,443 @@
+.page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + var(--spacing-xl));
+}
+
+.main {
+    padding-top: calc(var(--header-height) + var(--spacing-xl));
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+}
+
+/* Page Header */
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+}
+
+.headerText h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.headerText p {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Income Section */
+.incomeSection {
+    margin-bottom: var(--spacing-xl);
+}
+
+.incomeCard {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.incomeHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.incomeIcon {
+    font-size: 1.25rem;
+    color: var(--accent-success);
+}
+
+.incomeInput {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    width: 200px;
+    text-align: right;
+}
+
+.incomeInput:focus {
+    outline: none;
+}
+
+.incomeDisplay {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.incomeDisplay:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+}
+
+/* Allocation Bar */
+.allocationBar {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.barContainer {
+    display: flex;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+.barSegment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.3s ease;
+    min-width: 0;
+}
+
+.barLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.barRemaining {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: repeating-linear-gradient(45deg,
+            var(--bg-tertiary),
+            var(--bg-tertiary) 10px,
+            var(--bg-secondary) 10px,
+            var(--bg-secondary) 20px);
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+}
+
+.barLegend {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--spacing-sm);
+}
+
+.totalLabel {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.totalLabel.valid {
+    color: var(--accent-success);
+}
+
+.totalLabel.invalid {
+    color: var(--accent-danger);
+}
+
+/* Allocations List */
+.allocationsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.allocationItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.itemIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.itemInfo {
+    min-width: 160px;
+}
+
+.itemName {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.itemAmount {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.itemAmountClickable {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+}
+
+.itemAmountClickable:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+}
+
+.itemAmountInput {
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--accent-primary);
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    width: 120px;
+    outline: none;
+}
+
+.itemSlider {
+    flex: 1;
+    padding: 0 var(--spacing-md);
+}
+
+.slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    appearance: none;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color, var(--accent-primary));
+    cursor: grab;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+.itemPercent {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 70px;
+}
+
+.percentInput {
+    width: 50px;
+    padding: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.percentInput:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.itemPercent span {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+}
+
+.removeBtn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+}
+
+.removeBtn:hover {
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
+}
+
+.addBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border-light);
+    border-radius: var(--radius-lg);
+    color: var(--text-tertiary);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.addBtn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: var(--accent-primary-light);
+}
+
+/* Tips */
+.tips {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.tipCard {
+    padding: var(--spacing-lg);
+}
+
+.tipCard h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.tipCard p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.tipCard strong {
+    color: var(--accent-primary);
+}
+
+/* Modal */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid var(--border-light);
+}
+
+.modal h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+.colorPicker label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.colorOptions {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.colorOption {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.colorOption:hover {
+    transform: scale(1.1);
+}
+
+.colorOption.selected {
+    border-color: white;
+    box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .allocationItem {
+        flex-wrap: wrap;
+    }
+
+    .itemSlider {
+        width: 100%;
+        order: 5;
+        padding: var(--spacing-md) 0 0;
+    }
+
+    .incomeInput {
+        font-size: 1.5rem;
+        width: 150px;
+    }
+}

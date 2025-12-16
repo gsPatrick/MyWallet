@@ -1,0 +1,1060 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + var(--spacing-xl));
+}
+
+.main {
+    padding-top: calc(var(--header-height) + var(--spacing-xl));
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+}
+
+/* Page Header */
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+    gap: var(--spacing-lg);
+}
+
+.headerText {
+    flex: 1;
+}
+
+.pageTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+    font-size: 0.9375rem;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    background: var(--bg-secondary);
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-lg);
+    width: fit-content;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all var(--transition-normal);
+}
+
+.tab:hover {
+    color: var(--text-primary);
+}
+
+.tab.active {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.tabBadge {
+    padding: 2px 8px;
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Cards Grid */
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--spacing-xl);
+}
+
+.cardWrapper {
+    cursor: pointer;
+    position: relative;
+    transition: transform var(--transition-normal);
+}
+
+.cardWrapper:hover {
+    transform: translateY(-4px);
+}
+
+.cardHint {
+    display: block;
+    text-align: center;
+    margin-top: var(--spacing-sm);
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.cardWrapper:hover .cardHint {
+    opacity: 1;
+}
+
+.ofBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: var(--radius-sm);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: white;
+    backdrop-filter: blur(4px);
+}
+
+.linkBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.linkBtn:hover {
+    background: var(--accent-primary-light);
+    border-color: var(--accent-primary);
+}
+
+/* Invoice View */
+.invoiceView {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: var(--spacing-2xl);
+    align-items: start;
+}
+
+.invoiceCard {
+    position: sticky;
+    top: calc(var(--header-height) + var(--spacing-xl));
+}
+
+.invoiceDetails {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border-light);
+}
+
+.invoiceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.invoiceHeader h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.monthSelector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.monthSelector button {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.monthSelector button:hover {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.monthSelector>span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 100px;
+    text-align: center;
+}
+
+.invoiceSummary {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.invoiceMain {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-lg);
+}
+
+.invoiceTotal {
+    display: flex;
+    flex-direction: column;
+}
+
+.invoiceLabel {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.invoiceValue {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.invoiceStatus {
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.invoiceStatus.open {
+    background: var(--accent-warning-light);
+    color: var(--accent-warning);
+}
+
+.invoiceStatus.closed {
+    background: var(--accent-success-light);
+    color: var(--accent-success);
+}
+
+.invoiceMeta {
+    display: flex;
+    gap: var(--spacing-2xl);
+    flex-wrap: wrap;
+}
+
+.invoiceMeta>div {
+    display: flex;
+    flex-direction: column;
+}
+
+.invoiceMeta span {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+}
+
+.invoiceMeta strong {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.invoiceTransactions {
+    border-top: 1px solid var(--border-light);
+    padding-top: var(--spacing-xl);
+}
+
+.invoiceTransactions h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.transactionsList {
+    display: flex;
+    flex-direction: column;
+}
+
+.txItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.txItem:last-child {
+    border-bottom: none;
+}
+
+.txInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.txDesc {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.txDate {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.installment {
+    padding: 2px 8px;
+    background: var(--accent-info-light);
+    color: var(--accent-info);
+    border-radius: var(--radius-sm);
+    font-size: 0.625rem;
+    font-weight: 600;
+}
+
+.txAmount {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-3xl);
+    color: var(--text-tertiary);
+    gap: var(--spacing-md);
+    grid-column: 1 / -1;
+}
+
+.emptyState svg {
+    font-size: 3rem;
+    opacity: 0.4;
+}
+
+.emptyState p {
+    font-size: 1rem;
+}
+
+.connectLink {
+    padding: 10px 20px;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+
+
+/* Ghost Card Styles */
+.ghostWrapper {
+    height: 100%;
+}
+
+.ghostCard {
+    background: transparent !important;
+    /* Override standard card gradient */
+    border: 2px dashed var(--border-light);
+    box-shadow: none !important;
+    transition: all 0.3s ease;
+    color: var(--text-primary) !important;
+}
+
+/* Force child elements to inherit color in ghost card */
+.ghostCard :global(span),
+.ghostCard :global(div) {
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
+.ghostCard :global(.dots) {
+    opacity: 0.3;
+}
+
+.ghostWrapper:hover .ghostCard {
+    border-color: var(--accent-primary);
+    background: rgba(var(--accent-primary-rgb), 0.05) !important;
+}
+
+.ghostChip {
+    background: var(--bg-tertiary) !important;
+    /* Override chip gradient */
+    box-shadow: none !important;
+    opacity: 0.5;
+}
+
+.ghostIconWrapper {
+    font-size: 2rem;
+    color: var(--text-tertiary);
+    transition: color 0.3s ease;
+}
+
+.ghostWrapper:hover .ghostIconWrapper {
+    color: var(--accent-primary);
+}
+
+/* Hide pattern on ghost card if it inherits it */
+.ghostCard :global(.pattern) {
+    display: none;
+}
+
+/* Subscriptions Section */
+.subsSection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.subsCard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.subscriptionsList {
+    display: flex;
+    flex-direction: column;
+}
+
+.subscriptionItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--border-light);
+    transition: background var(--transition-fast);
+}
+
+.subscriptionItem:last-child {
+    border-bottom: none;
+}
+
+.subscriptionItem:hover {
+    background: var(--bg-tertiary);
+}
+
+.subscriptionIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+    border-radius: var(--radius-lg);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.subscriptionInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.subscriptionName {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.subscriptionCategory {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.subscriptionAmount {
+    text-align: right;
+    min-width: 100px;
+}
+
+.amount {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.frequency {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.subscriptionNext {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    min-width: 100px;
+}
+
+.subscriptionActions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.actionBtn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.actionBtn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.actionBtn.danger:hover {
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
+}
+
+/* Summary Cards */
+.summaryCards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.summaryCard {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl);
+}
+
+.summaryIcon {
+    font-size: 1.75rem;
+    color: var(--accent-primary);
+}
+
+.summaryLabel {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+}
+
+.summaryValue {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+/* Modal Form */
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding-top: var(--spacing-sm);
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.inputLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.selectInput {
+    height: 48px;
+    padding: 0 var(--spacing-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    cursor: pointer;
+}
+
+.selectInput:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+/* Color Picker */
+.colorPicker {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.colorBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.colorBtn:hover {
+    transform: scale(1.1);
+}
+
+.colorBtn.active {
+    border-color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+/* Color Picker */
+.colorOptions {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.colorOption {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.colorOption:hover {
+    transform: scale(1.1);
+}
+
+.colorOption.selected {
+    border-color: white;
+    box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+/* Open Finance Layout */
+.openFinanceLayout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--spacing-xl);
+    min-height: 500px;
+}
+
+.ofCardsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.ofCardsList h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.ofCardItem {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    text-align: left;
+    transition: all var(--transition-fast);
+}
+
+.ofCardItem:hover {
+    background: var(--bg-tertiary);
+}
+
+.ofCardItem.selected {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-light);
+}
+
+.ofCardVisual {
+    width: 50px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px 6px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.ofCardBrand {
+    font-size: 0.4375rem;
+    font-weight: 700;
+}
+
+.ofCardDigits {
+    font-size: 0.4375rem;
+    letter-spacing: 0.05em;
+}
+
+.ofCardInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.ofCardName {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.ofCardUsed {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+.manageLink {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    color: var(--accent-primary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.manageLink:hover {
+    background: var(--accent-primary-light);
+}
+
+/* Invoice Panel */
+.invoicePanel {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border-light);
+}
+
+.invoiceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.invoiceHeader h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.monthSelector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.monthSelector button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.monthSelector button:hover {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.monthSelector span {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 80px;
+    text-align: center;
+}
+
+.invoiceSummary {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.invoiceTotal {
+    margin-bottom: var(--spacing-lg);
+}
+
+.invoiceLabel {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.invoiceValue {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.invoiceMeta {
+    display: flex;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.invoiceMeta>div {
+    display: flex;
+    flex-direction: column;
+}
+
+.invoiceMeta span {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+}
+
+.invoiceMeta strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.statusOpen {
+    color: var(--accent-warning) !important;
+}
+
+.invoiceTransactions {
+    border-top: 1px solid var(--border-light);
+    padding-top: var(--spacing-lg);
+}
+
+.invoiceTransactions h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.invoiceTxList {
+    display: flex;
+    flex-direction: column;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.invoiceTx {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.invoiceTx:last-child {
+    border-bottom: none;
+}
+
+.invoiceTxInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.invoiceTxDesc {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.invoiceTxDate {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.installment {
+    padding: 2px 6px;
+    background: var(--accent-info-light);
+    color: var(--accent-info);
+    border-radius: var(--radius-sm);
+    font-size: 0.5625rem;
+    font-weight: 600;
+}
+
+.invoiceTxAmount {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.emptyInvoice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    color: var(--text-tertiary);
+    gap: var(--spacing-md);
+    text-align: center;
+}
+
+.emptyInvoice svg {
+    font-size: 3rem;
+    opacity: 0.4;
+}
+
+.emptyInvoice p {
+    font-size: 0.9375rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .cardsGrid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .openFinanceLayout {
+        grid-template-columns: 1fr;
+    }
+
+    .invoicePanel {
+        margin-top: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        /* No header on mobile */
+        padding-top: var(--spacing-lg);
+    }
+
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+
+    .pageHeader {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .headerText {
+        text-align: center;
+    }
+
+    .tabs {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .tab {
+        flex: 1;
+        justify-content: center;
+        min-width: 100px;
+    }
+
+    .cardsGrid {
+        max-width: 100%;
+        justify-items: center;
+    }
+
+    .subscriptionItem {
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+    }
+
+    .subscriptionNext {
+        order: 5;
+        width: 100%;
+        padding-top: var(--spacing-sm);
+        border-top: 1px dashed var(--border-light);
+    }
+
+    .summaryCards {
+        grid-template-columns: 1fr;
+    }
+
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+
+    .invoiceMeta {
+        gap: var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+
+    .pageTitle {
+        font-size: 1.5rem;
+    }
+}

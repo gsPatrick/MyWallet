@@ -1,0 +1,227 @@
+.pageWrapper {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + var(--spacing-lg));
+}
+
+.main {
+    padding-top: calc(var(--header-height) + var(--spacing-lg));
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+}
+
+.pageTitle {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pageSubtitle {
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+}
+
+/* Overview Grid */
+.overviewGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.overviewCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.overviewHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.overviewIcon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-size: 1.25rem;
+}
+
+.overviewIcon.income {
+    background: var(--accent-success-light);
+    color: var(--accent-success);
+}
+
+.overviewIcon.expense {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.overviewLabel {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.overviewValues {
+    display: flex;
+    flex-direction: column;
+}
+
+.actual {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.expected {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+.progressBar {
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: var(--radius-full);
+}
+
+.progressLabel {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+/* Section Title */
+.sectionTitle {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Recommendations */
+.recommendationsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.recommendationCard {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.recIcon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    font-size: 1.5rem;
+}
+
+.recIcon.invest {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.recIcon.emergency {
+    background: var(--gradient-success);
+    color: white;
+}
+
+.recContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.recLabel {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.recValue {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.recPercent {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+/* Status Card */
+.statusCard {
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.statusCard.onTrack {
+    background: var(--accent-success-light);
+    border-color: var(--accent-success);
+}
+
+.statusCard.overBudget {
+    background: var(--accent-danger-light);
+    border-color: var(--accent-danger);
+}
+
+.statusContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.statusLabel {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.statusValue {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .overviewGrid,
+    .recommendationsGrid {
+        grid-template-columns: 1fr;
+    }
+}
