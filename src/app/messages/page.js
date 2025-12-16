@@ -33,8 +33,6 @@ export default function MessagesPage() {
         setIsLoading(true);
         try {
             const data = await messagesAPI.list();
-            // Ordenar por data (do backend já vem ordenado desc, mas para chat queremos asc para visualização de stack)
-            // Se o backend retorna DESC (mais novo primeiro), precisamos inverter para mostrar no chat (mais antigo em cima)
             setMessages(data.reverse());
         } catch (error) {
             console.error("Erro ao carregar mensagens:", error);
@@ -47,11 +45,10 @@ export default function MessagesPage() {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
-        const tempId = Date.now(); // Optimistic update ID
+        const tempId = Date.now();
         const text = newMessage;
         setNewMessage('');
 
-        /* Optimistic Update */
         const optimisticMessage = {
             id: tempId,
             text: text,
@@ -65,16 +62,12 @@ export default function MessagesPage() {
         try {
             const createdMessage = await messagesAPI.create({
                 text: text,
-                title: 'Nova mensagem', // Título genérico
-                type: 'SUPPORT' // Tipo padrão
+                title: 'Nova mensagem',
+                type: 'SUPPORT'
             });
-
-            // Substitui a mensagem otimista pela real
             setMessages(prev => prev.map(msg => msg.id === tempId ? createdMessage : msg));
-
         } catch (error) {
             console.error("Erro ao enviar mensagem:", error);
-            // Reverter em caso de erro (removendo a mensagem otimista)
             setMessages(prev => prev.filter(msg => msg.id !== tempId));
             alert("Erro ao enviar mensagem.");
         }
@@ -101,44 +94,76 @@ export default function MessagesPage() {
 
             <main className={styles.main}>
                 <div className={styles.container}>
-                    <motion.div
-                                <div
-                        key={msg.id}
-                        className={`${styles.message} ${msg.sender === 'user' ? styles.userMessage : styles.botMessage}`}
-                    >
-                        <div className={styles.messageBubble}>
-                            <p>{msg.text}</p>
-                            <span className={styles.messageTime}>{msg.time}</span>
+                    <Card className={styles.chatCard}>
+                        <div className={styles.chatHeader}>
+                            <FiMessageSquare />
+                            <h2>Mensagens</h2>
                         </div>
-                    </div>
-                            ))}
-                </div>
 
-                {/* Composer */}
-                <div className={styles.composer}>
-                    <button className={styles.attachBtn}><FiPaperclip /></button>
-                    <input
-                        type="text"
-                        placeholder="Digite sua mensagem..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        className={styles.messageInput}
-                    />
-                    <button className={styles.emojiBtn}><FiSmile /></button>
-                    <button
-                        className={styles.sendBtn}
-                        onClick={handleSend}
-                        disabled={!message.trim()}
-                    >
-                        <FiSend />
-                    </button>
+                        <div className={styles.messagesContainer}>
+                            {isLoading ? (
+                                <div className={styles.loading}>
+                                    <FiLoader className={styles.spinner} />
+                                    <span>Carregando mensagens...</span>
+                                </div>
+                            ) : messages.length === 0 ? (
+                                <div className={styles.emptyState}>
+                                    <FiMessageSquare />
+                                    <p>Nenhuma mensagem ainda</p>
+                                    <span>Envie uma mensagem para começar</span>
+                                </div>
+                            ) : (
+                                <AnimatePresence>
+                                    {messages.map((msg) => (
+                                        <motion.div
+                                            key={msg.id}
+                                            className={`${styles.message} ${msg.sender === 'USER' ? styles.userMessage : styles.botMessage}`}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            onClick={() => handleMarkAsRead(msg.id, msg.isRead)}
+                                        >
+                                            <div className={styles.messageBubble}>
+                                                <p>{msg.text}</p>
+                                                <div className={styles.messageFooter}>
+                                                    <span className={styles.messageTime}>
+                                                        <FiClock /> {formatTime(msg.createdAt)}
+                                                    </span>
+                                                    {msg.sender === 'USER' && (
+                                                        <span className={styles.messageStatus}>
+                                                            {msg.pending ? <FiLoader className={styles.spinnerSmall} /> :
+                                                                msg.isRead ? <FiCheckCircle /> : <FiCheck />}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        <form className={styles.composer} onSubmit={handleSendMessage}>
+                            <input
+                                type="text"
+                                placeholder="Digite sua mensagem..."
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                className={styles.messageInput}
+                            />
+                            <button
+                                type="submit"
+                                className={styles.sendBtn}
+                                disabled={!newMessage.trim()}
+                            >
+                                <FiSend />
+                            </button>
+                        </form>
+                    </Card>
                 </div>
-            </motion.div>
+            </main>
+
+            <Dock />
         </div>
-            </main >
-
-        <Dock />
-        </div >
     );
 }
