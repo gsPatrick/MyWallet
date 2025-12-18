@@ -132,6 +132,13 @@
     position: relative;
 }
 
+.stepNode {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .stepCircle {
     width: 36px;
     height: 36px;
@@ -346,59 +353,106 @@
 .fullScreenAnimation {
     position: fixed;
     inset: 0;
-    background: linear-gradient(145deg, #0a0a0f 0%, #1a1a2e 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.animationContent {
+    background: #0a0a0f;
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
+    justify-content: center;
+    z-index: 1000;
+    overflow: hidden;
 }
 
-.successCircle {
-    width: 120px;
-    height: 120px;
+/* Background Glow Effects */
+.glowOrb {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
     border-radius: 50%;
-    background: #ffffff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(60px);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.glowOrb2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(40px);
+    animation: pulse 2s ease-in-out infinite reverse;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+/* Logo Container */
+.logoContainer {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 2rem;
-    box-shadow:
-        0 0 0 20px rgba(255, 255, 255, 0.1),
-        0 0 0 40px rgba(255, 255, 255, 0.05),
-        0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 2;
 }
 
-.successLogo {
-    object-fit: contain;
+/* Pulse Ring */
+.pulseRing {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Logo Animated */
+.logoAnimated {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
 }
 
 .welcomeText {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     color: #ffffff;
-    margin-bottom: 0.5rem;
+    margin-top: 2rem;
     letter-spacing: -0.02em;
+    text-align: center;
+    z-index: 2;
 }
 
-.welcomeSubtext {
-    font-size: 1.125rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 2.5rem;
+/* Loading Dots */
+.loadingDots {
+    display: flex;
+    gap: 8px;
+    margin-top: 2rem;
+    z-index: 2;
 }
 
-.loadingBar {
-    width: 200px;
-    height: 4px;
-    background: #ffffff;
-    border-radius: 2px;
-    transform-origin: left;
+.dot {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
 }
 
 .redirectOverlay {
@@ -508,5 +562,56 @@
 
     .successIcon {
         font-size: 2.5rem;
+    }
+}
+
+/* Day Selector Grid */
+.dayGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.dayButton {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dayButton:hover {
+    background: #f1f5f9;
+    color: #1a1a2e;
+}
+
+.dayButton.daySelected {
+    background: #1a1a2e;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(26, 26, 46, 0.2);
+}
+
+/* Update Mobile Grid */
+@media (max-width: 640px) {
+    .dayGrid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.25rem;
+    }
+
+    .dayButton {
+        font-size: 0.75rem;
     }
 }

@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiSun, FiMoon, FiMonitor, FiCheck, FiLink, FiShield, FiDownload, FiBell } from 'react-icons/fi';
+import { FiSun, FiMoon, FiMonitor, FiCheck, FiLink, FiShield, FiDownload, FiBell, FiMessageCircle, FiRefreshCw } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useTheme } from '@/contexts/ThemeContext';
-import { authAPI } from '@/services/api';
+import { authAPI, whatsappAPI } from '@/services/api';
 import styles from './page.module.css';
 
 const accentColors = [
@@ -34,12 +34,23 @@ export default function SettingsPage() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // WhatsApp Bot State
+    const [whatsappStatus, setWhatsappStatus] = useState('disconnected');
+    const [whatsappQR, setWhatsappQR] = useState(null);
+    const [whatsappLoading, setWhatsappLoading] = useState(false);
+
     useEffect(() => {
         const loadProfile = async () => {
             try {
                 const userData = await authAPI.me();
                 setUser(userData);
-                // Also load preferences if backend supports it (or map user preferences)
+                // Load WhatsApp status
+                try {
+                    const wpStatus = await whatsappAPI.getStatus();
+                    setWhatsappStatus(wpStatus.data?.status || 'disconnected');
+                } catch (e) {
+                    // Ignore if not connected
+                }
             } catch (error) {
                 console.error("Error loading profile:", error);
             } finally {
@@ -48,6 +59,38 @@ export default function SettingsPage() {
         };
         loadProfile();
     }, []);
+
+    // WhatsApp handlers
+    const handleWhatsappConnect = async () => {
+        setWhatsappLoading(true);
+        setWhatsappQR(null);
+        try {
+            const result = await whatsappAPI.connect();
+            if (result.data?.qrCode) {
+                setWhatsappQR(result.data.qrCode);
+                setWhatsappStatus('awaiting_scan');
+            } else if (result.data?.status === 'connected') {
+                setWhatsappStatus('connected');
+            }
+        } catch (error) {
+            console.error('Erro ao conectar WhatsApp:', error);
+        } finally {
+            setWhatsappLoading(false);
+        }
+    };
+
+    const handleWhatsappDisconnect = async () => {
+        setWhatsappLoading(true);
+        try {
+            await whatsappAPI.disconnect();
+            setWhatsappStatus('disconnected');
+            setWhatsappQR(null);
+        } catch (error) {
+            console.error('Erro ao desconectar WhatsApp:', error);
+        } finally {
+            setWhatsappLoading(false);
+        }
+    };
 
     return (
         <div className={styles.pageWrapper}>
@@ -212,6 +255,109 @@ export default function SettingsPage() {
                                     </div>
                                     <Button variant="secondary" size="sm" leftIcon={<FiDownload />}>Exportar</Button>
                                 </div>
+                            </Card>
+                        </motion.section>
+
+                        {/* Extrato Financeiro */}
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                        >
+                            <h2 className={styles.sectionTitle}>Extrato Financeiro</h2>
+
+                            <Card className={styles.settingCard}>
+                                <div className={styles.dataItem}>
+                                    <FiDownload className={styles.dataIcon} />
+                                    <div className={styles.dataInfo}>
+                                        <span className={styles.settingLabel}>Gerar Extrato</span>
+                                        <span className={styles.settingDesc}>Visualize todas as movimentações mês a mês e exporte em PDF</span>
+                                    </div>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => window.location.href = '/settings/statement'}
+                                    >
+                                        Acessar
+                                    </Button>
+                                </div>
+                            </Card>
+                        </motion.section>
+
+                        {/* WhatsApp Bot */}
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.7 }}
+                        >
+                            <h2 className={styles.sectionTitle}>Assistente WhatsApp</h2>
+
+                            <Card className={styles.settingCard}>
+                                <div className={styles.whatsappSection}>
+                                    <FiMessageCircle className={styles.whatsappIcon} />
+                                    <div className={styles.whatsappInfo}>
+                                        <span className={styles.settingLabel}>MyWallet AI Bot</span>
+                                        <span className={styles.settingDesc}>
+                                            Registre transações por texto ou áudio no WhatsApp
+                                        </span>
+
+                                        {/* Status Indicator */}
+                                        <div className={styles.whatsappStatusRow}>
+                                            <span className={`${styles.statusDot} ${styles[whatsappStatus]}`} />
+                                            <span className={styles.statusText}>
+                                                {whatsappStatus === 'connected' && '🟢 Conectado'}
+                                                {whatsappStatus === 'awaiting_scan' && '🟡 Aguardando scan'}
+                                                {whatsappStatus === 'disconnected' && '🔴 Desconectado'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.whatsappActions}>
+                                        {whatsappStatus === 'disconnected' && (
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
+                                                onClick={handleWhatsappConnect}
+                                                loading={whatsappLoading}
+                                                leftIcon={<FiLink />}
+                                            >
+                                                Conectar
+                                            </Button>
+                                        )}
+                                        {whatsappStatus === 'connected' && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={handleWhatsappDisconnect}
+                                                loading={whatsappLoading}
+                                            >
+                                                Desconectar
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* QR Code */}
+                                {whatsappQR && whatsappStatus === 'awaiting_scan' && (
+                                    <div className={styles.qrCodeWrapper}>
+                                        <img
+                                            src={whatsappQR}
+                                            alt="QR Code WhatsApp"
+                                            className={styles.qrCode}
+                                        />
+                                        <p className={styles.qrInstruction}>
+                                            Abra o WhatsApp → Aparelhos conectados → Conectar
+                                        </p>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handleWhatsappConnect}
+                                            leftIcon={<FiRefreshCw />}
+                                        >
+                                            Gerar novo QR
+                                        </Button>
+                                    </div>
+                                )}
                             </Card>
                         </motion.section>
                     </div>

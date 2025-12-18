@@ -1,0 +1,147 @@
+.overlayContainer {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: auto;
+    /* Blocks interaction with underlying app */
+}
+
+/* Semi-transparent background - Much lighter as requested */
+.backdrop {
+    position: absolute;
+    inset: 0;
+    /* background: rgba(0, 0, 0, 0.3); */
+    /* User said "fundo normal", implying very little or no dimming. 
+       However, we need *some* to focus. Let's make it very subtle or rely on Spotlight. */
+    background: transparent;
+    transition: all 0.5s ease;
+}
+
+/* Spotlight Effect */
+.spotlight {
+    position: absolute;
+    border-radius: 12px;
+    /* Reduced opacity of the surrounding dark area significantly */
+    /* box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4); */
+    /* User requested "fundo normal", so maybe NO darkening at all? 
+       But "spotlight" implies highlighting. 
+       Let's try a very subtle blur/darkening or just a border.
+       "ele deve ficar com o fundo normal" -> implies no overlay mask.
+       "card fluante deve ser transparente com blur" -> focus on card. 
+       Let's remove the huge shadow mask to respect "fundo normal". */
+    box-shadow: 0 0 0 0 transparent;
+    pointer-events: none;
+    z-index: 10000;
+    /* Just a nice border to highlight the element */
+    border: 2px solid #2563eb;
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+}
+
+.tooltipCard {
+    position: absolute;
+    z-index: 10001;
+    width: 320px;
+    /* Glassmorphism Logic */
+    background: rgba(20, 20, 35, 0.75);
+    /* Darkish glass for contrast */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    color: #fff;
+    /* Force white text for glass on usually dark/colored backgrounds */
+
+    max-width: 90vw;
+}
+
+/* Ensure Light Mode considers the glass card */
+@media (prefers-color-scheme: light) {
+    /* If light mode, maybe a lighter glass? 
+       But user app seems dark-ish or "premium". 
+       Let's stick to a neutral glass or adapt.
+       If user wants "fundo normal" (light dashboard), a dark glass card pops well. */
+}
+
+[data-theme='dark'] .tooltipCard {
+    /* Same glass style works for dark mode */
+    background: rgba(20, 20, 35, 0.75);
+}
+
+.cardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+[data-theme='dark'] .title {
+    color: #fff;
+}
+
+.description {
+    font-size: 0.9375rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+[data-theme='dark'] .description {
+    color: #a0a0b0;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.skipBtn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.skipBtn:hover {
+    color: #555;
+    text-decoration: underline;
+}
+
+.nextBtn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.nextBtn:hover {
+    background: #1d4ed8;
+}
+
+.stepIndicator {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ccc;
+}

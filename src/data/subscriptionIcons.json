@@ -1,0 +1,710 @@
+{
+    "subscriptions": {
+        "netflix": {
+            "name": "Netflix",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/75/Netflix_icon.svg",
+            "color": "#E50914",
+            "category": "STREAMING",
+            "defaultAmount": 39.90
+        },
+        "spotify": {
+            "name": "Spotify",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg",
+            "color": "#1DB954",
+            "category": "MUSIC",
+            "defaultAmount": 21.90
+        },
+        "amazon_prime": {
+            "name": "Amazon Prime",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png",
+            "color": "#FF9900",
+            "category": "STREAMING",
+            "defaultAmount": 14.90
+        },
+        "disney_plus": {
+            "name": "Disney+",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
+            "color": "#113CCF",
+            "category": "STREAMING",
+            "defaultAmount": 33.90
+        },
+        "hbo_max": {
+            "name": "HBO Max",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg",
+            "color": "#5822B4",
+            "category": "STREAMING",
+            "defaultAmount": 34.90
+        },
+        "youtube_premium": {
+            "name": "YouTube Premium",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",
+            "color": "#FF0000",
+            "category": "STREAMING",
+            "defaultAmount": 24.90
+        },
+        "apple_music": {
+            "name": "Apple Music",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Apple_Music_icon.svg",
+            "color": "#FA243C",
+            "category": "MUSIC",
+            "defaultAmount": 21.90
+        },
+        "deezer": {
+            "name": "Deezer",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Deezer_logo.svg",
+            "color": "#FEAA2D",
+            "category": "MUSIC",
+            "defaultAmount": 21.90
+        },
+        "paramount_plus": {
+            "name": "Paramount+",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount_Plus.svg",
+            "color": "#0064FF",
+            "category": "STREAMING",
+            "defaultAmount": 19.90
+        },
+        "globoplay": {
+            "name": "Globoplay",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Globoplay_logo.svg",
+            "color": "#FF0000",
+            "category": "STREAMING",
+            "defaultAmount": 24.90
+        },
+        "crunchyroll": {
+            "name": "Crunchyroll",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.svg",
+            "color": "#F47521",
+            "category": "STREAMING",
+            "defaultAmount": 14.99
+        },
+        "xbox_game_pass": {
+            "name": "Xbox Game Pass",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/43/Xbox_Game_Pass_logo.svg",
+            "color": "#107C10",
+            "category": "GAMING",
+            "defaultAmount": 44.99
+        },
+        "playstation_plus": {
+            "name": "PlayStation Plus",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/00/PlayStation_Plus_logo.svg",
+            "color": "#003791",
+            "category": "GAMING",
+            "defaultAmount": 42.90
+        },
+        "nintendo_online": {
+            "name": "Nintendo Online",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Nintendo_Switch_Online_logo.svg",
+            "color": "#E60012",
+            "category": "GAMING",
+            "defaultAmount": 24.90
+        },
+        "twitch": {
+            "name": "Twitch",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Twitch_logo_2019.svg",
+            "color": "#9146FF",
+            "category": "STREAMING",
+            "defaultAmount": 24.90
+        },
+        "icloud": {
+            "name": "iCloud",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+            "color": "#3693F3",
+            "category": "STORAGE",
+            "defaultAmount": 3.50
+        },
+        "google_one": {
+            "name": "Google One",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_One_logo.svg",
+            "color": "#4285F4",
+            "category": "STORAGE",
+            "defaultAmount": 6.99
+        },
+        "dropbox": {
+            "name": "Dropbox",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg",
+            "color": "#0061FF",
+            "category": "STORAGE",
+            "defaultAmount": 59.90
+        },
+        "notion": {
+            "name": "Notion",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 48.00
+        },
+        "slack": {
+            "name": "Slack",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg",
+            "color": "#4A154B",
+            "category": "SOFTWARE",
+            "defaultAmount": 39.00
+        },
+        "zoom": {
+            "name": "Zoom",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Zoom_Communications_Logo.svg",
+            "color": "#2D8CFF",
+            "category": "SOFTWARE",
+            "defaultAmount": 73.90
+        },
+        "microsoft_365": {
+            "name": "Microsoft 365",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+            "color": "#D83B01",
+            "category": "SOFTWARE",
+            "defaultAmount": 45.00
+        },
+        "adobe_cc": {
+            "name": "Adobe Creative Cloud",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Creative_Cloud_rainbow_icon.svg",
+            "color": "#FF0000",
+            "category": "SOFTWARE",
+            "defaultAmount": 224.00
+        },
+        "canva": {
+            "name": "Canva Pro",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/08/Canva_icon_2021.svg",
+            "color": "#00C4CC",
+            "category": "SOFTWARE",
+            "defaultAmount": 34.99
+        },
+        "figma": {
+            "name": "Figma",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg",
+            "color": "#F24E1E",
+            "category": "SOFTWARE",
+            "defaultAmount": 75.00
+        },
+        "github": {
+            "name": "GitHub Pro",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
+            "color": "#181717",
+            "category": "SOFTWARE",
+            "defaultAmount": 21.00
+        },
+        "chatgpt": {
+            "name": "ChatGPT Plus",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
+            "color": "#10A37F",
+            "category": "SOFTWARE",
+            "defaultAmount": 100.00
+        },
+        "prime_video_channels": {
+            "name": "Prime Video Channels",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png",
+            "color": "#00A8E1",
+            "category": "STREAMING",
+            "defaultAmount": 9.90
+        },
+        "star_plus": {
+            "name": "Star+",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Star_Plus_logo.svg",
+            "color": "#FFCC00",
+            "category": "STREAMING",
+            "defaultAmount": 40.90
+        },
+        "apple_tv_plus": {
+            "name": "Apple TV+",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Apple_TV_Plus_Logo.svg",
+            "color": "#000000",
+            "category": "STREAMING",
+            "defaultAmount": 21.90
+        },
+        "viki": {
+            "name": "Viki",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Viki_logo.svg",
+            "color": "#FF5722",
+            "category": "STREAMING",
+            "defaultAmount": 19.90
+        },
+        "pluto_tv": {
+            "name": "Pluto TV",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Pluto_TV_logo.svg",
+            "color": "#FFD400",
+            "category": "STREAMING",
+            "defaultAmount": 0.00
+        },
+        "soundcloud_go": {
+            "name": "SoundCloud Go",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a2/SoundCloud_logo.svg",
+            "color": "#FF5500",
+            "category": "MUSIC",
+            "defaultAmount": 16.90
+        },
+        "tidal": {
+            "name": "Tidal",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/75/Tidal_logo.svg",
+            "color": "#000000",
+            "category": "MUSIC",
+            "defaultAmount": 21.90
+        },
+        "amazon_music": {
+            "name": "Amazon Music Unlimited",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Amazon_Music_logo.svg",
+            "color": "#00A8E1",
+            "category": "MUSIC",
+            "defaultAmount": 21.90
+        },
+        "youtube_music": {
+            "name": "YouTube Music",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/d/d8/YouTube_Music_logo.svg",
+            "color": "#FF0000",
+            "category": "MUSIC",
+            "defaultAmount": 21.90
+        },
+        "ea_play": {
+            "name": "EA Play",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0c/EA_Play_logo.svg",
+            "color": "#FF4747",
+            "category": "GAMING",
+            "defaultAmount": 19.90
+        },
+        "ubisoft_plus": {
+            "name": "Ubisoft+",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/78/Ubisoft_logo.svg",
+            "color": "#000000",
+            "category": "GAMING",
+            "defaultAmount": 59.90
+        },
+        "steam": {
+            "name": "Steam",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
+            "color": "#171A21",
+            "category": "GAMING",
+            "defaultAmount": 0.00
+        },
+        "google_play_pass": {
+            "name": "Google Play Pass",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_Play_Store_badge_EN.svg",
+            "color": "#34A853",
+            "category": "GAMING",
+            "defaultAmount": 9.90
+        },
+        "medium": {
+            "name": "Medium",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Medium_logo_Monogram.svg",
+            "color": "#000000",
+            "category": "NEWS",
+            "defaultAmount": 25.00
+        },
+        "new_york_times": {
+            "name": "The New York Times",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0e/New_York_Times_logo.svg",
+            "color": "#000000",
+            "category": "NEWS",
+            "defaultAmount": 69.90
+        },
+        "spotify_family": {
+            "name": "Spotify Family",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg",
+            "color": "#1DB954",
+            "category": "MUSIC",
+            "defaultAmount": 34.90
+        },
+        "google_workspace": {
+            "name": "Google Workspace",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Workspace_logo.svg",
+            "color": "#4285F4",
+            "category": "SOFTWARE",
+            "defaultAmount": 27.00
+        },
+        "aws": {
+            "name": "AWS",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg",
+            "color": "#FF9900",
+            "category": "SOFTWARE",
+            "defaultAmount": 150.00
+        },
+        "digital_ocean": {
+            "name": "DigitalOcean",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/ff/DigitalOcean_logo.svg",
+            "color": "#0080FF",
+            "category": "SOFTWARE",
+            "defaultAmount": 60.00
+        },
+        "heroku": {
+            "name": "Heroku",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Heroku_logo.svg",
+            "color": "#430098",
+            "category": "SOFTWARE",
+            "defaultAmount": 35.00
+        },
+        "vercel": {
+            "name": "Vercel",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Vercel_logo_black.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 20.00
+        },
+        "netlify": {
+            "name": "Netlify",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Netlify_logo.svg",
+            "color": "#00C7B7",
+            "category": "SOFTWARE",
+            "defaultAmount": 19.00
+        },
+        "geforce_now": {
+            "name": "GeForce NOW",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Nvidia_logo.svg",
+            "color": "#76B900",
+            "category": "GAMING",
+            "defaultAmount": 49.99
+        },
+        "boosteroid": {
+            "name": "Boosteroid",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Boosteroid_logo.svg",
+            "color": "#FFCC00",
+            "category": "GAMING",
+            "defaultAmount": 39.90
+        },
+        "xbox_cloud_gaming": {
+            "name": "Xbox Cloud Gaming",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/43/Xbox_Game_Pass_logo.svg",
+            "color": "#107C10",
+            "category": "GAMING",
+            "defaultAmount": 0.00
+        },
+        "waze": {
+            "name": "Waze",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Waze_logo.svg",
+            "color": "#33CCFF",
+            "category": "UTILITIES",
+            "defaultAmount": 0.00
+        },
+        "uber": {
+            "name": "Uber",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.svg",
+            "color": "#000000",
+            "category": "UTILITIES",
+            "defaultAmount": 0.00
+        },
+        "99": {
+            "name": "99",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2b/99_logo.svg",
+            "color": "#FFD100",
+            "category": "UTILITIES",
+            "defaultAmount": 0.00
+        },
+        "cabify": {
+            "name": "Cabify",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Cabify_logo.svg",
+            "color": "#6C2EFF",
+            "category": "UTILITIES",
+            "defaultAmount": 0.00
+        },
+        "vivo": {
+            "name": "Vivo",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Vivo_logo.svg",
+            "color": "#660099",
+            "category": "UTILITIES",
+            "defaultAmount": 120.00
+        },
+        "claro": {
+            "name": "Claro",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Claro_logo.svg",
+            "color": "#E60019",
+            "category": "UTILITIES",
+            "defaultAmount": 110.00
+        },
+        "tim": {
+            "name": "TIM",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7f/TIM_logo.svg",
+            "color": "#0033A0",
+            "category": "UTILITIES",
+            "defaultAmount": 105.00
+        },
+        "oi": {
+            "name": "Oi",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/57/Oi_logo.svg",
+            "color": "#FFD100",
+            "category": "UTILITIES",
+            "defaultAmount": 95.00
+        },
+        "starlink": {
+            "name": "Starlink",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Starlink_Logo.svg",
+            "color": "#000000",
+            "category": "UTILITIES",
+            "defaultAmount": 230.00
+        },
+        "alexa": {
+            "name": "Amazon Alexa",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Amazon_Alexa_logo.svg",
+            "color": "#00CAFF",
+            "category": "UTILITIES",
+            "defaultAmount": 0.00
+        },
+        "google_nest": {
+            "name": "Google Nest",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Google_Nest_logo.svg",
+            "color": "#4285F4",
+            "category": "UTILITIES",
+            "defaultAmount": 0.00
+        },
+        "ring": {
+            "name": "Ring",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Ring_logo.svg",
+            "color": "#00BCE4",
+            "category": "UTILITIES",
+            "defaultAmount": 30.00
+        },
+        "jira": {
+            "name": "Jira",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Jira_Logo.svg",
+            "color": "#0052CC",
+            "category": "SOFTWARE",
+            "defaultAmount": 49.00
+        },
+        "confluence": {
+            "name": "Confluence",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Confluence_Logo.svg",
+            "color": "#172B4D",
+            "category": "SOFTWARE",
+            "defaultAmount": 39.00
+        },
+        "clickup": {
+            "name": "ClickUp",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7e/ClickUp_logo.svg",
+            "color": "#7B68EE",
+            "category": "SOFTWARE",
+            "defaultAmount": 29.00
+        },
+        "linear": {
+            "name": "Linear",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Linear_logo.svg",
+            "color": "#5E6AD2",
+            "category": "SOFTWARE",
+            "defaultAmount": 40.00
+        },
+        "bitwarden": {
+            "name": "Bitwarden",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Bitwarden_logo.svg",
+            "color": "#175DDC",
+            "category": "SOFTWARE",
+            "defaultAmount": 9.99
+        },
+        "lastpass": {
+            "name": "LastPass",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7a/LastPass_logo.svg",
+            "color": "#D32D27",
+            "category": "SOFTWARE",
+            "defaultAmount": 14.99
+        },
+        "norton": {
+            "name": "Norton",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Norton_logo.svg",
+            "color": "#FFD100",
+            "category": "SOFTWARE",
+            "defaultAmount": 19.99
+        },
+        "kaspersky": {
+            "name": "Kaspersky",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Kaspersky_logo.svg",
+            "color": "#006D5C",
+            "category": "SOFTWARE",
+            "defaultAmount": 19.99
+        },
+        "github_copilot": {
+            "name": "GitHub Copilot",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
+            "color": "#181717",
+            "category": "SOFTWARE",
+            "defaultAmount": 49.00
+        },
+        "jetbrains_all_products": {
+            "name": "JetBrains All Products Pack",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/71/JetBrains_Logo_2020.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 129.00
+        },
+        "postman": {
+            "name": "Postman",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Postman_%28software%29_logo.svg",
+            "color": "#FF6C37",
+            "category": "SOFTWARE",
+            "defaultAmount": 49.00
+        },
+        "sentry": {
+            "name": "Sentry",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Sentry_logo.svg",
+            "color": "#362D59",
+            "category": "SOFTWARE",
+            "defaultAmount": 39.00
+        },
+        "datadog": {
+            "name": "Datadog",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Datadog_logo.svg",
+            "color": "#632CA6",
+            "category": "SOFTWARE",
+            "defaultAmount": 99.00
+        },
+        "cloudflare": {
+            "name": "Cloudflare",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Cloudflare_Logo.svg",
+            "color": "#F38020",
+            "category": "SOFTWARE",
+            "defaultAmount": 20.00
+        },
+        "supabase": {
+            "name": "Supabase",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Supabase_logo.svg",
+            "color": "#3ECF8E",
+            "category": "SOFTWARE",
+            "defaultAmount": 25.00
+        },
+        "firebase": {
+            "name": "Firebase",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/37/Firebase_Logo.svg",
+            "color": "#FFCA28",
+            "category": "SOFTWARE",
+            "defaultAmount": 30.00
+        },
+        "openai_api": {
+            "name": "OpenAI API",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg",
+            "color": "#10A37F",
+            "category": "SOFTWARE",
+            "defaultAmount": 120.00
+        },
+        "anthropic": {
+            "name": "Anthropic",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Anthropic_logo.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 120.00
+        },
+        "midjourney": {
+            "name": "Midjourney",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Midjourney_Emblem.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 60.00
+        },
+        "runway": {
+            "name": "Runway",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1e/RunwayML_logo.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 75.00
+        },
+        "figma_organization": {
+            "name": "Figma Organization",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg",
+            "color": "#F24E1E",
+            "category": "SOFTWARE",
+            "defaultAmount": 300.00
+        },
+        "envato_elements": {
+            "name": "Envato Elements",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Envato_logo.svg",
+            "color": "#82B541",
+            "category": "SOFTWARE",
+            "defaultAmount": 89.00
+        },
+        "shutterstock": {
+            "name": "Shutterstock",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Shutterstock_Logo.svg",
+            "color": "#EE2B24",
+            "category": "SOFTWARE",
+            "defaultAmount": 199.00
+        },
+        "getty_images": {
+            "name": "Getty Images",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Getty_Images_logo.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 399.00
+        },
+        "courier": {
+            "name": "Courier",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Courier_logo.svg",
+            "color": "#6E56CF",
+            "category": "SOFTWARE",
+            "defaultAmount": 29.00
+        },
+        "sendgrid": {
+            "name": "SendGrid",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/78/SendGrid_logo.svg",
+            "color": "#1A82E2",
+            "category": "SOFTWARE",
+            "defaultAmount": 29.00
+        },
+        "mailchimp": {
+            "name": "Mailchimp",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Mailchimp_logo.svg",
+            "color": "#FFE01B",
+            "category": "SOFTWARE",
+            "defaultAmount": 39.00
+        },
+        "brevo": {
+            "name": "Brevo (Sendinblue)",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Brevo_logo.svg",
+            "color": "#0092FF",
+            "category": "SOFTWARE",
+            "defaultAmount": 25.00
+        }
+    },
+    "categories": [
+        {
+            "id": "STREAMING",
+            "name": "Streaming",
+            "color": "#E50914"
+        },
+        {
+            "id": "MUSIC",
+            "name": "Música",
+            "color": "#1DB954"
+        },
+        {
+            "id": "GAMING",
+            "name": "Games",
+            "color": "#107C10"
+        },
+        {
+            "id": "SOFTWARE",
+            "name": "Software",
+            "color": "#4285F4"
+        },
+        {
+            "id": "STORAGE",
+            "name": "Armazenamento",
+            "color": "#3693F3"
+        },
+        {
+            "id": "EDUCATION",
+            "name": "Educação",
+            "color": "#0056D2"
+        },
+        {
+            "id": "HEALTH",
+            "name": "Saúde",
+            "color": "#FF6B35"
+        },
+        {
+            "id": "FITNESS",
+            "name": "Fitness",
+            "color": "#FFD100"
+        },
+        {
+            "id": "NEWS",
+            "name": "Notícias",
+            "color": "#333333"
+        },
+        {
+            "id": "UTILITIES",
+            "name": "Serviços",
+            "color": "#708090"
+        },
+        {
+            "id": "INSURANCE",
+            "name": "Seguros",
+            "color": "#1E90FF"
+        },
+        {
+            "id": "OTHER",
+            "name": "Outros",
+            "color": "#708090"
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -18,10 +18,12 @@ import {
     FiTrendingUp,
     FiPieChart,
     FiSliders,
-    FiFileText
+    FiFileText,
+    FiCheckSquare
 } from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { notificationsAPI } from '@/services/api';
 import styles from './Header.module.css';
 
 const quickActions = [
@@ -40,11 +42,54 @@ export default function Header() {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showQuickActions, setShowQuickActions] = useState(false);
 
-    const mockNotifications = [
-        { id: 1, title: 'Dividendo PETR4', message: 'R$ 125,00', time: '2h', type: 'success' },
-        { id: 2, title: 'Meta atingida!', message: 'Reserva completa', time: '5h', type: 'info' },
-        { id: 3, title: 'Alerta de gastos', message: '80% do orçamento', time: '1d', type: 'warning' },
-    ];
+    // Notifications State
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [loadingNotifications, setLoadingNotifications] = useState(false);
+
+    const fetchNotifications = async () => {
+        try {
+            setLoadingNotifications(true);
+            const { data } = await notificationsAPI.list();
+            // Assuming data is array or { rows: [] }
+            const list = Array.isArray(data) ? data : data.rows || [];
+            setNotifications(list.slice(0, 5)); // Show top 5
+
+            // Count unread
+            const count = list.filter(n => !n.isRead).length;
+            setUnreadCount(count);
+        } catch (error) {
+            console.error('Failed to fetch notifications', error);
+        } finally {
+            setLoadingNotifications(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+        }
+    }, [user]);
+
+    const handleMarkRead = async (id) => {
+        try {
+            await notificationsAPI.markRead(id);
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error('Error marking read', error);
+        }
+    };
+
+    const handleMarkAllRead = async () => {
+        try {
+            await notificationsAPI.markAllRead();
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+        } catch (error) {
+            console.error('Error marking all read', error);
+        }
+    };
 
     return (
         <>
@@ -65,11 +110,14 @@ export default function Header() {
                         <div className={styles.notificationWrapper}>
                             <button
                                 className={styles.iconBtn}
-                                onClick={() => setShowNotifications(!showNotifications)}
+                                onClick={() => {
+                                    setShowNotifications(!showNotifications);
+                                    if (!showNotifications) fetchNotifications();
+                                }}
                                 aria-label="Notificações"
                             >
                                 <FiBell />
-                                <span className={styles.badge}>3</span>
+                                {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
                             </button>
 
                             <AnimatePresence>
@@ -82,18 +130,40 @@ export default function Header() {
                                     >
                                         <div className={styles.dropdownHeader}>
                                             Notificações
-                                            <button className={styles.markRead}>Limpar</button>
+                                            {notifications.length > 0 && (
+                                                <button className={styles.markRead} onClick={handleMarkAllRead}>
+                                                    Limpar
+                                                </button>
+                                            )}
                                         </div>
-                                        {mockNotifications.map(n => (
-                                            <div key={n.id} className={styles.notificationItem}>
-                                                <div className={`${styles.dot} ${styles[n.type]}`} />
-                                                <div className={styles.notificationText}>
-                                                    <span className={styles.notificationTitle}>{n.title}</span>
-                                                    <span className={styles.notificationMsg}>{n.message}</span>
-                                                </div>
-                                                <span className={styles.notificationTime}>{n.time}</span>
+
+                                        {loadingNotifications ? (
+                                            <div style={{ padding: '20px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+                                                Carregando...
                                             </div>
-                                        ))}
+                                        ) : notifications.length === 0 ? (
+                                            <div style={{ padding: '20px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+                                                Nenhuma notificação
+                                            </div>
+                                        ) : (
+                                            notifications.map(n => (
+                                                <div
+                                                    key={n.id}
+                                                    className={`${styles.notificationItem} ${n.isRead ? styles.read : ''}`}
+                                                    onClick={() => !n.isRead && handleMarkRead(n.id)}
+                                                >
+                                                    <div className={`${styles.dot} ${styles[n.type?.toLowerCase()] || styles.info}`} />
+                                                    <div className={styles.notificationText}>
+                                                        <span className={styles.notificationTitle}>{n.title}</span>
+                                                        <span className={styles.notificationMsg}>{n.message}</span>
+                                                    </div>
+                                                    {/* Simplistic time display */}
+                                                    <span className={styles.notificationTime}>
+                                                        {new Date(n.createdAt).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        )}
                                     </motion.div>
                                 )}
                             </AnimatePresence>

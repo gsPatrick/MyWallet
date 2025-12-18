@@ -1,0 +1,348 @@
+.page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding-bottom: calc(var(--dock-height) + 40px);
+}
+
+.main {
+    padding-top: calc(var(--header-height) + 24px);
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+}
+
+/* Back */
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 32px;
+    transition: color 0.2s;
+}
+
+.back:hover {
+    color: var(--accent-color);
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+}
+
+.header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+}
+
+.subtitle {
+    color: var(--text-tertiary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Month Navigator */
+.monthNav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 40px;
+    padding: 20px 0;
+}
+
+.monthNav button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.2s;
+}
+
+.monthNav button:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.monthDisplay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 200px;
+}
+
+.monthName {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.yearName {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+}
+
+/* Summary */
+.summary {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 48px;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+}
+
+@media (max-width: 768px) {
+    .summaryGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+}
+
+.summaryItem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.value.credit {
+    color: #22c55e;
+}
+
+.value.debit {
+    color: #ef4444;
+}
+
+.value.highlight {
+    color: var(--accent-color);
+}
+
+/* Transactions List */
+.transactionsList {
+    margin-bottom: 40px;
+}
+
+.sectionTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 24px 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* Day Block */
+.dayBlock {
+    margin-bottom: 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dayHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.dayInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.dayNumber {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    line-height: 1;
+    min-width: 48px;
+}
+
+.dayMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dayWeek {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-transform: capitalize;
+}
+
+.dayMonth {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    text-transform: capitalize;
+}
+
+.dayTotal {
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+/* Transactions */
+.dayTransactions {
+    padding: 8px 0;
+}
+
+.transaction {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s;
+}
+
+.transaction:last-child {
+    border-bottom: none;
+}
+
+.transaction:hover {
+    background: var(--bg-hover);
+}
+
+.txTime {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+}
+
+.txContent {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.txDesc {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.txAmount {
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+
+.credit {
+    color: #22c55e;
+}
+
+.debit {
+    color: #ef4444;
+}
+
+/* States */
+.loading,
+.empty {
+    padding: 80px 32px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.95rem;
+}
+
+/* Light Theme */
+:global([data-theme="light"]) .summary,
+:global([data-theme="light"]) .dayBlock {
+    background: white;
+}
+
+:global([data-theme="light"]) .dayHeader {
+    background: #f8fafc;
+}
+
+:global([data-theme="light"]) .monthNav button {
+    background: white;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .summary {
+        padding: 20px;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .value {
+        font-size: 1.1rem;
+    }
+
+    .transaction {
+        grid-template-columns: 50px 1fr auto;
+        padding: 14px 16px;
+    }
+
+    .dayNumber {
+        font-size: 1.5rem;
+    }
+}

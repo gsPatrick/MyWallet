@@ -226,6 +226,101 @@
     flex-direction: column;
 }
 
+/* WhatsApp Bot */
+.whatsappSection {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.whatsappIcon {
+    font-size: 2rem;
+    color: #25D366;
+    flex-shrink: 0;
+}
+
+.whatsappInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.whatsappStatusRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #64748b;
+}
+
+.statusDot.connected {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.statusDot.awaiting_scan {
+    background: #f59e0b;
+    animation: pulse-yellow 1.5s infinite;
+}
+
+.statusDot.disconnected {
+    background: #ef4444;
+}
+
+@keyframes pulse-yellow {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.statusText {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.whatsappActions {
+    flex-shrink: 0;
+}
+
+.qrCodeWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-medium);
+}
+
+.qrCode {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--radius-md);
+    background: white;
+    padding: var(--spacing-sm);
+}
+
+.qrInstruction {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
     .themeOptions {
@@ -233,9 +328,23 @@
     }
 
     .securityItem,
-    .dataItem {
+    .dataItem,
+    .whatsappSection {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--spacing-md);
+    }
+
+    .whatsappActions {
+        width: 100%;
+    }
+
+    .whatsappActions button {
+        width: 100%;
+    }
+
+    .qrCode {
+        width: 180px;
+        height: 180px;
     }
 }

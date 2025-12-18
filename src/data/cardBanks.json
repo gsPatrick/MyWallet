@@ -1,0 +1,141 @@
+{
+    "banks": {
+        "nubank": {
+            "name": "Nubank",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Nubank_logo_2021.svg",
+            "color": "#820AD1"
+        },
+        "itau": {
+            "name": "Itaú",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banco_Ita%C3%BA_logo.svg",
+            "color": "#EC7000"
+        },
+        "bradesco": {
+            "name": "Bradesco",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Bradesco_logo.svg",
+            "color": "#CC092F"
+        },
+        "santander": {
+            "name": "Santander",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Santander_Logo.svg",
+            "color": "#EC0000"
+        },
+        "bb": {
+            "name": "Banco do Brasil",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Banco_do_Brasil_logo.svg",
+            "color": "#FFCC00"
+        },
+        "caixa": {
+            "name": "Caixa",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/31/Caixa_Econ%C3%B4mica_Federal_logo.svg",
+            "color": "#005CA9"
+        },
+        "inter": {
+            "name": "Banco Inter",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/54/Banco_Inter_logo.svg",
+            "color": "#FF7A00"
+        },
+        "c6": {
+            "name": "C6 Bank",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6a/C6_Bank_logo.svg",
+            "color": "#242424"
+        },
+        "xp": {
+            "name": "XP",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/96/XP_Investimentos_logo.svg",
+            "color": "#FECB00"
+        },
+        "picpay": {
+            "name": "PicPay",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/61/PicPay_logo.svg",
+            "color": "#21C25E"
+        },
+        "mercadopago": {
+            "name": "Mercado Pago",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/36/Mercado_Pago_logo.svg",
+            "color": "#009EE3"
+        },
+        "will": {
+            "name": "Will Bank",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/47/Will_bank_logo.svg",
+            "color": "#FFDE59"
+        },
+        "next": {
+            "name": "Next",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Next_logo.svg",
+            "color": "#00E676"
+        },
+        "original": {
+            "name": "Banco Original",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Banco_Original_logo.svg",
+            "color": "#00A859"
+        },
+        "neon": {
+            "name": "Neon",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Neon_logo.svg",
+            "color": "#00D4AA"
+        },
+        "pan": {
+            "name": "Banco Pan",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Banco_Pan_logo.svg",
+            "color": "#00529B"
+        },
+        "safra": {
+            "name": "Safra",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/90/Banco_Safra_logo.svg",
+            "color": "#00529B"
+        },
+        "btg": {
+            "name": "BTG Pactual",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/09/BTG_Pactual_logo.svg",
+            "color": "#002D62"
+        },
+        "modalmais": {
+            "name": "Modal+",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1d/Modal_logo.svg",
+            "color": "#000000"
+        },
+        "digio": {
+            "name": "Digio",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Digio_logo.svg",
+            "color": "#0066FF"
+        },
+        "other": {
+            "name": "Outro",
+            "icon": null,
+            "color": "#708090"
+        }
+    },
+    "brands": {
+        "visa": {
+            "name": "Visa",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg",
+            "color": "#1A1F71"
+        },
+        "mastercard": {
+            "name": "Mastercard",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b7/MasterCard_Logo.svg",
+            "color": "#EB001B"
+        },
+        "elo": {
+            "name": "Elo",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Cartao_Elo_logo.svg",
+            "color": "#000000"
+        },
+        "amex": {
+            "name": "American Express",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg",
+            "color": "#006FCF"
+        },
+        "hipercard": {
+            "name": "Hipercard",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/37/Hipercard_logo.svg",
+            "color": "#822124"
+        },
+        "diners": {
+            "name": "Diners Club",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Diners_Club_Logo.svg",
+            "color": "#004A97"
+        }
+    }
+}

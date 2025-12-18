@@ -14,7 +14,6 @@ import Button from '@/components/ui/Button';
 import {
     Avatar,
     MedalCard,
-    AchievementAnimation,
     FeaturedMedals,
     FeaturedMedalsSelector,
     MedalDetailModal
@@ -31,9 +30,6 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState(null);
     const [stats, setStats] = useState(null);
     const [medals, setMedals] = useState([]);
-    const [medalQueue, setMedalQueue] = useState([]);
-    const [currentMedal, setCurrentMedal] = useState(null);
-    const [showAnimation, setShowAnimation] = useState(false);
     const [showMedalSelector, setShowMedalSelector] = useState(false);
     const [selectedMedalDetail, setSelectedMedalDetail] = useState(null);
     const [showMedalDetail, setShowMedalDetail] = useState(false);
@@ -42,36 +38,8 @@ export default function ProfilePage() {
         loadProfile();
     }, []);
 
-    // Show next medal from queue when current is closed
-    useEffect(() => {
-        if (!showAnimation && medalQueue.length > 0) {
-            const [nextMedal, ...rest] = medalQueue;
-            setCurrentMedal(nextMedal);
-            setMedalQueue(rest);
-            setShowAnimation(true);
-        }
-    }, [showAnimation, medalQueue]);
-
     const loadProfile = async () => {
         try {
-            // Try to register activity for streak
-            try {
-                await gamificationService.registerActivity();
-            } catch (e) {
-                console.warn('Could not register activity:', e);
-            }
-
-            // Try to check for new medals - queue ALL new medals
-            try {
-                const newMedalsResult = await gamificationService.checkMedals();
-                if (newMedalsResult?.success && newMedalsResult?.data?.newMedals?.length > 0) {
-                    // Queue all new medals to show one by one
-                    setMedalQueue(newMedalsResult.data.newMedals);
-                }
-            } catch (e) {
-                console.warn('Could not check medals:', e);
-            }
-
             // Try to get profile
             try {
                 const profileResult = await gamificationService.getProfile();
@@ -113,18 +81,6 @@ export default function ProfilePage() {
         }
     };
 
-    const handleCloseAnimation = async () => {
-        setShowAnimation(false);
-        if (currentMedal?.id) {
-            try {
-                await gamificationService.markMedalNotified(currentMedal.id);
-            } catch (e) {
-                console.warn('Could not mark medal as notified:', e);
-            }
-        }
-        setCurrentMedal(null);
-    };
-
     const handleSaveFeaturedMedals = async (medalIds) => {
         try {
             await gamificationService.updateFeaturedMedals(medalIds);
@@ -143,6 +99,24 @@ export default function ProfilePage() {
         setShowMedalDetail(true);
     };
 
+    // Level tier colors (every 10 levels)
+    const getLevelColor = (level) => {
+        const tier = Math.floor((level - 1) / 10);
+        const tierColors = [
+            '#22c55e', // 1-10: Green (Iniciante)
+            '#3b82f6', // 11-20: Blue (Aprendiz)
+            '#8b5cf6', // 21-30: Purple (Intermediário)
+            '#ec4899', // 31-40: Pink (Avançado)
+            '#f97316', // 41-50: Orange (Expert)
+            '#eab308', // 51-60: Yellow (Mestre)
+            '#ef4444', // 61-70: Red (Grão-Mestre)
+            '#14b8a6', // 71-80: Teal (Elite)
+            '#f59e0b', // 81-90: Amber (Lenda)
+            '#a855f7', // 91-100: Violet (Imortal)
+        ];
+        return tierColors[Math.min(tier, 9)];
+    };
+
     if (loading) {
         return (
             <div className={styles.pageWrapper}>
@@ -157,6 +131,7 @@ export default function ProfilePage() {
 
     const xpProgress = profile?.xpProgress || 0;
     const level = profile?.level || 1;
+    const levelColor = getLevelColor(level);
 
     return (
         <div className={styles.pageWrapper}>
@@ -177,7 +152,10 @@ export default function ProfilePage() {
                                     gender={profile?.avatarGender || 'masculino'}
                                     size="xlarge"
                                 />
-                                <div className={styles.levelBadge}>
+                                <div
+                                    className={styles.levelBadge}
+                                    style={{ background: levelColor }}
+                                >
                                     <FiZap /> {level}
                                 </div>
                             </div>
@@ -271,16 +249,15 @@ export default function ProfilePage() {
                                     </button>
                                 </div>
                                 <div className={styles.achievementsList}>
-                                    {medals.length > 0 ? (
-                                        medals.map(medal => (
+                                    {medals.filter(m => m.isComplete).length > 0 ? (
+                                        medals.filter(m => m.isComplete).map(medal => (
                                             <MedalCard
                                                 key={medal.id || medal.code}
                                                 medal={medal}
-                                                isComplete={medal.isComplete}
-                                                progress={medal.progress || 0}
-                                                isLocked={!medal.isComplete && !medal.progress}
+                                                isComplete={true}
+                                                progress={100}
                                                 size="small"
-                                                onClick={() => router.push('/medals')}
+                                                onClick={() => handleMedalClick(medal)}
                                             />
                                         ))
                                     ) : (
@@ -296,16 +273,6 @@ export default function ProfilePage() {
             </main>
 
             <Dock />
-
-            {/* Achievement Animation - shows medals from queue one by one */}
-            {currentMedal && (
-                <AchievementAnimation
-                    medal={currentMedal}
-                    isVisible={showAnimation}
-                    onClose={handleCloseAnimation}
-                    autoClose={false}
-                />
-            )}
 
             {/* Featured Medals Selector */}
             <FeaturedMedalsSelector

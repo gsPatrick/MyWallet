@@ -79,7 +79,7 @@ export default function Dock() {
                         const active = isActive(item.href);
 
                         return (
-                            <Link key={item.id} href={item.href} className={styles.dockItemWrapper}>
+                            <Link key={item.id} href={item.href} className={styles.dockItemWrapper} id={`dock-${item.id}`}>
                                 <motion.div
                                     className={`${styles.dockItem} ${active ? styles.active : ''}`}
                                     whileHover={{

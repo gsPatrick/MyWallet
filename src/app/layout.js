@@ -3,6 +3,9 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { PrivacyProvider } from '@/contexts/PrivacyContext';
+import { MedalProvider } from '@/contexts/MedalContext';
+import { PaymentNotificationProvider } from '@/contexts/PaymentNotificationContext';
+import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { PageTransitionProvider } from '@/components/PageTransition';
 
 export const metadata = {
@@ -27,17 +30,22 @@ export default function RootLayout({ children }) {
             <body>
                 <ThemeProvider>
                     <AuthProvider>
-                        <NotificationProvider>
-                            <PrivacyProvider>
-                                <PageTransitionProvider>
-                                    {children}
-                                </PageTransitionProvider>
-                            </PrivacyProvider>
-                        </NotificationProvider>
+                        <MedalProvider>
+                            <OnboardingProvider>
+                                <PaymentNotificationProvider>
+                                    <NotificationProvider>
+                                        <PrivacyProvider>
+                                            <PageTransitionProvider>
+                                                {children}
+                                            </PageTransitionProvider>
+                                        </PrivacyProvider>
+                                    </NotificationProvider>
+                                </PaymentNotificationProvider>
+                            </OnboardingProvider>
+                        </MedalProvider>
                     </AuthProvider>
                 </ThemeProvider>
             </body>
         </html>
     );
 }
-

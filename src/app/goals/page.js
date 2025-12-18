@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     FiPlus, FiTarget, FiCalendar, FiTrendingUp, FiEdit2, FiTrash2,
-    FiDollarSign, FiFlag, FiLink, FiHome, FiLoader, FiAlertCircle
+    FiDollarSign, FiFlag, FiLink, FiHome, FiLoader, FiAlertCircle, FiClock
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -13,6 +13,8 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import GhostGoal from '@/components/ui/GhostGoal';
+import GoalDetailsModal from '@/components/goals/GoalDetailsModal'; // Added import
+import GoalHistoryModal from '@/components/goals/GoalHistoryModal'; // Added Import
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
 import { goalsAPI, openFinanceAPI } from '@/services/api';
@@ -48,10 +50,11 @@ export default function GoalsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingGoal, setEditingGoal] = useState(null);
+    const [selectedGoal, setSelectedGoal] = useState(null); // For Details Modal
     const [formData, setFormData] = useState({
         name: '',
-        targetAmount: '',
-        currentAmount: '',
+        targetAmount: '', // Formatted string
+        currentAmount: '', // Formatted string
         deadline: '',
         category: '',
         priority: 'MEDIUM',
@@ -60,6 +63,30 @@ export default function GoalsPage() {
         linkedAccountId: '',
         manualBank: '',
     });
+
+    // Quick Value Update State
+    const [valueModal, setValueModal] = useState({ show: false, goal: null, type: 'add', amount: '' });
+
+    // History Modal State
+    const [historyModal, setHistoryModal] = useState({ show: false, goal: null });
+
+    // Format helpers (Reused)
+    const formatCurrencyBR = (value) => value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const parseBRCurrency = (str) => {
+        if (!str) return 0;
+        const cleaned = str.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.').trim();
+        return parseFloat(cleaned) || 0;
+    };
+    const formatInputBR = (value) => {
+        const digits = value.replace(/\D/g, '');
+        const amount = parseInt(digits || '0') / 100;
+        return amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const handleFormAmountChange = (field, value) => {
+        const formatted = formatInputBR(value);
+        setFormData(prev => ({ ...prev, [field]: formatted }));
+    };
 
     useEffect(() => {
         loadData();
@@ -92,8 +119,8 @@ export default function GoalsPage() {
             setEditingGoal(goal);
             setFormData({
                 name: goal.name,
-                targetAmount: goal.targetAmount.toString(),
-                currentAmount: goal.currentAmount.toString(),
+                targetAmount: formatCurrencyBR(parseFloat(goal.targetAmount)),
+                currentAmount: formatCurrencyBR(parseFloat(goal.currentAmount)),
                 deadline: goal.deadline ? goal.deadline.split('T')[0] : '',
                 category: categoryMap[goal.category] || 'Outros',
                 priority: goal.priority,
@@ -124,10 +151,11 @@ export default function GoalsPage() {
         try {
             const payload = {
                 ...formData,
-                targetAmount: parseFloat(formData.targetAmount),
-                currentAmount: parseFloat(formData.currentAmount),
+                targetAmount: parseBRCurrency(formData.targetAmount),
+                currentAmount: parseBRCurrency(formData.currentAmount),
                 category: reverseCategoryMap[formData.category] || 'OTHER',
-                deadline: formData.deadline || null
+                deadline: formData.deadline || null,
+                linkedAccountId: formData.linkedAccountId || null // Ensure null if empty string
             };
 
             if (editingGoal) {
@@ -139,7 +167,7 @@ export default function GoalsPage() {
             loadData();
         } catch (error) {
             console.error("Erro ao salvar:", error);
-            alert("Erro ao salvar meta: " + error.response?.data?.error || error.message);
+            alert("Erro ao salvar meta: " + (error.response?.data?.error || error.message));
         }
     };
 
@@ -151,6 +179,63 @@ export default function GoalsPage() {
             } catch (error) {
                 console.error("Erro ao excluir:", error);
             }
+        }
+    };
+
+    const handleAddValue = async (goal, val) => {
+        try {
+            await goalsAPI.transaction(goal.id, {
+                amount: val,
+                type: 'DEPOSIT',
+                reason: 'Depósito manual'
+            });
+            loadData();
+            setSelectedGoal(prev => prev ? ({ ...prev, currentAmount: prev.currentAmount + val }) : null);
+        } catch (error) {
+            console.error("Erro ao adicionar valor:", error);
+            alert("Erro ao atualizar saldo: " + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleRemoveValue = async (goal, val, reason) => {
+        try {
+            await goalsAPI.transaction(goal.id, {
+                amount: val,
+                type: 'WITHDRAW',
+                reason: reason || 'Resgate manual'
+            });
+            loadData();
+            setSelectedGoal(prev => prev ? ({ ...prev, currentAmount: prev.currentAmount - val }) : null); // Update if open
+            setValueModal({ show: false, goal: null, type: 'add', amount: '' }); // Close modal
+        } catch (error) {
+            console.error("Erro ao resgatar valor:", error);
+            alert("Erro ao atualizar saldo: " + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const submitValueUpdate = async () => {
+        const val = parseBRCurrency(valueModal.amount);
+        if (val <= 0) return;
+
+        try {
+            if (valueModal.type === 'add') {
+                await goalsAPI.transaction(valueModal.goal.id, {
+                    amount: val,
+                    type: 'DEPOSIT',
+                    reason: 'Depósito Rápido'
+                });
+            } else {
+                await goalsAPI.transaction(valueModal.goal.id, {
+                    amount: val,
+                    type: 'WITHDRAW',
+                    reason: 'Resgate Rápido'
+                });
+            }
+            loadData();
+            setValueModal({ show: false, goal: null, type: 'add', amount: '' });
+        } catch (error) {
+            console.error("Erro ao atualizar valor:", error);
+            alert("Erro ao atualizar saldo: " + (error.response?.data?.error || error.message));
         }
     };
 
@@ -263,8 +348,13 @@ export default function GoalsPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.1 * (index + 1) }}
+                                        className={styles.goalCardWrapper} // Added wrapper class for hover effects maybe?
                                     >
-                                        <Card className={styles.goalCard}>
+                                        <Card
+                                            className={styles.goalCard}
+                                            onClick={() => setSelectedGoal(goal)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             <div className={styles.goalHeader}>
                                                 <div
                                                     className={styles.goalIcon}
@@ -279,13 +369,43 @@ export default function GoalsPage() {
                                                 <div className={styles.goalActions}>
                                                     <button
                                                         className={styles.actionBtn}
-                                                        onClick={() => openModal(goal)}
+                                                        onClick={(e) => { e.stopPropagation(); openModal(goal); }}
+                                                        title="Editar"
                                                     >
                                                         <FiEdit2 />
                                                     </button>
                                                     <button
+                                                        className={styles.actionBtn}
+                                                        onClick={(e) => { e.stopPropagation(); setHistoryModal({ show: true, goal: goal }); }}
+                                                        title="Histórico"
+                                                    >
+                                                        <FiClock />
+                                                    </button>
+                                                    <div className={styles.quickActions}>
+                                                        <button
+                                                            className={`${styles.miniBtn} ${styles.addBtn}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setValueModal({ show: true, goal: goal, type: 'add', amount: '' });
+                                                            }}
+                                                            title="Adicionar Valor"
+                                                        >
+                                                            +
+                                                        </button>
+                                                        <button
+                                                            className={`${styles.miniBtn} ${styles.removeBtn}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setValueModal({ show: true, goal: goal, type: 'remove', amount: '' });
+                                                            }}
+                                                            title="Retirar Valor"
+                                                        >
+                                                            -
+                                                        </button>
+                                                    </div>
+                                                    <button
                                                         className={`${styles.actionBtn} ${styles.danger}`}
-                                                        onClick={() => handleDelete(goal.id)}
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(goal.id); }}
                                                     >
                                                         <FiTrash2 />
                                                     </button>
@@ -339,7 +459,7 @@ export default function GoalsPage() {
                                             <div className={styles.goalDeadline}>
                                                 <FiCalendar />
                                                 <span>
-                                                    {daysLeftText} • {goal.deadline ? formatDate(goal.deadline) : '--/--/----'}
+                                                    {daysLeftText} • {goal.deadline ? formatDate(goal.deadline) : 'Sem data fixa'}
                                                 </span>
                                             </div>
                                         </Card>
@@ -375,21 +495,22 @@ export default function GoalsPage() {
                     <div className={styles.formRow}>
                         <Input
                             label="Valor Objetivo"
-                            type="number"
+                            type="text"
                             placeholder="0,00"
                             leftIcon={<FiDollarSign />}
                             value={formData.targetAmount}
-                            onChange={(e) => setFormData(prev => ({ ...prev, targetAmount: e.target.value }))}
+                            onChange={(e) => handleFormAmountChange('targetAmount', e.target.value)}
                         />
                         <Input
                             label="Valor Atual"
-                            type="number"
+                            type="text"
                             placeholder="0,00"
                             leftIcon={<FiDollarSign />}
                             value={formData.currentAmount}
-                            onChange={(e) => setFormData(prev => ({ ...prev, currentAmount: e.target.value }))}
+                            onChange={(e) => handleFormAmountChange('currentAmount', e.target.value)}
                         />
                     </div>
+
 
                     <div className={styles.formRow}>
                         <div className={styles.inputGroup}>
@@ -405,13 +526,26 @@ export default function GoalsPage() {
                                 ))}
                             </select>
                         </div>
-                        <Input
-                            label="Prazo"
-                            type="date"
-                            leftIcon={<FiCalendar />}
-                            value={formData.deadline}
-                            onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
-                        />
+                        <div className={styles.inputGroup}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <label className={styles.inputLabel}>Prazo</label>
+                                <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!formData.deadline}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.checked ? '' : prev.deadline }))}
+                                    />
+                                    Sem data fixa
+                                </label>
+                            </div>
+                            <Input
+                                type="date"
+                                leftIcon={<FiCalendar />}
+                                value={formData.deadline}
+                                onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                                disabled={!formData.deadline && formData.deadline !== ''}
+                            />
+                        </div>
                     </div>
 
                     {/* Storage/Bank Selection */}
@@ -500,6 +634,57 @@ export default function GoalsPage() {
                         </Button>
                         <Button onClick={handleSave}>
                             {editingGoal ? 'Salvar Alterações' : 'Criar Meta'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Details Modal */}
+            <GoalDetailsModal
+                isOpen={!!selectedGoal}
+                onClose={() => setSelectedGoal(null)}
+                goal={selectedGoal}
+                onAddValue={handleAddValue}
+                onRemoveValue={handleRemoveValue}
+                onEdit={() => { setSelectedGoal(null); openModal(selectedGoal); }}
+            />
+
+            {/* History Modal */}
+            <GoalHistoryModal
+                isOpen={historyModal.show}
+                onClose={() => setHistoryModal({ ...historyModal, show: false })}
+                goal={historyModal.goal}
+            />
+
+            {/* Quick Value Update Modal */}
+            <Modal
+                isOpen={valueModal.show}
+                onClose={() => setValueModal({ ...valueModal, show: false })}
+                title={valueModal.type === 'add' ? 'Adicionar Valor' : 'Retirar Valor'}
+                size="sm"
+            >
+                <div>
+                    <p style={{ marginBottom: '1rem', color: '#64748b' }}>
+                        {valueModal.type === 'add'
+                            ? `Quanto você guardou para "${valueModal.goal?.name}"?`
+                            : `Quanto você vai retirar de "${valueModal.goal?.name}"?`
+                        }
+                    </p>
+                    <Input
+                        label="Valor"
+                        type="text"
+                        placeholder="0,00"
+                        leftIcon={<FiDollarSign />}
+                        value={valueModal.amount}
+                        onChange={(e) => setValueModal(prev => ({ ...prev, amount: formatInputBR(e.target.value) }))}
+                        autoFocus
+                    />
+                    <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
+                        <Button variant="ghost" onClick={() => setValueModal({ ...valueModal, show: false })}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={submitValueUpdate}>
+                            Confirmar
                         </Button>
                     </div>
                 </div>

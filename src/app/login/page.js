@@ -72,56 +72,72 @@ export default function LoginPage() {
                 {loginPhase === 'animating' || loginPhase === 'redirect' ? (
                     <motion.div
                         className={styles.fullScreenAnimation}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        initial={{ clipPath: 'circle(0% at 50% 50%)' }}
+                        animate={{ clipPath: 'circle(150% at 50% 50%)' }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
                     >
+                        {/* Background glow */}
+                        <div className={styles.glowOrb} />
+                        <div className={styles.glowOrb2} />
+
+                        {/* Logo container */}
                         <motion.div
-                            className={styles.animationContent}
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+                            className={styles.logoContainer}
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }}
                         >
+                            {/* Pulse ring */}
                             <motion.div
-                                className={styles.successCircle}
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                transition={{ delay: 0.4, type: "spring", stiffness: 150 }}
+                                className={styles.pulseRing}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: [0.8, 1.5, 0.8], opacity: [0.5, 0, 0.5] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            />
+
+                            {/* Logo */}
+                            <motion.div
+                                className={styles.logoAnimated}
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                             >
                                 <Image
-                                    src="/images/logoparafundobranco.png"
+                                    src="/images/logoparafundopreto.png"
                                     alt="MyWallet"
-                                    width={80}
-                                    height={40}
-                                    className={styles.successLogo}
+                                    width={280}
+                                    height={100}
+                                    style={{ objectFit: 'contain' }}
+                                    priority
                                 />
                             </motion.div>
+                        </motion.div>
 
-                            <motion.h1
-                                className={styles.welcomeText}
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8, duration: 0.5 }}
-                            >
-                                Bem-vindo de volta!
-                            </motion.h1>
+                        {/* Welcome text */}
+                        <motion.h1
+                            className={styles.welcomeText}
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6, duration: 0.5 }}
+                        >
+                            Bem-vindo de volta!
+                        </motion.h1>
 
-                            <motion.p
-                                className={styles.welcomeSubtext}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 1.1, duration: 0.5 }}
-                            >
-                                Preparando seu dashboard...
-                            </motion.p>
-
-                            <motion.div
-                                className={styles.loadingBar}
-                                initial={{ scaleX: 0 }}
-                                animate={{ scaleX: 1 }}
-                                transition={{ delay: 0.6, duration: 1.5, ease: "easeInOut" }}
-                            />
+                        {/* Loading dots */}
+                        <motion.div
+                            className={styles.loadingDots}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.8 }}
+                        >
+                            {[0, 1, 2].map((i) => (
+                                <motion.span
+                                    key={i}
+                                    className={styles.dot}
+                                    animate={{ y: [0, -8, 0] }}
+                                    transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+                                />
+                            ))}
                         </motion.div>
 
                         {loginPhase === 'redirect' && (

@@ -558,3 +558,65 @@
 .ghostGoalWrapper:hover .ghostCard span {
     color: var(--text-primary);
 }
+
+/* Quick Actions (Add/Remove Value) */
+.quickActions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 4px;
+    opacity: 0;
+    transform: translateX(5px);
+    transition: all 0.2s ease;
+}
+
+.goalCard:hover .quickActions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Show always on mobile/touch */
+@media (hover: none) {
+    .quickActions {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.miniBtn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.addBtn {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.addBtn:hover {
+    background: #22c55e;
+    color: white;
+    transform: scale(1.1);
+}
+
+.removeBtn {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.removeBtn:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+}

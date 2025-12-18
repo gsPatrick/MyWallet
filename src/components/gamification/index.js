@@ -6,3 +6,5 @@ export { default as AchievementAnimation } from './AchievementAnimation';
 export { default as MedalDetailModal } from './MedalDetailModal';
 export { default as FeaturedMedals } from './FeaturedMedals';
 export { default as FeaturedMedalsSelector } from './FeaturedMedalsSelector';
+export { default as LevelUpModal } from './LevelUpModal';
+

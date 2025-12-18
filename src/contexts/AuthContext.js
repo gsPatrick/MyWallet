@@ -78,10 +78,10 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const register = async (name, email, password) => {
+    const register = async (name, email, password, salary, salaryDay) => {
         setIsLoading(true);
         try {
-            const response = await authAPI.register(name, email, password);
+            const response = await authAPI.register(name, email, password, salary, salaryDay);
             console.log('Register response:', response);
 
             // API format: { message: "...", data: { accessToken, refreshToken, user } }
@@ -128,6 +128,11 @@ export function AuthProvider({ children }) {
         }
     };
 
+    // Expose checkAuth as refreshUser for external use
+    const refreshUser = async () => {
+        await checkAuth();
+    };
+
     const value = {
         user,
         isAuthenticated: !!user,
@@ -136,6 +141,7 @@ export function AuthProvider({ children }) {
         logout,
         register,
         updateUser,
+        refreshUser,
     };
 
     return (

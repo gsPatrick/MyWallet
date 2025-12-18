@@ -3,14 +3,112 @@
     inset: 0;
     background: #0a0a0f;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    transform-origin: bottom;
+    overflow: hidden;
 }
 
+/* Background Glow Effects */
+.glowOrb {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(60px);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.glowOrb2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(40px);
+    animation: pulse 2s ease-in-out infinite reverse;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+/* Logo Container */
+.logoContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pulse Ring */
+.pulseRing {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Logo Wrapper */
 .logoWrapper {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+/* Loading Dots */
+.loadingDots {
+    display: flex;
+    gap: 8px;
+    margin-top: 48px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .glowOrb {
+        width: 300px;
+        height: 300px;
+    }
+
+    .glowOrb2 {
+        width: 200px;
+        height: 200px;
+    }
+
+    .pulseRing {
+        width: 200px;
+        height: 200px;
+    }
+
+    .logoWrapper img {
+        max-width: 200px !important;
+    }
 }

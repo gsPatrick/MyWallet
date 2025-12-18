@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUser, FiMail, FiLock, FiArrowRight, FiCheck, FiArrowLeft, FiTarget, FiShield } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiArrowRight, FiCheck, FiArrowLeft, FiTarget, FiShield, FiDollarSign } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { usePageTransition } from '@/components/PageTransition';
@@ -26,6 +26,8 @@ export default function SignupPage() {
         email: '',
         password: '',
         confirmPassword: '',
+        salary: '',
+        salaryDay: '',
         mainGoal: '',
     });
     const [errors, setErrors] = useState({});
@@ -41,7 +43,17 @@ export default function SignupPage() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+        if (name === 'salary') {
+            // Real-time ATM Mask
+            const digits = value.replace(/\D/g, '');
+            const amount = parseInt(digits || '0') / 100;
+            const formatted = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            setFormData(prev => ({ ...prev, [name]: formatted }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
@@ -55,6 +67,12 @@ export default function SignupPage() {
 
     const validateStep2 = () => {
         const newErrors = {};
+        // Salary is optional, so mostly empty, but if we wanted to validate format...
+        return newErrors;
+    };
+
+    const validateStep3 = () => {
+        const newErrors = {};
         if (!formData.password) newErrors.password = 'Senha é obrigatória';
         else if (formData.password.length < 6) newErrors.password = 'Mínimo 6 caracteres';
         if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Senhas não conferem';
@@ -65,6 +83,7 @@ export default function SignupPage() {
         let stepErrors = {};
         if (step === 1) stepErrors = validateStep1();
         if (step === 2) stepErrors = validateStep2();
+        if (step === 3) stepErrors = validateStep3();
 
         if (Object.keys(stepErrors).length > 0) {
             setErrors(stepErrors);
@@ -75,15 +94,41 @@ export default function SignupPage() {
 
     const prevStep = () => setStep(prev => prev - 1);
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (step < 3) {
+                nextStep();
+            } else {
+                handleSubmit(e);
+            }
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.mainGoal) {
-            setErrors({ mainGoal: 'Selecione um objetivo' });
+
+        if (step < 3) {
+            nextStep();
             return;
         }
 
-        const result = await register(formData.name, formData.email, formData.password);
+        // Safety check: Don't try to register if password is not set (prevents premature submit bugs)
+        if (!formData.password || formData.password.length < 6) {
+            setErrors(prev => ({ ...prev, password: 'Senha é obrigatória' }));
+            return;
+        }
+
+
+        const result = await register(
+            formData.name,
+            formData.email,
+            formData.password,
+            formData.salary ? parseFloat(formData.salary.replace(/\./g, '').replace(',', '.')) : null,
+            formData.salaryDay ? parseInt(formData.salaryDay) : null
+        );
+
         if (result.success) {
             setSignupPhase('animating');
             setTimeout(() => {
@@ -100,16 +145,13 @@ export default function SignupPage() {
 
     const steps = [
         { id: 1, title: 'Dados', icon: FiUser },
-        { id: 2, title: 'Senha', icon: FiShield },
-        { id: 3, title: 'Meta', icon: FiTarget },
+        { id: 2, title: 'Renda', icon: FiDollarSign },
+        { id: 3, title: 'Senha', icon: FiShield },
     ];
 
-    const goals = [
-        { id: 'aposentadoria', label: 'Aposentadoria', emoji: '🏖️' },
-        { id: 'reserva', label: 'Reserva de Emergência', emoji: '🛡️' },
-        { id: 'patrimonio', label: 'Aumento de Patrimônio', emoji: '📈' },
-        { id: 'renda', label: 'Renda Passiva', emoji: '💰' },
-    ];
+
+
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
     return (
         <div className={styles.page}>
@@ -117,56 +159,72 @@ export default function SignupPage() {
                 {(signupPhase === 'animating' || signupPhase === 'redirect') && (
                     <motion.div
                         className={styles.fullScreenAnimation}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        initial={{ clipPath: 'circle(0% at 50% 50%)' }}
+                        animate={{ clipPath: 'circle(150% at 50% 50%)' }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
                     >
+                        {/* Background glow */}
+                        <div className={styles.glowOrb} />
+                        <div className={styles.glowOrb2} />
+
+                        {/* Logo container */}
                         <motion.div
-                            className={styles.animationContent}
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+                            className={styles.logoContainer}
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }}
                         >
+                            {/* Pulse ring */}
                             <motion.div
-                                className={styles.successCircle}
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                transition={{ delay: 0.4, type: "spring", stiffness: 150 }}
+                                className={styles.pulseRing}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: [0.8, 1.5, 0.8], opacity: [0.5, 0, 0.5] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            />
+
+                            {/* Logo */}
+                            <motion.div
+                                className={styles.logoAnimated}
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                             >
                                 <Image
-                                    src="/images/logoparafundobranco.png"
+                                    src="/images/logoparafundopreto.png"
                                     alt="MyWallet"
-                                    width={80}
-                                    height={40}
-                                    className={styles.successLogo}
+                                    width={280}
+                                    height={100}
+                                    style={{ objectFit: 'contain' }}
+                                    priority
                                 />
                             </motion.div>
+                        </motion.div>
 
-                            <motion.h1
-                                className={styles.welcomeText}
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8, duration: 0.5 }}
-                            >
-                                Conta criada!
-                            </motion.h1>
+                        {/* Welcome text */}
+                        <motion.h1
+                            className={styles.welcomeText}
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6, duration: 0.5 }}
+                        >
+                            Conta criada com sucesso!
+                        </motion.h1>
 
-                            <motion.p
-                                className={styles.welcomeSubtext}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 1.1, duration: 0.5 }}
-                            >
-                                Preparando seu dashboard...
-                            </motion.p>
-
-                            <motion.div
-                                className={styles.loadingBar}
-                                initial={{ scaleX: 0 }}
-                                animate={{ scaleX: 1 }}
-                                transition={{ delay: 0.6, duration: 1.5, ease: "easeInOut" }}
-                            />
+                        {/* Loading dots */}
+                        <motion.div
+                            className={styles.loadingDots}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.8 }}
+                        >
+                            {[0, 1, 2].map((i) => (
+                                <motion.span
+                                    key={i}
+                                    className={styles.dot}
+                                    animate={{ y: [0, -8, 0] }}
+                                    transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+                                />
+                            ))}
                         </motion.div>
 
                         {signupPhase === 'redirect' && (
@@ -215,12 +273,14 @@ export default function SignupPage() {
                     <div className={styles.stepsContainer}>
                         {steps.map((s, i) => (
                             <div key={s.id} className={styles.stepWrapper}>
-                                <div className={`${styles.stepCircle} ${step >= s.id ? styles.stepActive : ''} ${step > s.id ? styles.stepCompleted : ''}`}>
-                                    {step > s.id ? <FiCheck /> : s.id}
+                                <div className={styles.stepNode}>
+                                    <div className={`${styles.stepCircle} ${step >= s.id ? styles.stepActive : ''} ${step > s.id ? styles.stepCompleted : ''}`}>
+                                        {step > s.id ? <FiCheck /> : s.id}
+                                    </div>
+                                    <span className={`${styles.stepLabel} ${step >= s.id ? styles.stepLabelActive : ''}`}>
+                                        {s.title}
+                                    </span>
                                 </div>
-                                <span className={`${styles.stepLabel} ${step >= s.id ? styles.stepLabelActive : ''}`}>
-                                    {s.title}
-                                </span>
                                 {i < steps.length - 1 && (
                                     <div className={`${styles.stepLine} ${step > s.id ? styles.stepLineActive : ''}`} />
                                 )}
@@ -250,6 +310,7 @@ export default function SignupPage() {
                                         placeholder="Seu nome"
                                         value={formData.name}
                                         onChange={handleChange}
+                                        onKeyDown={handleKeyDown}
                                         error={errors.name}
                                         leftIcon={<FiUser />}
                                         fullWidth
@@ -261,6 +322,7 @@ export default function SignupPage() {
                                         placeholder="seu@email.com"
                                         value={formData.email}
                                         onChange={handleChange}
+                                        onKeyDown={handleKeyDown}
                                         error={errors.email}
                                         leftIcon={<FiMail />}
                                         fullWidth
@@ -271,6 +333,52 @@ export default function SignupPage() {
                             {step === 2 && (
                                 <motion.div
                                     key="step2"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className={styles.stepContent}
+                                >
+                                    <div className={styles.stepHeader}>
+                                        <h2 className={styles.stepTitle}>Renda Mensal</h2>
+                                        <p className={styles.stepSubtitle}>Para projetarmos seu futuro</p>
+                                    </div>
+
+                                    <Input
+                                        label="Salário Mensal (Opcional)"
+                                        type="text"
+                                        name="salary"
+                                        placeholder="0,00"
+                                        value={formData.salary}
+                                        onChange={handleChange}
+                                        onKeyDown={handleKeyDown}
+                                        error={errors.salary}
+                                        leftIcon={<FiDollarSign />}
+                                        fullWidth
+                                    />
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginLeft: '4px' }}>
+                                            Dia do Recebimento
+                                        </label>
+                                        <div className={styles.dayGrid}>
+                                            {days.map(d => (
+                                                <button
+                                                    key={d}
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, salaryDay: d }))}
+                                                    className={`${styles.dayButton} ${formData.salaryDay === d ? styles.daySelected : ''}`}
+                                                >
+                                                    {d}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {step === 3 && (
+                                <motion.div
+                                    key="step3"
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
@@ -288,6 +396,7 @@ export default function SignupPage() {
                                         placeholder="••••••••"
                                         value={formData.password}
                                         onChange={handleChange}
+                                        onKeyDown={handleKeyDown}
                                         error={errors.password}
                                         leftIcon={<FiLock />}
                                         fullWidth
@@ -299,48 +408,11 @@ export default function SignupPage() {
                                         placeholder="••••••••"
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
+                                        onKeyDown={handleKeyDown}
                                         error={errors.confirmPassword}
                                         leftIcon={<FiLock />}
                                         fullWidth
                                     />
-                                </motion.div>
-                            )}
-
-                            {step === 3 && (
-                                <motion.div
-                                    key="step3"
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    className={styles.stepContent}
-                                >
-                                    <div className={styles.stepHeader}>
-                                        <h2 className={styles.stepTitle}>Seu objetivo</h2>
-                                        <p className={styles.stepSubtitle}>Personalizamos sua experiência</p>
-                                    </div>
-
-                                    <div className={styles.goalsGrid}>
-                                        {goals.map(goal => (
-                                            <button
-                                                key={goal.id}
-                                                type="button"
-                                                className={`${styles.goalCard} ${formData.mainGoal === goal.label ? styles.goalSelected : ''}`}
-                                                onClick={() => {
-                                                    setFormData(prev => ({ ...prev, mainGoal: goal.label }));
-                                                    setErrors(prev => ({ ...prev, mainGoal: '' }));
-                                                }}
-                                            >
-                                                <span className={styles.goalEmoji}>{goal.emoji}</span>
-                                                <span className={styles.goalLabel}>{goal.label}</span>
-                                                {formData.mainGoal === goal.label && (
-                                                    <div className={styles.goalCheck}>
-                                                        <FiCheck />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {errors.mainGoal && <span className={styles.errorText}>{errors.mainGoal}</span>}
                                 </motion.div>
                             )}
                         </AnimatePresence>

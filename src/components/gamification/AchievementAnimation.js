@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiAward, FiCheck } from 'react-icons/fi';
+import { FiAward, FiCheck, FiGift } from 'react-icons/fi';
 import styles from './AchievementAnimation.module.css';
 
 const rarityColors = {
@@ -69,7 +69,8 @@ export default function AchievementAnimation({
     isVisible,
     onClose,
     autoClose = false,
-    autoCloseDelay = 5000
+    autoCloseDelay = 5000,
+    hasMoreMedals = false
 }) {
     const { name, description, rarity, xpReward } = medal || {};
     const [collected, setCollected] = useState(false);
@@ -87,7 +88,7 @@ export default function AchievementAnimation({
 
     const handleCollect = () => {
         setCollected(true);
-        setTimeout(() => onClose?.(), 1500);
+        setTimeout(() => onClose?.(), hasMoreMedals ? 1200 : 1500);
     };
 
     return (
@@ -138,7 +139,19 @@ export default function AchievementAnimation({
                             >
                                 <div className={styles.checkIcon}><FiCheck /></div>
                                 <p>Medalha coletada!</p>
-                                <span>Veja suas medalhas no Perfil</span>
+                                {hasMoreMedals ? (
+                                    <motion.div
+                                        className={styles.moreGifts}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                    >
+                                        <FiGift className={styles.giftIcon} />
+                                        <span>Parece que tem mais uma surpresa...</span>
+                                    </motion.div>
+                                ) : (
+                                    <span>Veja suas medalhas no Perfil</span>
+                                )}
                             </motion.div>
                         )}
                     </motion.div>

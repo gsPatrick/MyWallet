@@ -50,7 +50,7 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
     login: (email, password) => api.post('/auth/login', { email, password }),
-    register: (name, email, password) => api.post('/auth/register', { name, email, password }),
+    register: (name, email, password, salary, salaryDay) => api.post('/auth/register', { name, email, password, salary, salaryDay }),
     me: () => api.get('/auth/me'),
     refresh: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
     updateProfile: (data) => api.put('/auth/me', data),
@@ -59,20 +59,27 @@ export const authAPI = {
 };
 
 // Dashboard API
+// Dashboard API
 export const dashboardAPI = {
     getSummary: () => api.get('/dashboard/summary'),
     getAlerts: () => api.get('/dashboard/alerts'),
+    getActivities: () => api.get('/dashboard/activities'),
+    getRecentTransactions: () => api.get('/dashboard/recent-transactions'),
 };
 
+// Investments API
 // Investments API
 export const investmentsAPI = {
     list: (params) => api.get('/investments', { params }),
     getPortfolio: () => api.get('/investments/portfolio'),
     getPosition: (ticker) => api.get(`/investments/position/${ticker}`),
     getHistory: (ticker) => api.get(`/investments/history/${ticker}`),
-    registerOperation: (ticker, type, quantity, price, date) =>
-        api.post('/investments/operation', { ticker, type, quantity, price, date }),
-    getAssets: (search) => api.get('/investments/assets', { params: { search } }),
+    registerOperation: (data) => api.post('/investments', data),
+    getAssets: (search = '', page = 1) => api.get('/investments/assets', {
+        params: { search, page, limit: 50 }
+    }),
+    getDividends: () => api.get('/investments/dividends'),
+    getEvolution: (months = 12) => api.get('/investments/evolution', { params: { months } }),
 };
 
 // Investment Dashboard API (Analytics)
@@ -98,7 +105,7 @@ export const financialProductsAPI = {
 export const transactionsAPI = {
     list: (params) => api.get('/transactions', { params }),
     get: (id) => api.get(`/transactions/${id}`),
-    create: (data) => api.post('/transactions', data),
+    create: (data) => api.post('/transactions/manual', data),
     update: (id, data) => api.put(`/transactions/${id}`, data),
     delete: (id) => api.delete(`/transactions/${id}`),
     updateMetadata: (id, data) => api.put(`/transactions/${id}/metadata`, data),
@@ -124,6 +131,7 @@ export const cardsAPI = {
 };
 
 // Subscriptions API
+// Subscriptions API
 export const subscriptionsAPI = {
     list: () => api.get('/subscriptions'),
     get: (id) => api.get(`/subscriptions/${id}`),
@@ -132,6 +140,15 @@ export const subscriptionsAPI = {
     cancel: (id) => api.delete(`/subscriptions/${id}`),
     getSummary: () => api.get('/subscriptions/summary'),
     getUpcoming: () => api.get('/subscriptions/upcoming'),
+    markPaid: (id, date) => api.post(`/subscriptions/${id}/pay`, { date }),
+};
+
+// Notifications API
+export const notificationsAPI = {
+    list: (page = 1) => api.get('/notifications', { params: { page } }),
+    getPending: () => api.get('/notifications/pending'),
+    markRead: (id) => api.put(`/notifications/${id}/read`),
+    markAllRead: () => api.put('/notifications/read-all'),
 };
 
 // Open Finance API
@@ -153,6 +170,8 @@ export const goalsAPI = {
     create: (data) => api.post('/goals', data),
     update: (id, data) => api.put(`/goals/${id}`, data),
     delete: (id) => api.delete(`/goals/${id}`),
+    transaction: (id, data) => api.post(`/goals/${id}/transaction`, data),
+    getHistory: (id) => api.get(`/goals/${id}/history`),
 };
 
 // Messages API
@@ -168,6 +187,16 @@ export const reportsAPI = {
     getPortfolio: () => api.get('/reports/portfolio'),
     getEvolution: () => api.get('/reports/evolution'),
     getDividends: () => api.get('/reports/dividends'),
+    // Statement (Extrato Financeiro)
+    getStatement: (year, month) => api.get('/reports/statement', { params: { year, month } }),
+    getStatementYears: () => api.get('/reports/statement/years'),
+};
+
+// WhatsApp Bot API
+export const whatsappAPI = {
+    connect: () => api.post('/whatsapp/connect'),
+    getStatus: () => api.get('/whatsapp/status'),
+    disconnect: () => api.post('/whatsapp/disconnect'),
 };
 
 export default api;

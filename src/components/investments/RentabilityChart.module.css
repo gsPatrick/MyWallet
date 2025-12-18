@@ -1,0 +1,143 @@
+.container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.periodSelector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.periodBtn {
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.periodBtn:hover {
+    color: var(--text-primary);
+}
+
+.periodActive {
+    background: #6366f1;
+    color: white;
+}
+
+.metrics {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.metricItem {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.metricValue {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.metricValue svg {
+    font-size: 1rem;
+}
+
+.positive {
+    color: #22c55e;
+}
+
+.negative {
+    color: #ef4444;
+}
+
+.metricLabel {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.chartWrapper {
+    height: 180px;
+    margin: 0 -8px;
+}
+
+.loading {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+}
+
+.tooltip {
+    background: #1e1e2d;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tooltipDate {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.tooltipValue {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.mockDataWarning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.error {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #ef4444;
+    font-size: 0.85rem;
+}

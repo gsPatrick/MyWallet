@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     FiPlus, FiTrash2, FiSave, FiSliders, FiDollarSign, FiTrendingUp,
-    FiShield, FiHeart, FiHome, FiShoppingBag, FiAlertCircle
+    FiShield, FiHeart, FiHome, FiShoppingBag, FiAlertCircle, FiCheckCircle
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -13,6 +13,9 @@ import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import Input from '@/components/ui/Input';
 import OnboardingQuiz from '@/components/budgets/OnboardingQuiz';
+import { budgetsAPI } from '@/services/api'; // Added import
+import Modal from '@/components/ui/Modal'; // Already there but ensuring it is used
+// Styles import
 import styles from './page.module.css';
 
 const defaultAllocations = [
@@ -45,6 +48,7 @@ export default function BudgetAllocationPage() {
     const [newCategory, setNewCategory] = useState({ name: '', percent: 0, color: '#3b82f6', icon: 'dollar' });
     const [isEditingIncome, setIsEditingIncome] = useState(false);
     const [incomeInputValue, setIncomeInputValue] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // Added State
 
     useEffect(() => {
         const hasOnboarded = localStorage.getItem('budget_onboarded');
@@ -180,10 +184,18 @@ export default function BudgetAllocationPage() {
         }
     };
 
-    const handleSave = () => {
-        console.log('Saving allocations:', allocations);
-        // TODO: Save to API
-        localStorage.setItem('budget_onboarded', 'true');
+    const handleSave = async () => {
+        try {
+            await budgetsAPI.create({
+                income,
+                allocations
+            });
+            setShowSuccessModal(true);
+            localStorage.setItem('budget_onboarded', 'true');
+        } catch (error) {
+            console.error('Error saving budget:', error);
+            alert('Erro ao salvar orçamento: ' + (error.response?.data?.error || error.message));
+        }
     };
 
     const handleQuizFinish = (data) => {
@@ -459,6 +471,23 @@ export default function BudgetAllocationPage() {
                     </motion.div>
                 </div>
             )}
+            {/* Success Modal */}
+            <Modal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                title="Orçamento Salvo!"
+                size="sm"
+            >
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <FiCheckCircle style={{ fontSize: '3rem', color: '#22c55e', marginBottom: '1rem' }} />
+                    <p style={{ color: '#4b5563', marginBottom: '1.5rem' }}>
+                        Suas preferências de alocação foram salvas com sucesso.
+                    </p>
+                    <Button onClick={() => setShowSuccessModal(false)}>
+                        Continuar
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }

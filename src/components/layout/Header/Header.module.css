@@ -183,10 +183,17 @@
     gap: 12px;
     padding: 14px 18px;
     transition: background 0.15s ease;
+    cursor: pointer;
+}
+
+.notificationItem.read {
+    opacity: 0.6;
+    background: transparent;
 }
 
 .notificationItem:hover {
     background: var(--bg-secondary);
+    opacity: 1;
 }
 
 .dot {

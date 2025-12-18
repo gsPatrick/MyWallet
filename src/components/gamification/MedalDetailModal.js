@@ -9,7 +9,10 @@ const rarityColors = {
     silver: '#C0C0C0',
     gold: '#FFD700',
     platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
+    diamond: '#B9F2FF',
+    ruby: '#E0115F',
+    emerald: '#50C878',
+    legendary: '#FF6B35'
 };
 
 const rarityLabels = {
@@ -17,7 +20,10 @@ const rarityLabels = {
     silver: 'Prata',
     gold: 'Ouro',
     platinum: 'Platina',
-    diamond: 'Diamante'
+    diamond: 'Diamante',
+    ruby: 'Ruby',
+    emerald: 'Esmeralda',
+    legendary: 'Lendário'
 };
 
 const medalPhrases = {

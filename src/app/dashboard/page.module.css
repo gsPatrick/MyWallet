@@ -199,16 +199,41 @@
     color: #22c55e;
 }
 
-/* Geral Tab Grid */
-.geralGrid {
-    flex: 1;
+/* Main Dashboard Grid Structure */
+.dashboardGrid {
     display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 16px;
-    min-height: 0;
+    grid-template-columns: 1fr 340px;
+    /* Main Content | Sidebar */
+    gap: 20px;
+    align-items: start;
 }
 
-/* Allocation Card */
+.dashboardMain {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dashboardSidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Summary Grid (Income | Expense | Balance) */
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.summaryColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Geral Tab Grid - Now just for Allocation Chart inside Main */
 .allocationCard {
     background: rgba(30, 30, 35, 0.6);
     border-radius: 12px;
@@ -742,6 +767,22 @@
         0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
+.predictionCardBase {
+    background: rgba(30, 30, 35, 0.3);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    box-shadow: none;
+}
+
+[data-theme="light"] .predictionCardBase {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+}
+
+.predictionText {
+    opacity: 0.8;
+}
+
 .cardHeader {
     display: flex;
     justify-content: space-between;
@@ -788,6 +829,19 @@
 .iconMuted {
     color: var(--text-tertiary);
     font-size: 0.875rem;
+}
+
+/* Charts Row (Manual Tab) */
+.chartsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .chartsRow {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Bottom Grid */
@@ -965,16 +1019,14 @@
         align-items: flex-start;
     }
 
-    .summaryRow {
-        grid-template-columns: repeat(2, 1fr);
+    .dashboardGrid {
+        grid-template-columns: 1fr;
+        /* Stack Sidebar below on tablet */
     }
 
-    .bottomGrid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .actionCard {
-        grid-column: span 2;
+    /* Keep 3 columns for summary on tablet if space permits, else 1 or 2 */
+    .summaryGrid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -984,6 +1036,11 @@
         padding: var(--spacing-lg) var(--spacing-md);
         padding-bottom: calc(var(--dock-height) + var(--spacing-lg));
         overflow-y: auto;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+        /* Stack everything on mobile */
     }
 
     .page {
@@ -1070,6 +1127,100 @@
     }
 
     .quickGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Predictions Section */
+.predictionsRow {
+    margin: 8px 0;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.sectionTitle svg {
+    color: var(--accent-primary);
+}
+
+.predictionCards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.predictionCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="light"] .predictionCard {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.predictionCard svg {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.predictionCard.income {
+    border-left: 3px solid #22c55e;
+}
+
+.predictionCard.income svg {
+    color: #22c55e;
+}
+
+.predictionCard.expense {
+    border-left: 3px solid #f97316;
+}
+
+.predictionCard.expense svg {
+    color: #f97316;
+}
+
+.predictionCard.balance {
+    border-left: 3px solid var(--accent-primary);
+}
+
+.predictionCard.balance svg {
+    color: var(--accent-primary);
+}
+
+.predictionContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.predictionLabel {
+    font-size: 0.6875rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.predictionValue {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .predictionCards {
         grid-template-columns: 1fr;
     }
 }

@@ -16,6 +16,8 @@ import Modal from '@/components/ui/Modal';
 
 import CreditCard from '@/components/ui/CreditCard/CreditCard';
 import GhostCard from '@/components/ui/GhostCard';
+import CardModal from '@/components/modals/CardModal';
+import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
 import { cardsAPI, subscriptionsAPI, openFinanceAPI } from '@/services/api';
@@ -74,17 +76,6 @@ const mockManualInvoice = {
     ]
 };
 
-const cardColors = [
-    { name: 'Midnight', value: '#1a1a2e' },
-    { name: 'Navy', value: '#16213e' },
-    { name: 'Slate', value: '#334155' },
-    { name: 'Indigo', value: '#312e81' },
-    { name: 'Purple', value: '#581c87' },
-    { name: 'Rose', value: '#881337' },
-    { name: 'Gold', value: '#78350f' },
-    { name: 'Emerald', value: '#064e3b' },
-];
-
 // Invoice state
 export default function CardsPage() {
     // Privacy-aware formatting
@@ -104,15 +95,9 @@ export default function CardsPage() {
 
     const [selectedCard, setSelectedCard] = useState(null);
     const [invoiceMonth, setInvoiceMonth] = useState({ month: 12, year: 2024 });
-
-    const [cardForm, setCardForm] = useState({
-        name: '', brand: 'VISA', lastFourDigits: '', creditLimit: '',
-        availableLimit: '', closingDay: '', dueDay: '', color: '#1a1a2e', holderName: '',
-    });
-
-    const [subForm, setSubForm] = useState({
-        name: '', amount: '', category: '', frequency: 'MONTHLY', nextBillingDate: '',
-    });
+    const [subscriptionCardFilter, setSubscriptionCardFilter] = useState('ALL'); // ALL or cardId
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     useEffect(() => {
         const loadData = async () => {
@@ -137,42 +122,84 @@ export default function CardsPage() {
     const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
     const openCardModal = (card = null) => {
-        if (card) {
-            setEditingCard(card);
-            setCardForm({
-                name: card.name, brand: card.brand, lastFourDigits: card.lastFourDigits,
-                creditLimit: card.creditLimit.toString(), availableLimit: card.availableLimit.toString(),
-                closingDay: card.closingDay.toString(), dueDay: card.dueDay.toString(),
-                color: card.color, holderName: card.holderName || 'TITULAR',
-            });
-        } else {
-            setEditingCard(null);
-            setCardForm({
-                name: '', brand: 'VISA', lastFourDigits: '', creditLimit: '',
-                availableLimit: '', closingDay: '', dueDay: '', color: '#1a1a2e', holderName: '',
-            });
-        }
+        setEditingCard(card);
         setShowCardModal(true);
     };
 
     const openSubModal = (sub = null) => {
-        if (sub) {
-            setEditingSub(sub);
-            setSubForm({
-                name: sub.name, amount: sub.amount.toString(), category: sub.category,
-                frequency: sub.frequency, nextBillingDate: sub.nextBillingDate,
-            });
-        } else {
-            setEditingSub(null);
-            setSubForm({
-                name: '', amount: '', category: '', frequency: 'MONTHLY', nextBillingDate: '',
-            });
-        }
+        setEditingSub(sub);
         setShowSubModal(true);
     };
 
-    const handleSaveCard = () => { setShowCardModal(false); };
-    const handleSaveSub = () => { setShowSubModal(false); };
+    const loadData = async () => {
+        setIsLoading(true);
+        try {
+            const [cardsRes, subsRes] = await Promise.all([
+                cardsAPI.list(),
+                subscriptionsAPI.list()
+            ]);
+            setCards(cardsRes?.data || []);
+            setSubscriptions(subsRes?.data || []);
+        } catch (error) {
+            console.error("Error loading data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSaveCard = async (payload, editId) => {
+        try {
+            if (editId) {
+                await cardsAPI.update(editId, payload);
+            } else {
+                await cardsAPI.create(payload);
+            }
+            setShowCardModal(false);
+            setEditingCard(null);
+            loadData();
+        } catch (error) {
+            console.error("Error saving card:", error);
+            alert("Erro ao salvar cartão.");
+        }
+    };
+
+    const handleSaveSub = async (payload, editId) => {
+        try {
+            if (editId) {
+                await subscriptionsAPI.update(editId, payload);
+            } else {
+                await subscriptionsAPI.create(payload);
+            }
+            setShowSubModal(false);
+            setEditingSub(null);
+            loadData();
+        } catch (error) {
+            console.error("Error saving subscription:", error);
+            alert("Erro ao salvar assinatura.");
+        }
+    };
+
+    const handleSetBillingDay = (day) => {
+        if (!day || day < 1 || day > 31) return;
+        const today = new Date();
+        const currentDay = today.getDate();
+        let nextDate = new Date(today.getFullYear(), today.getMonth(), day);
+
+        // If day has passed this month, move to next month
+        if (day < currentDay) {
+            nextDate.setMonth(nextDate.getMonth() + 1);
+        }
+
+        setSubForm(prev => ({
+            ...prev,
+            nextBillingDate: nextDate.toISOString().split('T')[0]
+        }));
+    };
+
+    const handleStartToday = () => {
+        const today = new Date().toISOString().split('T')[0];
+        setSubForm(prev => ({ ...prev, nextBillingDate: today }));
+    };
 
     // Handle Open Finance Connection
     const handleConnectOpenFinance = async () => {
@@ -426,40 +453,114 @@ export default function CardsPage() {
                     {/* Subscriptions Tab */}
                     {activeTab === 'subscriptions' && !selectedCard && (
                         <motion.div className={styles.subsSection} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                            <Card className={styles.subsCard}>
-                                {subscriptions.length > 0 ? (
-                                    <div className={styles.subscriptionsList}>
-                                        {subscriptions.map((sub) => (
-                                            <div key={sub.id} className={styles.subscriptionItem}>
-                                                <div className={styles.subscriptionIcon}><FiRepeat /></div>
-                                                <div className={styles.subscriptionInfo}>
-                                                    <span className={styles.subscriptionName}>{sub.name}</span>
-                                                    <span className={styles.subscriptionCategory}>{sub.category}</span>
-                                                </div>
-                                                <div className={styles.subscriptionAmount}>
-                                                    <span className={styles.amount}>{formatCurrency(sub.amount)}</span>
-                                                    <span className={styles.frequency}>/{sub.frequency === 'MONTHLY' ? 'mês' : sub.frequency}</span>
-                                                </div>
-                                                <div className={styles.subscriptionNext}>
-                                                    <FiCalendar /><span>{formatDate(sub.nextBillingDate, 'short')}</span>
-                                                </div>
-                                                <div className={styles.subscriptionActions}>
-                                                    <button className={styles.actionBtn} onClick={() => openSubModal(sub)}><FiEdit2 /></button>
-                                                    <button className={`${styles.actionBtn} ${styles.danger}`}><FiTrash2 /></button>
-                                                </div>
-                                            </div>
+                            {/* Card Filter */}
+                            <div className={styles.filterBar}>
+                                <div className={styles.filterGroup}>
+                                    <FiCreditCard className={styles.filterIcon} />
+                                    <select
+                                        className={styles.filterSelect}
+                                        value={subscriptionCardFilter}
+                                        onChange={(e) => setSubscriptionCardFilter(e.target.value)}
+                                    >
+                                        <option value="ALL">Todas as assinaturas</option>
+                                        <option value="NONE">Sem cartão vinculado</option>
+                                        {cards.map(card => (
+                                            <option key={card.id} value={card.id}>
+                                                {card.name} •••• {card.lastFourDigits}
+                                            </option>
                                         ))}
-                                    </div>
-                                ) : (
-                                    // Empty State for Subscriptions
-                                    <div className={styles.emptySubs} onClick={() => openSubModal()}>
-                                        <FiRepeat className={styles.emptyIcon} />
-                                        <p>Nenhuma assinatura cadastrada</p>
-                                        <Button size="sm" variant="outline" leftIcon={<FiPlus />}>
-                                            Adicionar Assinatura
-                                        </Button>
-                                    </div>
-                                )}
+                                    </select>
+                                </div>
+                                <Button onClick={() => openSubModal()} leftIcon={<FiPlus />}>
+                                    Nova Assinatura
+                                </Button>
+                            </div>
+
+                            <Card className={styles.subsCard}>
+                                {(() => {
+                                    const filteredSubs = subscriptions.filter(sub => {
+                                        if (subscriptionCardFilter === 'ALL') return true;
+                                        if (subscriptionCardFilter === 'NONE') return !sub.cardId;
+                                        return sub.cardId === subscriptionCardFilter;
+                                    });
+                                    const totalPages = Math.ceil(filteredSubs.length / itemsPerPage);
+                                    const paginatedSubs = filteredSubs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+                                    return filteredSubs.length > 0 ? (
+                                        <>
+                                            <div className={styles.subscriptionsList}>
+                                                {paginatedSubs.map((sub) => (
+                                                    <div key={sub.id} className={styles.subscriptionItem}>
+                                                        <div
+                                                            className={styles.subscriptionIcon}
+                                                            style={{ background: sub.icon ? 'transparent' : undefined }}
+                                                        >
+                                                            {sub.icon ? (
+                                                                <img
+                                                                    src={sub.icon}
+                                                                    alt={sub.name}
+                                                                    style={{ width: 32, height: 32, objectFit: 'contain' }}
+                                                                />
+                                                            ) : (
+                                                                <FiRepeat />
+                                                            )}
+                                                        </div>
+                                                        <div className={styles.subscriptionInfo}>
+                                                            <span className={styles.subscriptionName}>{sub.name}</span>
+                                                            <span className={styles.subscriptionCategory}>
+                                                                {sub.category}
+                                                                {sub.cardId && cards.find(c => c.id === sub.cardId) && (
+                                                                    <> • <FiCreditCard style={{ fontSize: '0.7rem', verticalAlign: 'middle' }} /> {cards.find(c => c.id === sub.cardId)?.name}</>
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                        <div className={styles.subscriptionAmount}>
+                                                            <span className={styles.amount}>{formatCurrency(sub.amount)}</span>
+                                                            <span className={styles.frequency}>/{sub.frequency === 'MONTHLY' ? 'mês' : sub.frequency}</span>
+                                                        </div>
+                                                        <div className={styles.subscriptionNext}>
+                                                            <FiCalendar /><span>{formatDate(sub.nextBillingDate, 'short')}</span>
+                                                        </div>
+                                                        <div className={styles.subscriptionActions}>
+                                                            <button className={styles.actionBtn} onClick={() => openSubModal(sub)}><FiEdit2 /></button>
+                                                            <button className={`${styles.actionBtn} ${styles.danger}`}><FiTrash2 /></button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {totalPages > 1 && (
+                                                <div className={styles.pagination}>
+                                                    <button
+                                                        className={styles.pageBtn}
+                                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                        disabled={currentPage === 1}
+                                                    >
+                                                        <FiChevronLeft />
+                                                    </button>
+                                                    <span className={styles.pageInfo}>
+                                                        Página {currentPage} de {totalPages}
+                                                    </span>
+                                                    <button
+                                                        className={styles.pageBtn}
+                                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                        disabled={currentPage === totalPages}
+                                                    >
+                                                        <FiChevronRight />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        // Empty State for Subscriptions
+                                        <div className={styles.emptySubs} onClick={() => openSubModal()}>
+                                            <FiRepeat className={styles.emptyIcon} />
+                                            <p>{subscriptionCardFilter === 'ALL' ? 'Nenhuma assinatura cadastrada' : 'Nenhuma assinatura neste filtro'}</p>
+                                            <Button size="sm" variant="outline" leftIcon={<FiPlus />}>
+                                                Adicionar Assinatura
+                                            </Button>
+                                        </div>
+                                    );
+                                })()}
                             </Card>
 
                             <div className={styles.summaryCards}>
@@ -486,66 +587,21 @@ export default function CardsPage() {
             <Dock />
 
             {/* Card Modal */}
-            <Modal isOpen={showCardModal} onClose={() => setShowCardModal(false)} title={editingCard ? 'Editar Cartão' : 'Novo Cartão'} size="md">
-                <div className={styles.modalForm}>
-                    <Input label="Nome do Cartão" placeholder="Ex: Nubank Platinum" leftIcon={<FiCreditCard />} value={cardForm.name} onChange={(e) => setCardForm(prev => ({ ...prev, name: e.target.value }))} fullWidth />
-                    <div className={styles.formRow}>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.inputLabel}>Bandeira</label>
-                            <select className={styles.selectInput} value={cardForm.brand} onChange={(e) => setCardForm(prev => ({ ...prev, brand: e.target.value }))}>
-                                <option value="VISA">VISA</option>
-                                <option value="MASTERCARD">Mastercard</option>
-                                <option value="ELO">Elo</option>
-                                <option value="AMEX">American Express</option>
-                            </select>
-                        </div>
-                        <Input label="Últimos 4 dígitos" placeholder="0000" maxLength={4} value={cardForm.lastFourDigits} onChange={(e) => setCardForm(prev => ({ ...prev, lastFourDigits: e.target.value }))} />
-                    </div>
-                    <div className={styles.formRow}>
-                        <Input label="Limite Total" placeholder="10000" leftIcon={<FiDollarSign />} value={cardForm.creditLimit} onChange={(e) => setCardForm(prev => ({ ...prev, creditLimit: e.target.value }))} />
-                        <Input label="Limite Disponível" placeholder="5000" leftIcon={<FiDollarSign />} value={cardForm.availableLimit} onChange={(e) => setCardForm(prev => ({ ...prev, availableLimit: e.target.value }))} />
-                    </div>
-                    <div className={styles.formRow}>
-                        <Input label="Dia de Fechamento" placeholder="15" value={cardForm.closingDay} onChange={(e) => setCardForm(prev => ({ ...prev, closingDay: e.target.value }))} />
-                        <Input label="Dia de Vencimento" placeholder="25" value={cardForm.dueDay} onChange={(e) => setCardForm(prev => ({ ...prev, dueDay: e.target.value }))} />
-                    </div>
-                    <Input label="Nome do Titular" placeholder="NOME COMO NO CARTÃO" value={cardForm.holderName} onChange={(e) => setCardForm(prev => ({ ...prev, holderName: e.target.value }))} fullWidth />
-                    <div className={styles.colorPicker}>
-                        <label className={styles.inputLabel}>Cor do Cartão</label>
-                        <div className={styles.colorOptions}>
-                            {cardColors.map(c => (
-                                <button key={c.value} className={`${styles.colorOption} ${cardForm.color === c.value ? styles.selected : ''}`} style={{ background: c.value }} onClick={() => setCardForm(prev => ({ ...prev, color: c.value }))} title={c.name} type="button" />
-                            ))}
-                        </div>
-                    </div>
-                    <div className={styles.modalActions}>
-                        <Button variant="secondary" onClick={() => setShowCardModal(false)}>Cancelar</Button>
-                        <Button onClick={handleSaveCard}>{editingCard ? 'Salvar' : 'Criar Cartão'}</Button>
-                    </div>
-                </div>
-            </Modal>
+            <CardModal
+                isOpen={showCardModal}
+                onClose={() => { setShowCardModal(false); setEditingCard(null); }}
+                onSave={handleSaveCard}
+                editingCard={editingCard}
+            />
 
-            {/* Subscription Modal */}
-            <Modal isOpen={showSubModal} onClose={() => setShowSubModal(false)} title={editingSub ? 'Editar Assinatura' : 'Nova Assinatura'} size="sm">
-                <div className={styles.modalForm}>
-                    <Input label="Nome" placeholder="Ex: Netflix" leftIcon={<FiTag />} value={subForm.name} onChange={(e) => setSubForm(prev => ({ ...prev, name: e.target.value }))} fullWidth />
-                    <Input label="Valor" placeholder="29.90" leftIcon={<FiDollarSign />} value={subForm.amount} onChange={(e) => setSubForm(prev => ({ ...prev, amount: e.target.value }))} fullWidth />
-                    <Input label="Categoria" placeholder="Streaming" value={subForm.category} onChange={(e) => setSubForm(prev => ({ ...prev, category: e.target.value }))} fullWidth />
-                    <div className={styles.inputGroup}>
-                        <label className={styles.inputLabel}>Frequência</label>
-                        <select className={styles.selectInput} value={subForm.frequency} onChange={(e) => setSubForm(prev => ({ ...prev, frequency: e.target.value }))}>
-                            <option value="MONTHLY">Mensal</option>
-                            <option value="YEARLY">Anual</option>
-                            <option value="WEEKLY">Semanal</option>
-                        </select>
-                    </div>
-                    <Input label="Próxima Cobrança" type="date" leftIcon={<FiCalendar />} value={subForm.nextBillingDate} onChange={(e) => setSubForm(prev => ({ ...prev, nextBillingDate: e.target.value }))} fullWidth />
-                    <div className={styles.modalActions}>
-                        <Button variant="secondary" onClick={() => setShowSubModal(false)}>Cancelar</Button>
-                        <Button onClick={handleSaveSub}>{editingSub ? 'Salvar' : 'Criar'}</Button>
-                    </div>
-                </div>
-            </Modal>
+            {/* Subscription Modal with Gallery */}
+            <SubscriptionModal
+                isOpen={showSubModal}
+                onClose={() => { setShowSubModal(false); setEditingSub(null); }}
+                onSave={handleSaveSub}
+                editingSub={editingSub}
+                cards={cards}
+            />
         </div >
     );
 }
