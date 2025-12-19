@@ -118,6 +118,10 @@ export const budgetsAPI = {
     get: (year, month) => api.get(`/budgets/${year}/${month}`),
     update: (year, month, data) => api.put(`/budgets/${year}/${month}`, data),
     getRecommendations: () => api.get('/budgets/recommendations'),
+    // Budget Allocations
+    getCurrentAllocations: () => api.get('/budgets/allocations/current'),
+    getAllocations: (month, year) => api.get('/budgets/allocations', { params: { month, year } }),
+    create: (data) => api.post('/budgets/allocations', data),
 };
 
 // Cards API

@@ -164,17 +164,26 @@ export default function CardsPage() {
     };
 
     const handleSaveSub = async (payload, editId) => {
+        console.log('📦 [CARDS PAGE] handleSaveSub called');
+        console.log('📦 [CARDS PAGE] Payload:', payload);
+        console.log('📦 [CARDS PAGE] Payload cardId:', payload.cardId, '| Type:', typeof payload.cardId);
+        console.log('📦 [CARDS PAGE] Edit ID:', editId);
+        console.log('📦 [CARDS PAGE] Available cards:', cards);
         try {
             if (editId) {
-                await subscriptionsAPI.update(editId, payload);
+                console.log('📦 [CARDS PAGE] Updating subscription...');
+                const result = await subscriptionsAPI.update(editId, payload);
+                console.log('📦 [CARDS PAGE] Update result:', result);
             } else {
-                await subscriptionsAPI.create(payload);
+                console.log('📦 [CARDS PAGE] Creating new subscription...');
+                const result = await subscriptionsAPI.create(payload);
+                console.log('📦 [CARDS PAGE] Create result:', result);
             }
             setShowSubModal(false);
             setEditingSub(null);
             loadData();
         } catch (error) {
-            console.error("Error saving subscription:", error);
+            console.error("❌ [CARDS PAGE] Error saving subscription:", error);
             alert("Erro ao salvar assinatura.");
         }
     };

@@ -19,7 +19,8 @@ import {
     FiPieChart,
     FiSliders,
     FiFileText,
-    FiCheckSquare
+    FiCheckSquare,
+    FiCreditCard
 } from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,13 +30,13 @@ import styles from './Header.module.css';
 const quickActions = [
     { id: 'new-transaction', href: '/transactions?new=true', icon: FiPlus, label: 'Nova Transação', color: '#22c55e' },
     { id: 'new-goal', href: '/goals?new=true', icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6' },
-    { id: 'new-investment', href: '/investments?new=true', icon: FiTrendingUp, label: 'Nova Operação', color: '#3b82f6' },
-    { id: 'reports', href: '/reports', icon: FiPieChart, label: 'Relatórios', color: '#f59e0b' },
+    { id: 'profile', href: '/settings', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
+    { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartão', color: '#f59e0b' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
-    { id: 'statements', href: '/statements', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
+    { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
 ];
 
-export default function Header() {
+export default function Header({ leftContent, rightContent }) {
     const { theme, toggleTheme } = useTheme();
     const { user, logout } = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -94,6 +95,9 @@ export default function Header() {
     return (
         <>
             <header className={styles.header}>
+                {/* Custom Left Content (Dashboard tabs) - Far left */}
+                {leftContent && <div className={styles.customContentLeft}>{leftContent}</div>}
+
                 <div className={styles.container}>
                     {/* Left Actions */}
                     <div className={styles.actions}>
@@ -233,6 +237,9 @@ export default function Header() {
                         </div>
                     </div>
                 </div>
+
+                {/* Custom Right Content (Date filters) - Far right */}
+                {rightContent && <div className={styles.customContentRight}>{rightContent}</div>}
             </header>
 
             {/* Quick Actions Modal */}

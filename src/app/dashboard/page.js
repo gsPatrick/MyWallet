@@ -13,7 +13,7 @@ import Dock from '@/components/layout/Dock';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/utils/formatters';
-import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI } from '@/services/api';
+import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI, budgetsAPI } from '@/services/api';
 import ActivityList from '@/components/dashboard/ActivityList';
 import SubscriptionWidget from '@/components/dashboard/SubscriptionWidget';
 import styles from './page.module.css';
@@ -51,6 +51,7 @@ export default function DashboardPage() {
     const [openFinanceCards, setOpenFinanceCards] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [dashboardSummary, setDashboardSummary] = useState(null);
+    const [budgets, setBudgets] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -60,18 +61,20 @@ export default function DashboardPage() {
     const loadDashboardData = async () => {
         setIsLoading(true);
         try {
-            const [portfolioRes, accountsRes, cardsRes, transactionsRes, summaryRes] = await Promise.all([
+            const [portfolioRes, accountsRes, cardsRes, transactionsRes, summaryRes, budgetsRes] = await Promise.all([
                 reportsAPI.getPortfolio(),
                 openFinanceAPI.listAccounts().catch(() => []),
                 openFinanceAPI.listCards().catch(() => ({ data: [] })),
                 transactionsAPI.list({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0] }),
-                dashboardAPI.getSummary().catch(() => ({}))
+                dashboardAPI.getSummary().catch(() => ({})),
+                budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } }))
             ]);
             setPortfolioData(portfolioRes);
             setOpenFinanceAccounts(accountsRes?.data || accountsRes || []);
             setOpenFinanceCards(cardsRes?.data || []);
             setTransactions(transactionsRes?.data?.transactions || transactionsRes || []);
             setDashboardSummary(summaryRes?.data || summaryRes || {});
+            setBudgets(budgetsRes?.data?.allocations || budgetsRes?.allocations || []);
         } catch (error) {
             console.error("Erro ao carregar dashboard:", error);
         } finally {
@@ -120,17 +123,18 @@ export default function DashboardPage() {
             return acc;
         }, {});
 
-    const allocationData = Object.entries(expensesByCategory).map(([name, spent], index) => ({
-        id: index,
-        name,
-        spent,
-        percent: monthlyExpenses > 0 ? Math.round((spent / monthlyExpenses) * 100) : 0,
-        color: ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'][index % 6]
-    })).sort((a, b) => b.spent - a.spent);
-
-    // Use actual data - show empty state when no data
-    const displayAllocation = allocationData;
-    const hasAllocationData = allocationData.length > 0;
+    // Use budgets for allocation display instead of transaction categories
+    // Show budgets with zeroed values (for future implementation)
+    const budgetColors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
+    const displayAllocation = budgets.map((budget, index) => ({
+        id: budget.id || index,
+        name: budget.name,
+        spent: parseFloat(budget.spent) || 0,
+        limit: parseFloat(budget.amount) || 0,
+        percent: parseFloat(budget.percentage) || 0,
+        color: budget.color || budgetColors[index % budgetColors.length]
+    }));
+    const hasAllocationData = displayAllocation.length > 0;
     const hasPendingTransactions = pendingTransactions.length > 0;
 
     const getDateLabel = () => dateFilters.find(f => f.id === dateFilter)?.label || 'Mês';
@@ -148,54 +152,59 @@ export default function DashboardPage() {
         );
     }
 
+    // Tab buttons component for reuse
+    const TabsComponent = (
+        <div className={styles.tabs}>
+            {[
+                { id: 'geral', label: 'Geral', icon: FiHome },
+                { id: 'manual', label: 'Manual', icon: FiDollarSign },
+                { id: 'openfinance', label: 'Open Finance', icon: FiLink },
+                { id: 'investments', label: 'Investimentos', icon: FiTrendingUp }
+            ].map(tab => {
+                const Icon = tab.icon;
+                return (
+                    <button
+                        key={tab.id}
+                        id={`tab-${tab.id}`}
+                        className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+                        onClick={() => setActiveTab(tab.id)}
+                    >
+                        <Icon />
+                        {tab.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+
+    // Date filter component for reuse
+    const DateFilterComponent = (
+        <div className={styles.dateFilter}>
+            {dateFilters.map(filter => (
+                <button
+                    key={filter.id}
+                    className={`${styles.dateBtn} ${dateFilter === filter.id ? styles.active : ''}`}
+                    onClick={() => {
+                        setDateFilter(filter.id);
+                        if (filter.id === 'custom') setShowDatePicker(true);
+                    }}
+                >
+                    {filter.id === 'custom' ? <FiCalendar /> : null}
+                    {filter.label}
+                </button>
+            ))}
+        </div>
+    );
+
     return (
         <div className={styles.page}>
-            <Header />
+            <Header leftContent={TabsComponent} rightContent={DateFilterComponent} />
 
             <main className={styles.main}>
-                {/* Top Controls */}
-                <div className={styles.topControls}>
-                    {/* Tabs */}
-                    <div className={styles.tabs}>
-                        {[
-                            { id: 'geral', label: 'Geral', icon: FiHome },
-                            { id: 'manual', label: 'Manual', icon: FiDollarSign },
-                            { id: 'openfinance', label: 'Open Finance', icon: FiLink },
-                            { id: 'investments', label: 'Investimentos', icon: FiTrendingUp }
-                        ].map(tab => {
-                            const Icon = tab.icon;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    id={`tab-${tab.id}`}
-                                    className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-                                    onClick={() => setActiveTab(tab.id)}
-                                >
-                                    <Icon />
-                                    {tab.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-
-
-                    {/* Date Filter */}
-                    <div className={styles.dateFilter}>
-                        {dateFilters.map(filter => (
-                            <button
-                                key={filter.id}
-                                className={`${styles.dateBtn} ${dateFilter === filter.id ? styles.active : ''}`}
-                                onClick={() => {
-                                    setDateFilter(filter.id);
-                                    if (filter.id === 'custom') setShowDatePicker(true);
-                                }}
-                            >
-                                {filter.id === 'custom' ? <FiCalendar /> : null}
-                                {filter.label}
-                            </button>
-                        ))}
-                    </div>
+                {/* Top Controls - Mobile Only */}
+                <div className={`${styles.topControls} ${styles.mobileOnly}`}>
+                    {TabsComponent}
+                    {DateFilterComponent}
                 </div>
 
                 {/* Custom Date Picker Modal */}
@@ -370,6 +379,7 @@ export default function DashboardPage() {
                                                             <div key={a.id} className={styles.legendItem}>
                                                                 <span className={styles.legendDot} style={{ background: a.color }} />
                                                                 <span className={styles.legendName}>{a.name}</span>
+                                                                <span className={styles.legendValue}>{formatCurrency(a.limit)}</span>
                                                                 <span className={styles.legendPercent}>{a.percent}%</span>
                                                             </div>
                                                         ))
@@ -388,15 +398,15 @@ export default function DashboardPage() {
                                             <div className={styles.barChartContainer}>
                                                 {hasAllocationData ? (
                                                     displayAllocation.map(a => {
-                                                        const target = a.spent * 1.2;
-                                                        const pct = (a.spent / target) * 100;
+                                                        const target = a.limit || 0; // Use budget limit
+                                                        const pct = target > 0 ? (a.spent / target) * 100 : 0;
                                                         return (
                                                             <div key={a.id} className={styles.barItem}>
                                                                 <div className={styles.barLabel}>
                                                                     <span className={styles.barDot} style={{ background: a.color }} />
                                                                     <span>{a.name}</span>
                                                                 </div>
-                                                                <div className={styles.barTrack}>
+                                                                <div className={styles.barTrack} style={{ background: `${a.color}30` }}>
                                                                     <div
                                                                         className={styles.barFill}
                                                                         style={{
@@ -404,11 +414,9 @@ export default function DashboardPage() {
                                                                             background: pct > 100 ? '#ef4444' : a.color
                                                                         }}
                                                                     />
-                                                                    <div className={styles.barTarget} style={{ left: '100%' }} />
-                                                                </div>
-                                                                <div className={styles.barValues}>
-                                                                    <span className={pct > 100 ? styles.overBudget : ''}>{formatCurrency(a.spent)}</span>
-                                                                    <span className={styles.barTargetValue}>/ {formatCurrency(target)}</span>
+                                                                    <span className={`${styles.barValueInline} ${pct > 100 ? styles.overBudget : ''}`}>
+                                                                        {formatCurrency(a.spent)} / {formatCurrency(target)}
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         );
@@ -444,21 +452,21 @@ export default function DashboardPage() {
                                 <div className={styles.quickActions}>
                                     <h3>Ações Rápidas</h3>
                                     <div className={styles.quickGrid}>
-                                        <Link href="/transactions" className={styles.quickItem}>
+                                        <Link href="/transactions?new=true" className={styles.quickItem}>
                                             <FiPlus />
                                             <span>Nova Transação</span>
                                         </Link>
-                                        <Link href="/investments/create" className={styles.quickItem}>
-                                            <FiTrendingUp />
-                                            <span>Nova Operação</span>
+                                        <Link href="/settings" className={styles.quickItem}>
+                                            <FiHome />
+                                            <span>Perfil</span>
                                         </Link>
-                                        <Link href="/open-finance" className={styles.quickItem}>
-                                            <FiLink />
-                                            <span>Sincronizar</span>
+                                        <Link href="/cards" className={styles.quickItem}>
+                                            <FiCreditCard />
+                                            <span>Cartão</span>
                                         </Link>
-                                        <Link href="/goals" className={styles.quickItem}>
+                                        <Link href="/goals?new=true" className={styles.quickItem}>
                                             <FiTarget />
-                                            <span>Ver Metas</span>
+                                            <span>Nova Meta</span>
                                         </Link>
                                     </div>
 
@@ -583,21 +591,21 @@ export default function DashboardPage() {
                                     <div className={styles.quickActions}>
                                         <h3>Ações Rápidas</h3>
                                         <div className={styles.quickGrid}>
-                                            <Link href="/transactions" className={styles.quickItem}>
+                                            <Link href="/transactions?new=true" className={styles.quickItem}>
                                                 <FiPlus />
                                                 <span>Nova Transação</span>
                                             </Link>
-                                            <Link href="/investments/create" className={styles.quickItem}>
-                                                <FiTrendingUp />
-                                                <span>Nova Operação</span>
+                                            <Link href="/settings" className={styles.quickItem}>
+                                                <FiHome />
+                                                <span>Perfil</span>
                                             </Link>
-                                            <Link href="/open-finance" className={styles.quickItem}>
-                                                <FiLink />
-                                                <span>Sincronizar</span>
+                                            <Link href="/cards" className={styles.quickItem}>
+                                                <FiCreditCard />
+                                                <span>Cartão</span>
                                             </Link>
-                                            <Link href="/goals" className={styles.quickItem}>
+                                            <Link href="/goals?new=true" className={styles.quickItem}>
                                                 <FiTarget />
-                                                <span>Ver Metas</span>
+                                                <span>Nova Meta</span>
                                             </Link>
                                         </div>
                                     </div>

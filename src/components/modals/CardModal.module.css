@@ -103,10 +103,36 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
+[data-theme="light"] .selectionLabel {
+    color: rgba(0, 0, 0, 0.5);
+}
+
 .selectionValue {
     font-size: 0.9375rem;
     font-weight: 500;
     color: white;
+}
+
+[data-theme="light"] .selectionValue {
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .selectionItem {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .selectionItem:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .selectionPreview {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .selectionPlaceholder {
+    color: rgba(0, 0, 0, 0.4);
 }
 
 /* Color Picker */

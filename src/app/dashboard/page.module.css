@@ -11,11 +11,27 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: calc(var(--header-height) + 12px) 20px 72px;
+    padding: var(--header-height) 20px 56px;
+    padding-top: calc(var(--header-height) + 20px);
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
     gap: 12px;
+    overflow: hidden;
+}
+
+/* Geral tab allows scroll */
+.mainScrollable {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--header-height) 20px 72px;
+    padding-top: calc(var(--header-height) + 20px);
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 12px;
+    overflow-y: auto;
 }
 
 /* Top Controls */
@@ -24,6 +40,17 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+}
+
+/* Hide on Desktop (show only on mobile) */
+.mobileOnly {
+    display: flex;
+}
+
+@media (min-width: 769px) {
+    .mobileOnly {
+        display: none;
+    }
 }
 
 /* Tabs */
@@ -53,12 +80,13 @@
 }
 
 .tab.active {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--text-primary);
+    background: var(--accent-primary);
+    color: white;
 }
 
 [data-theme="light"] .tab.active {
-    background: rgba(0, 0, 0, 0.08);
+    background: var(--accent-primary);
+    color: white;
 }
 
 /* Date Filter */
@@ -201,17 +229,20 @@
 
 /* Main Dashboard Grid Structure */
 .dashboardGrid {
+    flex: 1;
     display: grid;
     grid-template-columns: 1fr 340px;
     /* Main Content | Sidebar */
     gap: 20px;
-    align-items: start;
+    align-items: stretch;
+    min-height: 0;
 }
 
 .dashboardMain {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
+    min-height: 0;
 }
 
 .dashboardSidebar {
@@ -239,6 +270,11 @@
     border-radius: 12px;
     padding: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 [data-theme="light"] .allocationCard {
@@ -448,6 +484,12 @@
     color: var(--text-primary);
 }
 
+.legendValue {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
 /* Empty Legend State */
 .emptyLegend {
     display: flex;
@@ -470,14 +512,14 @@
 .barChartContainer {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin: 16px 0;
+    gap: 6px;
+    margin: 8px 0;
 }
 
 .barItem {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .barLabel {
@@ -495,9 +537,9 @@
 }
 
 .barTrack {
-    height: 12px;
+    height: 16px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
 }
@@ -520,6 +562,23 @@
     background: var(--text-tertiary);
 }
 
+.barValueInline {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] .barValueInline {
+    color: #1a1a2e;
+    text-shadow: none;
+}
+
 .barValues {
     display: flex;
     justify-content: flex-end;
@@ -537,7 +596,8 @@
 }
 
 .overBudget {
-    color: #ef4444 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* Quick Actions */
@@ -842,6 +902,41 @@
     .chartsRow {
         grid-template-columns: 1fr;
     }
+}
+
+/* Fluxo de Caixa Card - Full Width */
+.fluxoCaixaCard {
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+[data-theme="light"] .fluxoCaixaCard {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Activities Sidebar - Vertical Layout */
+.activitiesSidebar {
+    background: rgba(30, 30, 35, 0.6);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+[data-theme="light"] .activitiesSidebar {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Bottom Grid */
@@ -1222,5 +1317,78 @@
 @media (max-width: 768px) {
     .predictionCards {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Budget Summary Bar */
+.budgetSummaryBar {
+    display: flex;
+    height: 28px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .budgetSummaryBar {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.budgetSummaryItem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.budgetSummaryItem:hover {
+    filter: brightness(1.1);
+}
+
+.budgetSummaryPercent {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Budget Legend Bar */
+.budgetLegendBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin-bottom: 16px;
+    padding: 10px 0;
+}
+
+.budgetLegendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.budgetLegendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.budgetLegendText {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.budgetLegendName {
+    color: var(--text-tertiary);
+    font-weight: 400;
+}
+
+@media (max-width: 768px) {
+    .budgetLegendBar {
+        flex-direction: column;
+        gap: 8px;
     }
 }

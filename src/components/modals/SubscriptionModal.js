@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { FiTag, FiDollarSign, FiCalendar, FiImage, FiSearch, FiX, FiCreditCard } from 'react-icons/fi';
+import { FiTag, FiDollarSign, FiCalendar, FiImage, FiSearch, FiX, FiCreditCard, FiPlus } from 'react-icons/fi';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import CategoryModal from '@/components/modals/CategoryModal';
+import categoriesService from '@/services/categoriesService';
 import subscriptionData from '@/data/subscriptionIcons.json';
 import styles from './SubscriptionModal.module.css';
 
@@ -32,6 +34,10 @@ export default function SubscriptionModal({
     const [iconSearch, setIconSearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('ALL');
 
+    // Dynamic Categories
+    const [userCategories, setUserCategories] = useState([]);
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+
     // Get subscriptions from JSON
     const subscriptionsLibrary = useMemo(() => {
         return Object.entries(subscriptionData.subscriptions || {}).map(([key, value]) => ({
@@ -40,7 +46,28 @@ export default function SubscriptionModal({
         }));
     }, []);
 
-    const categories = subscriptionData.categories || [];
+
+
+    // Load user categories
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const res = await categoriesService.list();
+                setUserCategories(res.data || []);
+            } catch (error) {
+                console.error("Error loading categories:", error);
+            }
+        };
+        loadCategories();
+    }, []);
+
+    const defaultCategories = subscriptionData.categories || [];
+
+    // Combine for display in main modal (not gallery filter)
+    const allCategoriesOptions = [
+        { label: 'Padrão', options: defaultCategories },
+        { label: 'Minhas Categorias', options: userCategories }
+    ];
 
     // Filter subscriptions by search and category
     const filteredSubscriptions = useMemo(() => {
@@ -102,6 +129,11 @@ export default function SubscriptionModal({
     };
 
     const handleSave = () => {
+        console.log('🔵 [SUBSCRIPTION MODAL] handleSave called');
+        console.log('🔵 [SUBSCRIPTION MODAL] form state:', form);
+        console.log('🔵 [SUBSCRIPTION MODAL] form.cardId:', form.cardId, '| Type:', typeof form.cardId);
+        console.log('🔵 [SUBSCRIPTION MODAL] cards prop received:', cards);
+
         const payload = {
             name: form.name,
             amount: parseFloat(form.amount) || 0,
@@ -112,7 +144,16 @@ export default function SubscriptionModal({
             color: form.color,
             cardId: form.cardId || null,
         };
+
+        console.log('🔵 [SUBSCRIPTION MODAL] Final payload to send:', payload);
         onSave?.(payload, editingSub?.id);
+    };
+
+    const handleCategoryCreated = (newCat) => {
+        if (newCat) {
+            setUserCategories(prev => [...prev, newCat]);
+            setForm(prev => ({ ...prev, category: newCat.id || newCat.name })); // Use ID if available, else name
+        }
     };
 
     return (
@@ -167,38 +208,55 @@ export default function SubscriptionModal({
                     />
 
                     <div className={styles.inputGroup}>
-                        <label className={styles.inputLabel}>Categoria</label>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <label className={styles.inputLabel}>Categoria</label>
+                            <button
+                                type="button"
+                                className={styles.addCategoryBtn}
+                                onClick={() => setShowCategoryModal(true)}
+                                style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+                            >
+                                <FiPlus style={{ marginRight: 2 }} /> Criar
+                            </button>
+                        </div>
                         <select
                             className={styles.selectInput}
                             value={form.category}
                             onChange={(e) => setForm(prev => ({ ...prev, category: e.target.value }))}
                         >
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
+                            <optgroup label="Padrão">
+                                {defaultCategories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </optgroup>
+                            {userCategories.length > 0 && (
+                                <optgroup label="Minhas Categorias">
+                                    {userCategories.map(cat => (
+                                        <option key={cat.id} value={cat.id || cat.name}>{cat.name}</option>
+                                    ))}
+                                </optgroup>
+                            )}
                         </select>
                     </div>
 
-                    {cards.length > 0 && (
-                        <div className={styles.inputGroup}>
-                            <label className={styles.inputLabel}>
-                                <FiCreditCard style={{ marginRight: 6, verticalAlign: 'middle' }} />
-                                Vincular ao Cartão (opcional)
-                            </label>
-                            <select
-                                className={styles.selectInput}
-                                value={form.cardId}
-                                onChange={(e) => setForm(prev => ({ ...prev, cardId: e.target.value }))}
-                            >
-                                <option value="">Sem cartão vinculado</option>
-                                {cards.map(card => (
-                                    <option key={card.id} value={card.id}>
-                                        {card.name} •••• {card.lastFourDigits}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>
+                            <FiCreditCard style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                            Vincular ao Cartão (opcional)
+                        </label>
+                        <select
+                            className={styles.selectInput}
+                            value={form.cardId}
+                            onChange={(e) => setForm(prev => ({ ...prev, cardId: e.target.value }))}
+                        >
+                            <option value="">Sem cartão vinculado</option>
+                            {cards.map(card => (
+                                <option key={card.id} value={card.id}>
+                                    {card.name} •••• {card.lastFourDigits}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
                     <div className={styles.inputGroup}>
                         <label className={styles.inputLabel}>Frequência</label>
@@ -251,6 +309,14 @@ export default function SubscriptionModal({
                 </div>
             </Modal>
 
+            {/* Category Creation Modal */}
+            <CategoryModal
+                isOpen={showCategoryModal}
+                onClose={() => setShowCategoryModal(false)}
+                onSuccess={handleCategoryCreated}
+                type="EXPENSE"
+            />
+
             {/* Icon Gallery Modal */}
             <Modal
                 isOpen={showIconGallery}
@@ -287,7 +353,7 @@ export default function SubscriptionModal({
                         >
                             Todos
                         </button>
-                        {categories.map(cat => (
+                        {defaultCategories.map(cat => (
                             <button
                                 key={cat.id}
                                 className={`${styles.categoryTab} ${selectedCategory === cat.id ? styles.active : ''}`}

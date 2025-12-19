@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     FiPlus, FiTarget, FiCalendar, FiTrendingUp, FiEdit2, FiTrash2,
@@ -17,7 +18,7 @@ import GoalDetailsModal from '@/components/goals/GoalDetailsModal'; // Added imp
 import GoalHistoryModal from '@/components/goals/GoalHistoryModal'; // Added Import
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
-import { goalsAPI, openFinanceAPI } from '@/services/api';
+import { goalsAPI, openFinanceAPI, budgetsAPI } from '@/services/api';
 import styles from './page.module.css';
 
 const goalColors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6'];
@@ -41,12 +42,17 @@ const categoryMap = Object.entries(reverseCategoryMap).reduce((acc, [key, value]
 
 const categories = Object.keys(reverseCategoryMap);
 
+
 export default function GoalsPage() {
+    // URL params for auto-open modal
+    const searchParams = useSearchParams();
+
     // Privacy-aware formatting
     const { formatCurrency } = usePrivateCurrency();
 
     const [goals, setGoals] = useState([]);
     const [accounts, setAccounts] = useState([]);
+    const [budgetAllocations, setBudgetAllocations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingGoal, setEditingGoal] = useState(null);
@@ -56,12 +62,15 @@ export default function GoalsPage() {
         targetAmount: '', // Formatted string
         currentAmount: '', // Formatted string
         deadline: '',
-        category: '',
+        deadline: '',
+        // category: '', // Removed from UI
         priority: 'MEDIUM',
         color: '#6366f1',
         storageType: 'manual',
         linkedAccountId: '',
         manualBank: '',
+        isInfinite: false, // Caixinha mode
+        budgetAllocationId: '', // Vínculo ao orçamento
     });
 
     // Quick Value Update State
@@ -88,6 +97,13 @@ export default function GoalsPage() {
         setFormData(prev => ({ ...prev, [field]: formatted }));
     };
 
+    // Auto-open modal from URL param
+    useEffect(() => {
+        if (searchParams.get('new') === 'true') {
+            setShowModal(true);
+        }
+    }, [searchParams]);
+
     useEffect(() => {
         loadData();
     }, []);
@@ -95,15 +111,16 @@ export default function GoalsPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [goalsRes, accountsRes] = await Promise.all([
+            const [goalsRes, accountsRes, allocationsRes] = await Promise.all([
                 goalsAPI.list(),
-                openFinanceAPI.listAccounts()
+                openFinanceAPI.listAccounts(),
+                budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } }))
             ]);
             setGoals(goalsRes);
-            setAccounts(accountsRes || []); // accountsRes.data se vier paginado? Ajustar conforme api.js
+            setAccounts(accountsRes || []);
+            setBudgetAllocations(allocationsRes?.data?.allocations || []);
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
-            // Fallback to empty if fails
         } finally {
             setIsLoading(false);
         }
@@ -119,7 +136,7 @@ export default function GoalsPage() {
             setEditingGoal(goal);
             setFormData({
                 name: goal.name,
-                targetAmount: formatCurrencyBR(parseFloat(goal.targetAmount)),
+                targetAmount: formatCurrencyBR(parseFloat(goal.targetAmount || 0)),
                 currentAmount: formatCurrencyBR(parseFloat(goal.currentAmount)),
                 deadline: goal.deadline ? goal.deadline.split('T')[0] : '',
                 category: categoryMap[goal.category] || 'Outros',
@@ -128,6 +145,8 @@ export default function GoalsPage() {
                 storageType: goal.storageType || 'manual',
                 linkedAccountId: goal.linkedAccountId || '',
                 manualBank: goal.manualBank || '',
+                isInfinite: goal.isInfinite || false,
+                budgetAllocationId: goal.budgetAllocationId || '',
             });
         } else {
             setEditingGoal(null);
@@ -136,12 +155,17 @@ export default function GoalsPage() {
                 targetAmount: '',
                 currentAmount: '0',
                 deadline: '',
-                category: '',
+                targetAmount: '',
+                currentAmount: '0',
+                deadline: '',
+                // category: '',
                 priority: 'MEDIUM',
                 color: '#6366f1',
                 storageType: 'manual',
                 linkedAccountId: '',
                 manualBank: '',
+                isInfinite: false,
+                budgetAllocationId: '',
             });
         }
         setShowModal(true);
@@ -151,11 +175,14 @@ export default function GoalsPage() {
         try {
             const payload = {
                 ...formData,
-                targetAmount: parseBRCurrency(formData.targetAmount),
+                targetAmount: formData.isInfinite ? null : parseBRCurrency(formData.targetAmount),
                 currentAmount: parseBRCurrency(formData.currentAmount),
-                category: reverseCategoryMap[formData.category] || 'OTHER',
+                targetAmount: formData.isInfinite ? null : parseBRCurrency(formData.targetAmount),
+                currentAmount: parseBRCurrency(formData.currentAmount),
+                category: 'OTHER', // Default since UI removed
                 deadline: formData.deadline || null,
-                linkedAccountId: formData.linkedAccountId || null // Ensure null if empty string
+                linkedAccountId: formData.linkedAccountId || null,
+                budgetAllocationId: formData.budgetAllocationId || null,
             };
 
             if (editingGoal) {
@@ -413,7 +440,7 @@ export default function GoalsPage() {
                                             </div>
 
                                             <span className={`${styles.priorityBadge} ${styles[goal.priority?.toLowerCase() || 'medium']}`}>
-                                                {goal.priority === 'HIGH' ? 'Alta' : goal.priority === 'MEDIUM' ? 'Média' : 'Baixa'}
+                                                {goal.priority === 'HIGH' ? 'Prioridade Alta' : goal.priority === 'MEDIUM' ? 'Prioridade Média' : 'Prioridade Baixa'}
                                             </span>
 
                                             {/* Bank/Account Info */}
@@ -492,15 +519,41 @@ export default function GoalsPage() {
                         fullWidth
                     />
 
+                    {/* Caixinha (Meta Infinita) Toggle */}
+                    <div className={styles.infiniteToggle}>
+                        <label className={styles.checkboxLabel}>
+                            <input
+                                type="checkbox"
+                                checked={formData.isInfinite}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    isInfinite: e.target.checked,
+                                    targetAmount: e.target.checked ? '' : prev.targetAmount
+                                }))}
+                            />
+                            <span className={styles.checkboxText}>
+                                💰 Meta sem valor fixo (Caixinha)
+                            </span>
+                        </label>
+                        <span className={styles.helperText}>
+                            {formData.isInfinite
+                                ? 'O saldo acumula indefinidamente sem meta final'
+                                : 'Define um valor alvo para alcançar'
+                            }
+                        </span>
+                    </div>
+
                     <div className={styles.formRow}>
-                        <Input
-                            label="Valor Objetivo"
-                            type="text"
-                            placeholder="0,00"
-                            leftIcon={<FiDollarSign />}
-                            value={formData.targetAmount}
-                            onChange={(e) => handleFormAmountChange('targetAmount', e.target.value)}
-                        />
+                        {!formData.isInfinite && (
+                            <Input
+                                label="Valor Objetivo"
+                                type="text"
+                                placeholder="0,00"
+                                leftIcon={<FiDollarSign />}
+                                value={formData.targetAmount}
+                                onChange={(e) => handleFormAmountChange('targetAmount', e.target.value)}
+                            />
+                        )}
                         <Input
                             label="Valor Atual"
                             type="text"
@@ -508,24 +561,12 @@ export default function GoalsPage() {
                             leftIcon={<FiDollarSign />}
                             value={formData.currentAmount}
                             onChange={(e) => handleFormAmountChange('currentAmount', e.target.value)}
+                            style={formData.isInfinite ? { flex: 1 } : {}}
                         />
                     </div>
 
 
                     <div className={styles.formRow}>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.inputLabel}>Categoria</label>
-                            <select
-                                className={styles.selectInput}
-                                value={formData.category}
-                                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                            >
-                                <option value="">Selecione...</option>
-                                {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
-                        </div>
                         <div className={styles.inputGroup}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                 <label className={styles.inputLabel}>Prazo</label>
@@ -547,7 +588,6 @@ export default function GoalsPage() {
                             />
                         </div>
                     </div>
-
                     {/* Storage/Bank Selection */}
                     <div className={styles.storageSection}>
                         <label className={styles.inputLabel}>Onde está guardando?</label>
@@ -598,6 +638,28 @@ export default function GoalsPage() {
                             </div>
                         )}
                     </div>
+
+                    {/* Budget Allocation Link */}
+                    {budgetAllocations.length > 0 && (
+                        <div className={styles.inputGroup}>
+                            <label className={styles.inputLabel}>🎯 Vincular ao Orçamento Mensal</label>
+                            <select
+                                className={styles.selectInput}
+                                value={formData.budgetAllocationId}
+                                onChange={(e) => setFormData(prev => ({ ...prev, budgetAllocationId: e.target.value }))}
+                            >
+                                <option value="">Nenhum (Não vincular)</option>
+                                {budgetAllocations.map(alloc => (
+                                    <option key={alloc.id} value={alloc.id}>
+                                        {alloc.name} ({alloc.percentage}% - R$ {alloc.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
+                                    </option>
+                                ))}
+                            </select>
+                            <span className={styles.helperText}>
+                                Aportes nesta meta contarão para o orçamento selecionado
+                            </span>
+                        </div>
+                    )}
 
                     <div className={styles.formRow}>
                         <div className={styles.inputGroup}>

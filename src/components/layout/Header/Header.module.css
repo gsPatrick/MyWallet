@@ -18,7 +18,7 @@
     align-items: center;
     justify-content: center;
     gap: 40px;
-    padding: 20px 48px;
+
     /* No background, no shadow by default (light mode) */
     background: transparent;
     border-radius: 6px;
@@ -57,6 +57,27 @@
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+/* Custom Content Slot (Dashboard filters) */
+.customContentLeft {
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.customContentRight {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    pointer-events: auto;
 }
 
 /* Icon Button - Minimal */

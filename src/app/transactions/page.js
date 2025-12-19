@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     FiPlus, FiFilter, FiCalendar, FiTrendingUp, FiTrendingDown, FiEdit, FiTrash2,
@@ -14,15 +15,22 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
+import BudgetExceededModal from '@/components/modals/BudgetExceededModal';
+import CategoryModal from '@/components/modals/CategoryModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
+
 import { formatDate } from '@/utils/formatters';
-import { transactionsAPI, cardsAPI } from '@/services/api';
+import { transactionsAPI, cardsAPI, budgetsAPI } from '@/services/api';
 import categoriesService from '@/services/categoriesService';
 import { mockTransactions } from '@/utils/mockData';
 import subscriptionIcons from '@/data/subscriptionIcons.json';
 import styles from './page.module.css';
 
+
 export default function TransactionsPage() {
+    // URL params for auto-open modal
+    const searchParams = useSearchParams();
+
     // Privacy-aware formatting
     const { formatCurrency } = usePrivateCurrency();
     // State
@@ -49,8 +57,23 @@ export default function TransactionsPage() {
 
     const [transactionMode, setTransactionMode] = useState('single');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState('');
+    // Removed inline category state in favor of component
     const [categoryList, setCategoryList] = useState([]);
+
+    // Budget Allocations for linking
+    const [budgetAllocations, setBudgetAllocations] = useState([]);
+
+    // Budget Exceeded Modal state
+    const [showBudgetModal, setShowBudgetModal] = useState(false);
+    const [budgetExceededData, setBudgetExceededData] = useState(null);
+    const [pendingTransaction, setPendingTransaction] = useState(null);
+
+    // Edit and Delete states
+    const [editingTransaction, setEditingTransaction] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [transactionToDelete, setTransactionToDelete] = useState(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+
     const [newTransaction, setNewTransaction] = useState({
         type: 'EXPENSE',
         description: '',
@@ -81,6 +104,13 @@ export default function TransactionsPage() {
     // Derived
     const categories = ['Todas', ...(apiCategories || [])]; // Handling potential null apiCategories
 
+    // Auto-open modal from URL param
+    useEffect(() => {
+        if (searchParams.get('new') === 'true') {
+            setShowAddModal(true);
+        }
+    }, [searchParams]);
+
     // Load data from API
     useEffect(() => {
         const loadData = async () => {
@@ -109,11 +139,12 @@ export default function TransactionsPage() {
                 const startStr = startDate.toISOString().split('T')[0];
                 const endStr = endDate.toISOString().split('T')[0];
 
-                const [txRes, catRes, cardsRes, categoriesRes] = await Promise.all([
+                const [txRes, catRes, cardsRes, categoriesRes, allocationsRes] = await Promise.all([
                     transactionsAPI.list({ startDate: startStr, endDate: endStr }),
                     transactionsAPI.getCategories(),
                     cardsAPI.list(),
-                    categoriesService.list()
+                    categoriesService.list(),
+                    budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } }))
                 ]);
 
                 // Apply local filters
@@ -140,11 +171,12 @@ export default function TransactionsPage() {
                 }
 
                 setTransactions(filtered);
-                setApiCategories(catRes?.data || []);
-                setCards(cardsRes?.data || []);
+                setCards(cardsRes.data || []);
+                setApiCategories(categoriesRes?.data || []);
                 setCategoryList(categoriesRes?.data || []);
+                setBudgetAllocations(allocationsRes?.data?.allocations || []);
             } catch (error) {
-                console.error("Error loading transactions:", error);
+                console.error("Failed to load data:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -205,7 +237,7 @@ export default function TransactionsPage() {
         setNewTransaction(prev => ({ ...prev, amount: formatted }));
     };
 
-    const handleAddTransaction = async () => {
+    const handleAddTransaction = async (forceOverbudget = false) => {
         // Validation for Subscriptions (Recurring)
         if (transactionMode === 'recurring' && newTransaction.type === 'EXPENSE' && !newTransaction.cardId) {
             alert("Assinaturas (recorrentes) devem estar obrigatoriamente associadas a um cartão de crédito.");
@@ -216,18 +248,52 @@ export default function TransactionsPage() {
             // Parse amount: "1.000,00" -> 1000.00
             const rawAmount = parseFloat(newTransaction.amount.replace(/\./g, '').replace(',', '.'));
 
-            await transactionsAPI.create({
+            const payload = {
                 ...newTransaction,
                 amount: rawAmount,
                 isRecurring: transactionMode === 'recurring',
-                installments: transactionMode === 'installment' ? { current: 1, total: parseInt(newTransaction.installments) } : null
-            });
+                installments: transactionMode === 'installment' ? { current: 1, total: parseInt(newTransaction.installments) } : null,
+                forceOverbudget
+            };
+
+            if (editingTransaction) {
+                // Update existing transaction
+                await transactionsAPI.update(editingTransaction.id, payload);
+            } else {
+                // Create new transaction
+                await transactionsAPI.create(payload);
+            }
+
             setShowAddModal(false);
+            setEditingTransaction(null);
             resetForm();
-            // Trigger reload (simplified)
-            window.location.reload();
+            setShowBudgetModal(false);
+            setBudgetExceededData(null);
+            setPendingTransaction(null);
+            // Reload transactions - extract array from response
+            const txRes = await transactionsAPI.list();
+            setTransactions(txRes?.data?.transactions || []);
         } catch (error) {
-            alert("Error creating transaction: " + error.message);
+            // Check if this is a BUDGET_EXCEEDED error
+            // Error is already response.data due to api.js interceptor
+            const errorData = error;
+
+            if (errorData?.code === 'BUDGET_EXCEEDED' && errorData?.budgetData) {
+                // Save pending transaction and show budget modal
+                const rawAmount = parseFloat(newTransaction.amount.replace(/\./g, '').replace(',', '.'));
+                setPendingTransaction({
+                    ...newTransaction,
+                    amount: rawAmount,
+                    isRecurring: transactionMode === 'recurring',
+                    installments: transactionMode === 'installment' ? { current: 1, total: parseInt(newTransaction.installments) } : null
+                });
+                setBudgetExceededData(errorData.budgetData);
+                setShowBudgetModal(true);
+                return;
+            }
+
+            const message = errorData?.error || errorData?.message || (typeof errorData === 'string' ? errorData : 'Erro desconhecido');
+            alert("Error creating transaction: " + message);
         }
     };
 
@@ -249,31 +315,64 @@ export default function TransactionsPage() {
         setTransactionMode('single');
     };
 
-    // Create new category inline
-    const handleCreateCategory = async () => {
-        if (!newCategoryName.trim()) return;
-        try {
-            const response = await categoriesService.create({
-                name: newCategoryName.trim(),
-                type: newTransaction.type,
-                icon: 'FiFolder',
-                color: '#6366f1'
-            });
-            const newCat = response?.data;
-            if (newCat) {
-                setCategoryList(prev => [...prev, newCat]);
-                setNewTransaction(prev => ({ ...prev, categoryId: newCat.id, category: newCat.name }));
-            }
-            setNewCategoryName('');
-            setShowCategoryModal(false);
-        } catch (error) {
-            alert('Erro ao criar categoria: ' + error.message);
+    // Callback when category is created via modal
+    const handleCategoryCreated = (newCat) => {
+        if (newCat) {
+            setCategoryList(prev => [...prev, newCat]);
+            setNewTransaction(prev => ({ ...prev, categoryId: newCat.id, category: newCat.name }));
         }
     };
 
     const getCardName = (cardId) => {
         // Implementation would need cards loaded or card name in transaction object
         return "Cartão";
+    };
+
+    // Handle Edit Transaction
+    const handleEdit = (tx) => {
+        setEditingTransaction(tx);
+        setNewTransaction({
+            type: tx.type,
+            description: tx.description,
+            amount: tx.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            category: tx.category || '',
+            categoryId: tx.categoryId || '',
+            date: tx.date ? tx.date.split('T')[0] : new Date().toISOString().split('T')[0],
+            isRecurring: tx.isRecurring || false,
+            frequency: tx.frequency || 'MONTHLY',
+            recurringDay: tx.recurringDay || '',
+            status: tx.status || 'COMPLETED',
+            cardId: tx.cardId || '',
+            installments: tx.installments?.total?.toString() || '',
+            imageUrl: tx.imageUrl || '',
+        });
+        setTransactionMode(tx.isRecurring ? 'recurring' : tx.installments ? 'installment' : 'single');
+        setShowAddModal(true);
+    };
+
+    // Handle Delete Transaction
+    const handleDelete = async () => {
+        if (!transactionToDelete) return;
+        try {
+            await transactionsAPI.delete(transactionToDelete.id);
+            setShowDeleteModal(false);
+            setTransactionToDelete(null);
+            setDeleteSuccess(true);
+            // Reload transactions - extract array from response
+            const txRes = await transactionsAPI.list();
+            setTransactions(txRes?.data?.transactions || []);
+            // Hide success message after 3 seconds
+            setTimeout(() => setDeleteSuccess(false), 3000);
+        } catch (error) {
+            console.error('Error deleting transaction:', error);
+            alert('Erro ao excluir transação: ' + (error.message || 'Erro desconhecido'));
+        }
+    };
+
+    // Open delete confirmation
+    const openDeleteModal = (tx) => {
+        setTransactionToDelete(tx);
+        setShowDeleteModal(true);
     };
 
     // Budget tips - keeping mock for now as API endpoint might be different or complex
@@ -581,9 +680,14 @@ export default function TransactionsPage() {
                                     value={filterCategory}
                                     onChange={(e) => setFilterCategory(e.target.value)}
                                 >
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
+                                    {categories.map(cat => {
+                                        const isObj = typeof cat === 'object';
+                                        const value = isObj ? cat.id : cat;
+                                        const label = isObj ? cat.name : cat;
+                                        return (
+                                            <option key={value} value={value}>{label}</option>
+                                        );
+                                    })}
                                 </select>
                             </div>
                         </motion.div>
@@ -640,24 +744,33 @@ export default function TransactionsPage() {
                                         >
                                             <div
                                                 className={`${styles.transactionIcon} ${tx.type === 'INCOME' ? styles.income : styles.expense}`}
-                                                style={{ background: tx.imageUrl || tx.icon ? 'transparent' : undefined }}
+                                                style={{ background: (tx.imageUrl || tx.icon || tx.subscription?.icon) ? 'transparent' : undefined }}
                                             >
-                                                {tx.imageUrl || tx.icon ? (
+                                                {(tx.imageUrl || tx.icon || tx.subscription?.icon) ? (
                                                     <img
-                                                        src={tx.imageUrl || tx.icon}
+                                                        src={tx.imageUrl || tx.icon || tx.subscription?.icon}
                                                         alt={tx.description}
                                                         className={styles.transactionIconImg}
                                                     />
-                                                ) : tx.isRecurring ? <FiRepeat /> : tx.type === 'INCOME' ? <FiTrendingUp /> : <FiTrendingDown />}
+                                                ) : (tx.isRecurring || tx.subscriptionId) ? <FiRepeat /> : tx.type === 'INCOME' ? <FiTrendingUp /> : <FiTrendingDown />}
                                             </div>
                                             <div className={styles.transactionInfo}>
                                                 <div className={styles.descRow}>
                                                     <span className={styles.transactionDesc}>{tx.description}</span>
-                                                    {tx.status === 'PENDING' && <span className={styles.pendingBadge}><FiClock /> Agendado</span>}
+                                                    {(tx.status === 'PENDING' || tx.status === 'PAID' && tx.source === 'CARD' && new Date(tx.date) > new Date()) && <span className={styles.pendingBadge}><FiClock /> Agendado</span>}
+                                                    {(new Date(tx.date) > new Date() && tx.status !== 'PENDING' && tx.status !== 'PAID') && (
+                                                        <span className={styles.futureBadge}>Futuro</span>
+                                                    )}
                                                 </div>
                                                 <div className={styles.transactionMeta}>
                                                     <span className={styles.transactionCategory}>{tx.category}</span>
-                                                    {tx.isRecurring && <span className={styles.recurringBadge}><FiRepeat /> Recorrente</span>}
+                                                    {(tx.isRecurring || tx.subscriptionId) && (
+                                                        <span className={styles.recurringBadge}><FiRepeat /> Recorrente</span>
+                                                    )}
+                                                    {/* Show card name for card transactions */}
+                                                    {tx.source === 'CARD' && tx.sourceType && (
+                                                        <span className={styles.cardBadge}><FiCreditCard /> {tx.sourceType}</span>
+                                                    )}
                                                     {tx.installments && (
                                                         <span className={styles.installmentBadge}>
                                                             <FiLayers /> {tx.installments.current}/{tx.installments.total}
@@ -666,17 +779,17 @@ export default function TransactionsPage() {
                                                 </div>
                                             </div>
                                             <div className={styles.transactionAmount}>
-                                                <span className={`${tx.type === 'INCOME' ? styles.income : styles.expense} ${tx.status === 'PENDING' ? styles.pendingText : ''}`}>
+                                                <span className={`${tx.type === 'INCOME' ? styles.income : styles.expense} ${(tx.status === 'PENDING' || tx.status === 'PAID') ? styles.pendingText : ''}`}>
                                                     {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
                                                 </span>
-                                                <span className={styles.transactionDate}>
-                                                    <FiCalendar /> {formatDate(tx.date)}
+                                                <span className={styles.transactionDateHighlight}>
+                                                    {formatDate(tx.date)}
                                                 </span>
                                             </div>
-                                            {tx.source === 'MANUAL' && (
+                                            {(tx.source === 'MANUAL' || tx.source === 'CARD') && (
                                                 <div className={styles.transactionActions}>
-                                                    <button className={styles.actionBtn}><FiEdit /></button>
-                                                    <button className={`${styles.actionBtn} ${styles.danger}`}><FiTrash2 /></button>
+                                                    <button className={styles.actionBtn} onClick={(e) => { e.stopPropagation(); handleEdit(tx); }} title="Editar"><FiEdit /></button>
+                                                    <button className={`${styles.actionBtn} ${styles.danger}`} onClick={(e) => { e.stopPropagation(); openDeleteModal(tx); }} title="Excluir"><FiTrash2 /></button>
                                                 </div>
                                             )}
                                         </motion.div>
@@ -690,11 +803,11 @@ export default function TransactionsPage() {
 
             <Dock />
 
-            {/* Add Transaction Modal */}
+            {/* Add/Edit Transaction Modal */}
             <Modal
                 isOpen={showAddModal}
-                onClose={() => { setShowAddModal(false); resetForm(); }}
-                title="Nova Transação"
+                onClose={() => { setShowAddModal(false); setEditingTransaction(null); resetForm(); }}
+                title={editingTransaction ? 'Editar Transação' : 'Nova Transação'}
                 size="md"
             >
                 <div className={styles.formGrid}>
@@ -946,37 +1059,23 @@ export default function TransactionsPage() {
                     )}
 
                     <div className={styles.modalActions}>
-                        <Button variant="secondary" onClick={() => { setShowAddModal(false); resetForm(); }}>
+                        <Button variant="secondary" onClick={() => { setShowAddModal(false); setEditingTransaction(null); resetForm(); }}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleAddTransaction}>Salvar</Button>
+                        <Button onClick={() => handleAddTransaction(false)}>
+                            {editingTransaction ? 'Salvar Alterações' : 'Criar Transação'}
+                        </Button>
                     </div>
                 </div>
             </Modal>
 
-            {/* Create Category Modal */}
-            <Modal
+            {/* Category Creation Modal */}
+            <CategoryModal
                 isOpen={showCategoryModal}
                 onClose={() => setShowCategoryModal(false)}
-                title="Nova Categoria"
-                size="sm"
-            >
-                <div className={styles.formGrid}>
-                    <p className={styles.helperText}>Criando categoria para: <strong>{newTransaction.type === 'INCOME' ? 'Receita' : 'Despesa'}</strong></p>
-                    <Input
-                        label="Nome da Categoria"
-                        placeholder="Ex: Entretenimento"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        fullWidth
-                        autoFocus
-                    />
-                    <div className={styles.modalActions}>
-                        <Button variant="secondary" onClick={() => setShowCategoryModal(false)}>Cancelar</Button>
-                        <Button onClick={handleCreateCategory} disabled={!newCategoryName.trim()}>Criar</Button>
-                    </div>
-                </div>
-            </Modal>
+                onSuccess={handleCategoryCreated}
+                type={newTransaction.type}
+            />
 
             {/* Icon Picker Modal */}
             <Modal
@@ -987,7 +1086,7 @@ export default function TransactionsPage() {
             >
                 <div className={styles.iconPickerContent}>
                     <div className={styles.iconGrid}>
-                        {Object.entries(subscriptionIcons.services || {}).map(([key, service]) => (
+                        {Object.entries(subscriptionIcons.subscriptions || {}).map(([key, service]) => (
                             <button
                                 key={key}
                                 className={styles.iconGridItem}
@@ -1006,6 +1105,68 @@ export default function TransactionsPage() {
                     </div>
                 </div>
             </Modal>
+
+            {/* Budget Exceeded Modal */}
+            <BudgetExceededModal
+                isOpen={showBudgetModal}
+                onClose={() => {
+                    setShowBudgetModal(false);
+                    setBudgetExceededData(null);
+                    setPendingTransaction(null);
+                }}
+                onConfirm={() => handleAddTransaction(true)}
+                budgetData={budgetExceededData}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={showDeleteModal}
+                onClose={() => { setShowDeleteModal(false); setTransactionToDelete(null); }}
+                title="Confirmar Exclusão"
+                size="sm"
+            >
+                <div style={{ padding: '1rem 0', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Tem certeza que deseja excluir a transação <strong>"{transactionToDelete?.description}"</strong>?
+                    </p>
+                    <p style={{ color: 'var(--accent-danger)', fontSize: '0.875rem' }}>
+                        Esta ação não pode ser desfeita.
+                    </p>
+                </div>
+                <div className={styles.modalActions}>
+                    <Button variant="secondary" onClick={() => { setShowDeleteModal(false); setTransactionToDelete(null); }}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={handleDelete}>
+                        Excluir
+                    </Button>
+                </div>
+            </Modal>
+
+            {/* Delete Success Toast */}
+            {deleteSuccess && (
+                <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 50 }}
+                    style={{
+                        position: 'fixed',
+                        top: 'calc(var(--header-height) + 16px)',
+                        right: '24px',
+                        background: 'var(--accent-success)',
+                        color: 'white',
+                        padding: '12px 24px',
+                        borderRadius: 'var(--radius-md)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: 'var(--shadow-lg)',
+                        zIndex: 9999
+                    }}
+                >
+                    <FiCheck /> Transação excluída com sucesso!
+                </motion.div>
+            )}
         </div>
     );
 }

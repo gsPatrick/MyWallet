@@ -51,11 +51,38 @@ export default function BudgetAllocationPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Added State
 
     useEffect(() => {
-        const hasOnboarded = localStorage.getItem('budget_onboarded');
-        if (!hasOnboarded) {
-            setShowQuiz(true);
-        }
+        loadData();
     }, []);
+
+    const loadData = async () => {
+        try {
+            const hasOnboarded = localStorage.getItem('budget_onboarded');
+            const response = await budgetsAPI.getCurrentAllocations();
+            const data = response.data?.allocations || response.data || [];
+
+            if (data.length > 0) {
+                const mapped = data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    percent: parseFloat(item.percentage),
+                    color: item.color,
+                    icon: item.icon
+                }));
+                setAllocations(mapped);
+
+                // Estimate income from total amounts
+                const totalAmount = data.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+                if (totalAmount > 0) setIncome(totalAmount);
+            } else if (!hasOnboarded) {
+                setShowQuiz(true);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar alocações:', error);
+            // Fallback to quiz if no data and not onboarded
+            const hasOnboarded = localStorage.getItem('budget_onboarded');
+            if (!hasOnboarded) setShowQuiz(true);
+        }
+    };
 
     // Format number to Brazilian currency display (R$ 10.000,00)
     const formatCurrencyBR = (value) => {

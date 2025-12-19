@@ -20,7 +20,8 @@ import {
     FiPlus,
     FiDollarSign,
     FiPieChart,
-    FiFileText
+    FiFileText,
+    FiUser
 } from 'react-icons/fi';
 import { usePrivacy } from '@/contexts/PrivacyContext';
 import styles from './Dock.module.css';
@@ -39,10 +40,10 @@ const dockItems = [
 const quickActions = [
     { id: 'new-transaction', href: '/transactions?new=true', icon: FiPlus, label: 'Nova Transação', color: '#22c55e' },
     { id: 'new-goal', href: '/goals?new=true', icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6' },
-    { id: 'new-investment', href: '/investments?new=true', icon: FiTrendingUp, label: 'Nova Operação', color: '#3b82f6' },
-    { id: 'reports', href: '/reports', icon: FiPieChart, label: 'Relatórios', color: '#f59e0b' },
+    { id: 'profile', href: '/settings', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
+    { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartão', color: '#f59e0b' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
-    { id: 'statements', href: '/statements', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
+    { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
 ];
 
 export default function Dock() {

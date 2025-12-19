@@ -72,27 +72,37 @@ export default function OnboardingConfig({ onComplete }) {
         } else if (step === 'cards') {
             setLoading(true);
             try {
+                console.log('🃏 [ONBOARDING] Creating cards...', cards);
                 const createdCards = [];
                 for (const card of cards) {
+                    console.log('🃏 [ONBOARDING] Sending card to API:', card);
                     const response = await cardsAPI.create(card);
+                    console.log('🃏 [ONBOARDING] Card API response:', response);
                     if (response && response.data) {
+                        console.log('🃏 [ONBOARDING] Card created with ID:', response.data.id);
                         createdCards.push(response.data);
                     }
                 }
+                console.log('🃏 [ONBOARDING] All created cards:', createdCards);
                 setCards(createdCards);
             } catch (e) {
-                console.error('Error saving cards:', e);
+                console.error('❌ [ONBOARDING] Error saving cards:', e);
             }
             setLoading(false);
             setStep('subscriptions');
         } else if (step === 'subscriptions') {
             setLoading(true);
             try {
+                console.log('📦 [ONBOARDING] Creating subscriptions...', subscriptions);
+                console.log('📦 [ONBOARDING] Available cards state:', cards);
                 for (const sub of subscriptions) {
-                    await subscriptionsAPI.create(sub);
+                    console.log('📦 [ONBOARDING] Sending subscription to API:', sub);
+                    console.log('📦 [ONBOARDING] Subscription cardId:', sub.cardId, '| Type:', typeof sub.cardId);
+                    const result = await subscriptionsAPI.create(sub);
+                    console.log('📦 [ONBOARDING] Subscription API response:', result);
                 }
             } catch (e) {
-                console.error('Error saving subscriptions:', e);
+                console.error('❌ [ONBOARDING] Error saving subscriptions:', e);
             }
             setLoading(false);
             setStep('complete');

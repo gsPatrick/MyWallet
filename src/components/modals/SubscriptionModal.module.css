@@ -288,3 +288,97 @@
         white-space: nowrap;
     }
 }
+
+/* Light Theme Overrides */
+[data-theme="light"] .inputLabel {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .selectInput {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .selectInput option {
+    background: white;
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .iconSection {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .iconPreview {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .iconPlaceholder {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .modalActions {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .searchIcon {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .searchInput {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .searchInput::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .clearSearch {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .clearSearch:hover {
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .categoryTab {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .categoryTab:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .subscriptionCard {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .subscriptionCard:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .subIconWrapper {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .subName {
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .subPrice {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .noResults {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .galleryActions {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
