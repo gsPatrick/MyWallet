@@ -44,6 +44,25 @@ export default function SettingsPage() {
             try {
                 const userData = await authAPI.me();
                 setUser(userData);
+
+                // Load Gamification Data
+                try {
+                    const [medalsRes, profileRes] = await Promise.all([
+                        gamificationService.getMedals(),
+                        gamificationService.getProfile()
+                    ]);
+
+                    if (medalsRes.data) {
+                        setMedals(medalsRes.data);
+                    }
+
+                    if (profileRes.data && profileRes.data.featuredMedals && profileRes.data.featuredMedals.length > 0) {
+                        setEquippedMedal(profileRes.data.featuredMedals[0]);
+                    }
+                } catch (e) {
+                    console.error("Error loading gamification data:", e);
+                }
+
                 // Load WhatsApp status
                 try {
                     const wpStatus = await whatsappAPI.getStatus();
@@ -59,6 +78,29 @@ export default function SettingsPage() {
         };
         loadProfile();
     }, []);
+
+    const handleMedalClick = (medal) => {
+        setSelectedMedal(medal);
+        setShowMedalModal(true);
+    };
+
+    const handleEquipMedal = async () => {
+        if (!selectedMedal) return;
+        try {
+            await gamificationService.updateFeaturedMedals([selectedMedal.id]);
+            setEquippedMedal(selectedMedal);
+            setShowMedalModal(false);
+
+            // Refresh profile to confirm (optional)
+            const profileRes = await gamificationService.getProfile();
+            if (profileRes.data && profileRes.data.featuredMedals && profileRes.data.featuredMedals.length > 0) {
+                setEquippedMedal(profileRes.data.featuredMedals[0]);
+            }
+        } catch (error) {
+            console.error("Error equipping medal:", error);
+            alert("Erro ao equipar medalha.");
+        }
+    };
 
     // WhatsApp handlers
     const handleWhatsappConnect = async () => {
@@ -108,6 +150,8 @@ export default function SettingsPage() {
                     </motion.div>
 
                     <div className={styles.settingsGrid}>
+                        {/* Achievements */}
+
                         {/* Appearance */}
                         <motion.section
                             initial={{ opacity: 0, y: 20 }}
@@ -365,6 +409,8 @@ export default function SettingsPage() {
             </main>
 
             <Dock />
+
+
         </div>
     );
 }

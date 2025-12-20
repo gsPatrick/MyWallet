@@ -11,13 +11,20 @@ const api = axios.create({
     },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token AND profile context
 api.interceptors.request.use(
     (config) => {
         if (typeof window !== 'undefined') {
+            // Add auth token
             const token = localStorage.getItem('investpro_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
+            }
+
+            // ✅ PROFILE ISOLATION: Add x-profile-id header
+            const profileId = localStorage.getItem('investpro_profile_id');
+            if (profileId) {
+                config.headers['x-profile-id'] = profileId;
             }
         }
         return config;
@@ -201,6 +208,18 @@ export const whatsappAPI = {
     connect: () => api.post('/whatsapp/connect'),
     getStatus: () => api.get('/whatsapp/status'),
     disconnect: () => api.post('/whatsapp/disconnect'),
+};
+
+// Profiles API (Multi-Context)
+export const profilesAPI = {
+    list: () => api.get('/profiles'),
+    get: (id) => api.get(`/profiles/${id}`),
+    getDefault: () => api.get('/profiles/default'),
+    check: () => api.get('/profiles/check'),
+    setup: (data) => api.post('/profiles/setup', data),
+    create: (data) => api.post('/profiles', data),
+    update: (id, data) => api.put(`/profiles/${id}`, data),
+    switchProfile: (id) => api.put(`/profiles/${id}/switch`),
 };
 
 export default api;

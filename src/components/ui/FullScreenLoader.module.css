@@ -1,0 +1,132 @@
+/* FullScreenLoader - Clean Animated Overlay */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0a0a0f 0%, #131320 50%, #0f0f18 100%);
+    overflow: hidden;
+}
+
+/* Background glows */
+.glowOrb {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    top: 20%;
+    left: 30%;
+    filter: blur(80px);
+    animation: float 6s ease-in-out infinite;
+}
+
+.glowOrb2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+    bottom: 20%;
+    right: 25%;
+    filter: blur(60px);
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(20px, -20px);
+    }
+}
+
+/* Icon container */
+.iconContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.pulseRing {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 3px solid rgba(139, 92, 246, 0.3);
+}
+
+.iconBox {
+    width: 90px;
+    height: 90px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 40px rgba(139, 92, 246, 0.3),
+        0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.iconBox svg {
+    width: 40px;
+    height: 40px;
+    color: white;
+}
+
+.spinIcon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Loading dots */
+.loadingDots {
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.8);
+}
+
+/* Light mode adjustments */
+[data-theme="light"] .overlay {
+    background: linear-gradient(135deg, #f8f9fc 0%, #eef0f5 50%, #f0f2f7 100%);
+}
+
+[data-theme="light"] .glowOrb {
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+}
+
+[data-theme="light"] .glowOrb2 {
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, transparent 70%);
+}
+
+[data-theme="light"] .iconBox {
+    box-shadow:
+        0 0 30px rgba(139, 92, 246, 0.2),
+        0 15px 30px rgba(0, 0, 0, 0.1);
+}

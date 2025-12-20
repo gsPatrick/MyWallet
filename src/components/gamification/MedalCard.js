@@ -1,14 +1,38 @@
 'use client';
 
-import { FiAward, FiLock } from 'react-icons/fi';
+import {
+    FiAward, FiLock, FiStar, FiCalendar, FiZap, FiTarget,
+    FiCheckCircle, FiPieChart, FiTrendingUp, FiDollarSign,
+    FiFlag, FiDisc, FiHexagon
+} from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa'; // Using FontAwesome for Crown if FiCrown missing, or just map key
 import styles from './MedalCard.module.css';
+
+const iconMap = {
+    'star': <FiStar />,
+    'calendar': <FiCalendar />,
+    'award': <FiAward />,
+    'crown': <FaCrown />, // or FiDisc if FaCrown unavailable, let's stick to Fi if possible or use generic
+    'zap': <FiZap />,
+    'target': <FiTarget />,
+    'check-circle': <FiCheckCircle />,
+    'pie-chart': <FiPieChart />,
+    'trending-up': <FiTrendingUp />,
+    'dollar-sign': <FiDollarSign />,
+    'flag': <FiFlag />,
+    'medal': <FiDisc />, // Approximation
+    'diamond': <FiHexagon /> // Approximation
+};
 
 const rarityColors = {
     bronze: '#CD7F32',
     silver: '#C0C0C0',
     gold: '#FFD700',
     platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
+    diamond: '#B9F2FF',
+    emerald: '#50C878',
+    ruby: '#E0115F',
+    legendary: '#FF6B35'
 };
 
 const rarityLabels = {
@@ -16,7 +40,10 @@ const rarityLabels = {
     silver: 'Prata',
     gold: 'Ouro',
     platinum: 'Platina',
-    diamond: 'Diamante'
+    diamond: 'Diamante',
+    emerald: 'Esmeralda',
+    ruby: 'Rubi',
+    legendary: 'Lendário'
 };
 
 export default function MedalCard({
@@ -47,7 +74,13 @@ export default function MedalCard({
                 {isLocked ? (
                     <FiLock className={styles.lockIcon} />
                 ) : (
-                    <FiAward className={styles.medalIcon} />
+                    (icon && typeof icon !== 'string') ? icon : (
+                        icon && iconMap[icon] ? (
+                            <span className={styles.medalIcon}>{iconMap[icon]}</span>
+                        ) : (
+                            icon ? <span className={styles.medalIcon}>{icon}</span> : <FiAward className={styles.medalIcon} />
+                        )
+                    )
                 )}
                 {isComplete && <div className={styles.completeBadge}>✓</div>}
             </div>

@@ -4,16 +4,18 @@
     align-items: flex-start;
     gap: 1rem;
     padding: 1.25rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.25rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
     border-radius: 16px;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .card:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-secondary);
     transform: translateY(-2px);
+    border-color: var(--border-medium);
 }
 
 /* Complete State */
@@ -48,7 +50,10 @@
     position: relative;
     width: 48px;
     height: 48px;
+    width: 48px;
+    height: 48px;
     background: rgba(var(--rarity-rgb), 0.1);
+    border: 1px solid rgba(var(--rarity-rgb), 0.2);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -68,7 +73,7 @@
 
 .lockIcon {
     font-size: 1.25rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-tertiary);
 }
 
 .completeBadge {
@@ -96,7 +101,7 @@
 .name {
     font-size: 1rem;
     font-weight: 600;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
@@ -106,7 +111,7 @@
 
 .description {
     font-size: 0.8125rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     line-height: 1.4;
 }
 
@@ -125,7 +130,7 @@
 .progressBar {
     flex: 1;
     height: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-secondary);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -139,7 +144,7 @@
 
 .progressText {
     font-size: 0.6875rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-tertiary);
     font-weight: 500;
 }
 

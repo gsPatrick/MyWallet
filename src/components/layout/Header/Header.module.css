@@ -308,6 +308,74 @@
     font-size: 1.125rem;
 }
 
+/* Profile Section in Dropdown */
+.profileSection {
+    padding: 12px 18px;
+}
+
+.profileSectionLabel {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+}
+
+.currentProfileBadge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--accent-primary-light);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.profileList {
+    display: flex;
+    flex-direction: column;
+}
+
+.profileOption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.profileOption:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.profileIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.profileIcon svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* Quick Actions Modal */
 .quickActionsBackdrop {
     position: fixed;
@@ -431,9 +499,154 @@
     text-align: center;
 }
 
+/* ====================================== */
+/* Profile Switcher */
+/* ====================================== */
+
+.profileSwitcher {
+    position: relative;
+    margin-left: 16px;
+}
+
+.profileBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+[data-theme="light"] .profileBtn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.profileBtn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="light"] .profileBtn:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.profileIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.profileName {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profileChevron {
+    font-size: 0.85rem;
+    transition: transform 0.2s ease;
+    color: var(--text-tertiary);
+}
+
+.profileChevron.rotated {
+    transform: rotate(180deg);
+}
+
+.profileDropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 200px;
+    background: rgba(18, 18, 24, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    overflow: hidden;
+}
+
+[data-theme="light"] .profileDropdown {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.profileDropdownHeader {
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .profileDropdownHeader {
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+.profileOption {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text-primary);
+    transition: background 0.2s ease;
+}
+
+.profileOption:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .profileOption:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.profileOption.active {
+    background: rgba(var(--accent-primary-rgb), 0.1);
+}
+
+.profileOptionIcon {
+    font-size: 1.25rem;
+}
+
+.profileOptionName {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.profileActiveCheck {
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
 /* HIDE ON MOBILE */
 @media (max-width: 768px) {
     .header {
+        display: none;
+    }
+
+    .profileSwitcher {
         display: none;
     }
 }

@@ -20,11 +20,15 @@ import {
     FiSliders,
     FiFileText,
     FiCheckSquare,
-    FiCreditCard
+    FiCreditCard,
+    FiBriefcase,
+    FiRefreshCw
 } from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfiles } from '@/contexts/ProfileContext';
 import { notificationsAPI } from '@/services/api';
+import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import styles from './Header.module.css';
 
 const quickActions = [
@@ -39,14 +43,18 @@ const quickActions = [
 export default function Header({ leftContent, rightContent }) {
     const { theme, toggleTheme } = useTheme();
     const { user, logout } = useAuth();
+    const { profiles, currentProfile, switchProfile, loading: profilesLoading } = useProfiles();
     const [showDropdown, setShowDropdown] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showQuickActions, setShowQuickActions] = useState(false);
+    const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
+    const [profileSwitching, setProfileSwitching] = useState({ isActive: false, type: null });
 
     // Notifications State
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
+
 
     const fetchNotifications = async () => {
         try {
@@ -94,6 +102,12 @@ export default function Header({ leftContent, rightContent }) {
 
     return (
         <>
+            {/* Profile Switch Loading Animation */}
+            <FullScreenLoader
+                isVisible={profileSwitching.isActive}
+                icon={profileSwitching.type}
+            />
+
             <header className={styles.header}>
                 {/* Custom Left Content (Dashboard tabs) - Far left */}
                 {leftContent && <div className={styles.customContentLeft}>{leftContent}</div>}
@@ -183,6 +197,9 @@ export default function Header({ leftContent, rightContent }) {
                         />
                     </Link>
 
+
+                    {/* Profile Switcher moved to Account Dropdown and Dock */}
+
                     {/* Right Actions */}
                     <div className={styles.actions}>
                         {/* Quick Actions Button */}
@@ -220,6 +237,52 @@ export default function Header({ leftContent, rightContent }) {
                                             <span className={styles.userName}>{user?.name || 'Usuário'}</span>
                                             <span className={styles.userEmail}>{user?.email || 'email@example.com'}</span>
                                         </div>
+
+                                        {/* Profile Switcher Section */}
+                                        {profiles.length > 0 && currentProfile && (
+                                            <>
+                                                <div className={styles.divider} />
+                                                <div className={styles.profileSection}>
+                                                    <span className={styles.profileSectionLabel}>Perfil Ativo</span>
+                                                    <div className={styles.currentProfileBadge}>
+                                                        <span className={styles.profileIcon}>
+                                                            {currentProfile.type === 'BUSINESS' ? <FiBriefcase /> : <FiUser />}
+                                                        </span>
+                                                        <span>{currentProfile.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className={styles.profileList}>
+                                                    {profiles.filter(p => p.id !== currentProfile.id).map((profile) => (
+                                                        <button
+                                                            key={profile.id}
+                                                            className={styles.profileOption}
+                                                            onClick={async () => {
+                                                                // Show animation
+                                                                setProfileSwitching({
+                                                                    isActive: true,
+                                                                    type: profile.type === 'BUSINESS' ? 'profile-business' : 'profile-personal'
+                                                                });
+                                                                setShowDropdown(false);
+
+                                                                // Switch profile
+                                                                await switchProfile(profile.id);
+
+                                                                // Delay reload for animation
+                                                                setTimeout(() => {
+                                                                    window.location.reload();
+                                                                }, 1000);
+                                                            }}
+                                                        >
+                                                            <span className={styles.profileIcon}>
+                                                                {profile.type === 'BUSINESS' ? <FiBriefcase /> : <FiUser />}
+                                                            </span>
+                                                            <span>Trocar para {profile.name}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+
                                         <div className={styles.divider} />
                                         <Link href="/profile/me" className={styles.menuItem}>
                                             <FiUser /> Perfil

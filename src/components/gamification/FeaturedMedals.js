@@ -2,16 +2,40 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiAward, FiPlus } from 'react-icons/fi';
+import {
+    FiAward, FiPlus, FiStar, FiCalendar, FiZap, FiTarget,
+    FiCheckCircle, FiPieChart, FiTrendingUp, FiDollarSign,
+    FiFlag, FiDisc, FiHexagon
+} from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
 import MedalDetailModal from './MedalDetailModal';
 import styles from './FeaturedMedals.module.css';
+
+const iconMap = {
+    'star': <FiStar />,
+    'calendar': <FiCalendar />,
+    'award': <FiAward />,
+    'crown': <FaCrown />,
+    'zap': <FiZap />,
+    'target': <FiTarget />,
+    'check-circle': <FiCheckCircle />,
+    'pie-chart': <FiPieChart />,
+    'trending-up': <FiTrendingUp />,
+    'dollar-sign': <FiDollarSign />,
+    'flag': <FiFlag />,
+    'medal': <FiDisc />,
+    'diamond': <FiHexagon />
+};
 
 const rarityColors = {
     bronze: '#CD7F32',
     silver: '#C0C0C0',
     gold: '#FFD700',
     platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
+    diamond: '#B9F2FF',
+    emerald: '#50C878',
+    ruby: '#E0115F',
+    legendary: '#FF6B35'
 };
 
 export default function FeaturedMedals({ medals = [], allMedals = [], onEdit }) {
@@ -56,7 +80,7 @@ export default function FeaturedMedals({ medals = [], allMedals = [], onEdit }) 
                         transition={{ delay: index * 0.1 }}
                     >
                         <div className={styles.medalIcon}>
-                            <FiAward />
+                            {iconMap[medal.icon] || <FiAward />}
                         </div>
                         <div className={styles.tooltip}>{medal.name}</div>
                     </motion.div>

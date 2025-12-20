@@ -1,8 +1,29 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiAward, FiX, FiCalendar, FiStar } from 'react-icons/fi';
+import {
+    FiAward, FiX, FiCalendar, FiStar, FiZap, FiTarget,
+    FiCheckCircle, FiPieChart, FiTrendingUp, FiDollarSign,
+    FiFlag, FiDisc, FiHexagon
+} from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
 import styles from './MedalDetailModal.module.css';
+
+const iconMap = {
+    'star': <FiStar />,
+    'calendar': <FiCalendar />,
+    'award': <FiAward />,
+    'crown': <FaCrown />,
+    'zap': <FiZap />,
+    'target': <FiTarget />,
+    'check-circle': <FiCheckCircle />,
+    'pie-chart': <FiPieChart />,
+    'trending-up': <FiTrendingUp />,
+    'dollar-sign': <FiDollarSign />,
+    'flag': <FiFlag />,
+    'medal': <FiDisc />,
+    'diamond': <FiHexagon />
+};
 
 const rarityColors = {
     bronze: '#CD7F32',
@@ -93,7 +114,7 @@ export default function MedalDetailModal({ medal, isVisible, onClose }) {
                             className={`${styles.medalIcon} ${!isComplete ? styles.locked : ''}`}
                             style={{ '--color': rarityColors[rarity] }}
                         >
-                            <FiAward />
+                            {iconMap[medal.icon] || <FiAward />}
                         </div>
 
                         {/* Medal Name */}

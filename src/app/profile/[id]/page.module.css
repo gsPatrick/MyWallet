@@ -1,6 +1,7 @@
 .pageWrapper {
     min-height: 100vh;
     background: var(--bg-primary);
+    color: var(--text-primary);
     padding-bottom: calc(var(--dock-height) + var(--spacing-xl));
 }
 
@@ -279,6 +280,24 @@
     margin-top: 2px;
 }
 
+.levelBadge {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 1rem;
+    border: 4px solid var(--bg-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
 .unlockedBadge {
     width: 28px;
     height: 28px;
@@ -305,4 +324,234 @@
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Medal Badge */
+.profileMedalBadge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 3px dashed var(--text-tertiary);
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.profileMedalBadge:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+.profileMedalBadge.hasMedal {
+    border: 3px solid var(--bg-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ownerMedal {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.emptyBadge {
+    background: var(--bg-tertiary);
+    border: 3px dashed var(--text-tertiary);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emptyBadge:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+.ownerMedal {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@keyframes spinMedal {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Journey Medal Selector Modal */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.journeySelectorModal {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid var(--border-light);
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.modalHeader h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.closeBtn:hover {
+    color: var(--text-primary);
+}
+
+.modalSubtitle {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.journeyMedalsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.journeyMedalOption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.journeyMedalOption:hover {
+    background: var(--bg-primary);
+}
+
+.journeyMedalOption.selected {
+    border-color: var(--accent-primary);
+    background: var(--bg-primary);
+}
+
+.journeyMedalIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.journeyMedalName {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    text-align: center;
+    font-weight: 500;
+}
+
+.selectedCheck {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+}
+
+.noMedals {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    padding: 2rem 1rem;
+}
+
+.removeMedalBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--accent-danger);
+    color: var(--accent-danger);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+}
+
+.removeMedalBtn:hover {
+    background: var(--accent-danger);
+    color: white;
 }

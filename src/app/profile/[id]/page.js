@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     FiMail, FiCalendar, FiEdit2, FiAward, FiTrendingUp, FiTarget,
-    FiDollarSign, FiPieChart, FiStar, FiCheck, FiChevronRight, FiZap
+    FiDollarSign, FiPieChart, FiStar, FiCheck, FiChevronRight, FiZap, FiPlus, FiX
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -19,6 +19,7 @@ import {
     MedalDetailModal
 } from '@/components/gamification';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import gamificationService from '@/services/gamificationService';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import styles from './page.module.css';
@@ -26,6 +27,8 @@ import styles from './page.module.css';
 export default function ProfilePage() {
     const router = useRouter();
     const { user } = useAuth();
+    const { theme } = useTheme();
+    const ownerMedalImage = theme === 'light' ? '/images/medalhadonofundobranco.png' : '/images/medalhadonofundoescuro.png';
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
     const [stats, setStats] = useState(null);
@@ -33,9 +36,14 @@ export default function ProfilePage() {
     const [showMedalSelector, setShowMedalSelector] = useState(false);
     const [selectedMedalDetail, setSelectedMedalDetail] = useState(null);
     const [showMedalDetail, setShowMedalDetail] = useState(false);
+    const [showJourneySelector, setShowJourneySelector] = useState(false);
+    const [selectedJourneyMedalKey, setSelectedJourneyMedalKey] = useState(null);
 
     useEffect(() => {
         loadProfile();
+        // Load saved journey medal from localStorage
+        const saved = localStorage.getItem('selectedJourneyMedal');
+        if (saved) setSelectedJourneyMedalKey(Number(saved));
     }, []);
 
     const loadProfile = async () => {
@@ -117,6 +125,66 @@ export default function ProfilePage() {
         return tierColors[Math.min(tier, 9)];
     };
 
+    // Level Medals Data (same as LevelUpModal)
+    // Level Medals Data (enhanced)
+    const levelMedals = {
+        10: { name: 'Bronze', emoji: '🥉', color: '#CD7F32', rarity: 'bronze', description: 'Alcance o Nível 10' },
+        20: { name: 'Prata', emoji: '🥈', color: '#C0C0C0', rarity: 'silver', description: 'Alcance o Nível 20' },
+        25: { name: 'Ouro', emoji: '🥇', color: '#FFD700', rarity: 'gold', description: 'Alcance o Nível 25' },
+        50: { name: 'Platina', emoji: '💎', color: '#E5E4E2', rarity: 'platinum', description: 'Alcance o Nível 50' },
+        70: { name: 'Diamante', emoji: '💠', color: '#B9F2FF', rarity: 'diamond', description: 'Alcance o Nível 70' },
+        100: { name: 'Mestre Supremo', emoji: '👑', color: '#FF6B35', rarity: 'diamond', description: 'Alcance o Nível 100' },
+        9998: { name: 'Beta Tester', emoji: '⚡', color: '#50C878', rarity: 'emerald', description: 'Participante da fase Beta' }, // Emerald
+        9999: { name: 'MyWallet Founder', emoji: '👑', color: '#E0115F', rarity: 'ruby', description: 'Criador do Sistema' } // Ruby
+    };
+
+    // Determine which journey medals are unlocked for this user
+    const getUnlockedJourneyMedals = () => {
+        const email = profile?.user?.email || user?.email;
+        const created = profile?.user?.createdAt || user?.createdAt;
+        const level = profile?.level || 1;
+        const unlocked = [];
+
+        // Check each medal
+        Object.entries(levelMedals).forEach(([key, medal]) => {
+            const lvl = Number(key);
+            let isUnlocked = false;
+
+            if (lvl === 9999) {
+                // Ruby / Owner
+                isUnlocked = email === 'patrick@gmail.com' || email === 'patrick123@gmail.com';
+            } else if (lvl === 9998) {
+                // Emerald / Beta
+                const isLeo = email?.toLowerCase() === 'leonardo@gmail.com';
+                const isBetaDate = created && new Date(created) < new Date('2025-02-01');
+                isUnlocked = isLeo || isBetaDate;
+            } else {
+                // Standard level check
+                isUnlocked = level >= lvl;
+            }
+
+            if (isUnlocked) {
+                unlocked.push({ key: lvl, ...medal });
+            }
+        });
+
+        return unlocked;
+    };
+
+    const handleSelectJourneyMedal = (medalKey) => {
+        setSelectedJourneyMedalKey(medalKey);
+        localStorage.setItem('selectedJourneyMedal', String(medalKey));
+        setShowJourneySelector(false);
+    };
+
+    const handleRemoveJourneyMedal = () => {
+        setSelectedJourneyMedalKey(null);
+        localStorage.removeItem('selectedJourneyMedal');
+        setShowJourneySelector(false);
+    };
+
+    const selectedJourneyMedal = selectedJourneyMedalKey ? levelMedals[selectedJourneyMedalKey] : null;
+
     if (loading) {
         return (
             <div className={styles.pageWrapper}>
@@ -156,8 +224,34 @@ export default function ProfilePage() {
                                     className={styles.levelBadge}
                                     style={{ background: levelColor }}
                                 >
-                                    <FiZap /> {level}
+                                    {level}
+
                                 </div>
+                                {selectedJourneyMedal ? (
+                                    <div
+                                        className={`${styles.profileMedalBadge} ${styles.hasMedal}`}
+                                        style={{
+                                            background: selectedJourneyMedal.rarity === 'ruby' ? 'transparent' : selectedJourneyMedal.color,
+                                            boxShadow: selectedJourneyMedal.rarity === 'ruby' ? 'none' : `0 4px 12px ${selectedJourneyMedal.color}60`
+                                        }}
+                                        title={`Medalha: ${selectedJourneyMedal.name} (Clique para alterar)`}
+                                        onClick={() => setShowJourneySelector(true)}
+                                    >
+                                        {selectedJourneyMedal.rarity === 'ruby' ? (
+                                            <img src={ownerMedalImage} className={styles.ownerMedal} alt="Founder" />
+                                        ) : (
+                                            selectedJourneyMedal.emoji
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={styles.profileMedalBadge}
+                                        title="Escolher Medalha de Jornada"
+                                        onClick={() => setShowJourneySelector(true)}
+                                    >
+                                        <FiPlus />
+                                    </div>
+                                )}
                             </div>
                             <Button
                                 size="sm"
@@ -268,6 +362,67 @@ export default function ProfilePage() {
                                 </div>
                             </Card>
                         </motion.div>
+
+                        {/* Level Journey */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <Card className={styles.achievementsCard}>
+                                <div className={styles.cardHeader}>
+                                    <h2 className={styles.cardTitle}><FiTarget /> Jornada de Nível</h2>
+                                </div>
+                                <div className={styles.achievementsList}>
+                                    {Object.entries(levelMedals).sort((a, b) => Number(a[0]) - Number(b[0])).map(([lvlStr, medal]) => {
+                                        const lvl = Number(lvlStr);
+                                        let isUnlocked = false;
+                                        let progress = 0;
+
+                                        // Special Medals Logic
+                                        if (lvl === 9999) { // Ruby / Owner
+                                            const email = profile?.user?.email || user?.email;
+                                            isUnlocked = email === 'patrick@gmail.com' || email === 'patrick123@gmail.com';
+                                            progress = isUnlocked ? 100 : 0;
+                                        } else if (lvl === 9998) { // Emerald / Beta
+                                            const created = profile?.user?.createdAt || user?.createdAt;
+                                            const email = profile?.user?.email || user?.email;
+                                            const isLeo = email?.toLowerCase() === 'leonardo@gmail.com';
+                                            const isBetaDate = created && new Date(created) < new Date('2025-02-01');
+
+                                            isUnlocked = isLeo || isBetaDate;
+                                            progress = isUnlocked ? 100 : 0;
+                                        } else {
+                                            // Standard Level Logic
+                                            isUnlocked = level >= lvl;
+                                            if (isUnlocked) {
+                                                progress = 100;
+                                            } else {
+                                                progress = Math.min((level / lvl) * 100, 100);
+                                            }
+                                        }
+
+                                        let iconComponent;
+                                        if (lvl === 9999) {
+                                            iconComponent = <img src={ownerMedalImage} className={styles.ownerMedal} alt="Founder" />;
+                                        } else {
+                                            iconComponent = <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{medal.emoji}</span>;
+                                        }
+
+                                        return (
+                                            <MedalCard
+                                                key={lvl}
+                                                medal={{ ...medal, icon: iconComponent }}
+                                                isComplete={isUnlocked}
+                                                isLocked={!isUnlocked}
+                                                progress={progress}
+                                                size="small"
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </Card>
+                        </motion.div>
                     </div>
                 </div>
             </main>
@@ -289,6 +444,64 @@ export default function ProfilePage() {
                 isVisible={showMedalDetail}
                 onClose={() => setShowMedalDetail(false)}
             />
+
+            {/* Journey Medal Selector Modal */}
+            {showJourneySelector && (
+                <div className={styles.modalOverlay} onClick={() => setShowJourneySelector(false)}>
+                    <motion.div
+                        className={styles.journeySelectorModal}
+                        onClick={(e) => e.stopPropagation()}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                    >
+                        <div className={styles.modalHeader}>
+                            <h3>Escolher Medalha de Jornada</h3>
+                            <button className={styles.closeBtn} onClick={() => setShowJourneySelector(false)}>
+                                <FiX />
+                            </button>
+                        </div>
+                        <p className={styles.modalSubtitle}>
+                            Selecione uma medalha desbloqueada para exibir no seu perfil
+                        </p>
+                        <div className={styles.journeyMedalsGrid}>
+                            {getUnlockedJourneyMedals().length > 0 ? (
+                                getUnlockedJourneyMedals().map((medal) => (
+                                    <motion.div
+                                        key={medal.key}
+                                        className={`${styles.journeyMedalOption} ${selectedJourneyMedalKey === medal.key ? styles.selected : ''}`}
+                                        onClick={() => handleSelectJourneyMedal(medal.key)}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <div
+                                            className={styles.journeyMedalIcon}
+                                            style={{ background: medal.color }}
+                                        >
+                                            {medal.rarity === 'ruby' ? (
+                                                <img src={ownerMedalImage} alt="Founder" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                            ) : (
+                                                medal.emoji
+                                            )}
+                                        </div>
+                                        <span className={styles.journeyMedalName}>{medal.name}</span>
+                                        {selectedJourneyMedalKey === medal.key && (
+                                            <div className={styles.selectedCheck}><FiCheck /></div>
+                                        )}
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <p className={styles.noMedals}>Você ainda não desbloqueou nenhuma medalha de jornada.</p>
+                            )}
+                        </div>
+                        {selectedJourneyMedalKey && (
+                            <button className={styles.removeMedalBtn} onClick={handleRemoveJourneyMedal}>
+                                Remover Medalha Selecionada
+                            </button>
+                        )}
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 }

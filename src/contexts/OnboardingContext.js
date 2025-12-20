@@ -3,10 +3,10 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from './AuthContext';
+import { useProfiles } from './ProfileContext';
 import { useMedals } from './MedalContext';
 import api from '@/services/api';
 import TourOverlay from '@/components/Onboarding/TourOverlay';
-import OnboardingConfig from '@/components/Onboarding/OnboardingConfig';
 
 const OnboardingContext = createContext({});
 
@@ -30,43 +30,43 @@ const TOUR_STEPS = [
         content: 'Gerencie suas transações manuais e veja o fluxo de caixa separado do Open Finance.',
         path: '/dashboard'
     },
-    // --- DOCK Navigation Mock ---
+    // --- DOCK Navigation ---
     {
         targetId: 'dock-transactions',
         title: 'Menu Transações',
         content: 'Clique aqui para acessar suas receitas e despesas detalhadas.',
-        path: '/dashboard' // Pointing to dock while on dashboard
+        path: '/dashboard'
     },
     // --- TRANSACTIONS PAGE ---
     {
-        targetId: 'summary-grid', // Needs to exist in Transactions Page
+        targetId: 'summary-grid',
         title: 'Resumo de Transações',
         content: 'Veja suas receitas e despesas realizadas e previsões futuras.',
         path: '/transactions'
     },
     {
-        targetId: 'filter-bar', // Needs to exist or be added
+        targetId: 'filter-bar',
         title: 'Filtros',
         content: 'Filtre por data, status ou categoria para encontrar exatamente o que procura.',
         path: '/transactions'
     },
     // --- CARDS PAGE ---
     {
-        targetId: null, // Fixed position
+        targetId: null,
         title: 'Cartões e Assinaturas',
         content: 'Gerencie todos os seus cartões de crédito e assinaturas recorrentes em um só lugar.',
         path: '/cards'
     },
     // --- GOALS PAGE ---
     {
-        targetId: null, // Fixed position
+        targetId: null,
         title: 'Metas Financeiras',
         content: 'Defina e acompanhe seus objetivos financeiros de curto, médio e longo prazo.',
         path: '/goals'
     },
     // --- PLANNING PAGE (End) ---
     {
-        targetId: null, // Fixed position
+        targetId: null,
         title: 'Planejamento Financeiro',
         content: 'Defina limites de gastos e receba recomendações personalizadas para sua saúde financeira.',
         path: '/budget-allocation'
@@ -75,27 +75,48 @@ const TOUR_STEPS = [
 
 export function OnboardingProvider({ children }) {
     const { user, isAuthenticated, refreshUser } = useAuth();
+    const { hasProfiles, loading: profilesLoading } = useProfiles();
     const { triggerMedalCheck } = useMedals();
     const router = useRouter();
     const pathname = usePathname();
 
-    // Onboarding phases: 'tour' -> 'config' -> 'complete'
-    const [phase, setPhase] = useState('tour');
+    // Onboarding phases: 'tour' -> 'profile_config' (via AppShell) -> 'complete'
+    const [phase, setPhase] = useState('idle');
     const [showTour, setShowTour] = useState(false);
-    const [showConfig, setShowConfig] = useState(false);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-    // Initial Check
+    // Start Tour for new users (who don't have onboardingComplete)
+    // Tour shows FIRST, then ProfileWizard via AppShell after tour ends
     useEffect(() => {
-        if (isAuthenticated && user && !user.onboardingComplete) {
-            // Small delay to ensure everything is loaded
+        if (profilesLoading) return;
+        if (!isAuthenticated || !user) return;
+
+        // If onboarding is complete, don't show anything
+        if (user.onboardingComplete) {
+            setPhase('complete');
+            return;
+        }
+
+        // If user doesn't have profiles yet, show tour first
+        // After tour completes/skips, AppShell will show ProfileWizard
+        if (!hasProfiles) {
             const timer = setTimeout(() => {
                 setPhase('tour');
                 setShowTour(true);
-            }, 1000);
+            }, 500);
             return () => clearTimeout(timer);
         }
-    }, [isAuthenticated, user]);
+
+        // User has profiles but onboarding not complete - skip to complete
+        // (ProfileWizard was already shown by AppShell)
+        setPhase('complete');
+        // Mark as complete
+        api.put('/auth/onboarding-complete').then(() => {
+            refreshUser?.();
+            setTimeout(() => triggerMedalCheck?.(), 1000);
+        }).catch(console.error);
+
+    }, [isAuthenticated, user, hasProfiles, profilesLoading]);
 
     // Navigation Effect: Ensure we are on the right page for the step
     useEffect(() => {
@@ -111,38 +132,18 @@ export function OnboardingProvider({ children }) {
         if (currentStepIndex < TOUR_STEPS.length - 1) {
             setCurrentStepIndex(prev => prev + 1);
         } else {
-            // Tour finished, go to config phase
+            // Tour finished - AppShell will show ProfileWizard automatically
             setShowTour(false);
-            setPhase('config');
-            setShowConfig(true);
+            setPhase('profile_config');
             router.push('/dashboard');
         }
     };
 
     const handleSkip = async () => {
-        // Skip tour, go directly to config
+        // Skip tour - AppShell will show ProfileWizard automatically
         setShowTour(false);
-        setPhase('config');
-        setShowConfig(true);
+        setPhase('profile_config');
         router.push('/dashboard');
-    };
-
-    const handleConfigComplete = async () => {
-        try {
-            await api.put('/auth/onboarding-complete');
-            if (refreshUser) await refreshUser();
-            setShowConfig(false);
-            setPhase('complete');
-
-            // Trigger medal check
-            setTimeout(() => {
-                triggerMedalCheck?.();
-            }, 1000);
-        } catch (error) {
-            console.error('Error completing onboarding:', error);
-            setShowConfig(false);
-            setPhase('complete');
-        }
     };
 
     const startOnboarding = useCallback(() => {
@@ -153,9 +154,9 @@ export function OnboardingProvider({ children }) {
 
     const currentStep = TOUR_STEPS[currentStepIndex];
 
-    // Global Scroll Lock during Tour or Config
+    // Global Scroll Lock during Tour
     useEffect(() => {
-        if (showTour || showConfig) {
+        if (showTour) {
             document.body.style.overflow = 'hidden';
             document.documentElement.style.overflow = 'hidden';
         } else {
@@ -167,19 +168,20 @@ export function OnboardingProvider({ children }) {
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
         };
-    }, [showTour, showConfig]);
+    }, [showTour]);
 
-    // Only render overlay if we are on the correct path (to avoid flashing before nav)
+    // Only render overlay if we are on the correct path
     const canRenderStep = showTour && phase === 'tour' && currentStep && pathname === currentStep.path;
 
     return (
         <OnboardingContext.Provider value={{
             startOnboarding,
-            isOnboardingComplete: user?.onboardingComplete ?? false
+            isOnboardingComplete: user?.onboardingComplete ?? false,
+            phase
         }}>
             {children}
 
-            {/* Tour Overlay */}
+            {/* Tour Overlay - Shows FIRST for new users */}
             {canRenderStep && (
                 <TourOverlay
                     step={currentStep}
@@ -188,11 +190,6 @@ export function OnboardingProvider({ children }) {
                     onNext={handleNext}
                     onSkip={handleSkip}
                 />
-            )}
-
-            {/* Configuration Phase */}
-            {showConfig && phase === 'config' && (
-                <OnboardingConfig onComplete={handleConfigComplete} />
             )}
         </OnboardingContext.Provider>
     );

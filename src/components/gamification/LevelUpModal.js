@@ -150,7 +150,7 @@ export default function LevelUpModal({
                                         animate={{ scale: 1 }}
                                         transition={{ delay: 1.2, type: 'spring', stiffness: 300 }}
                                     >
-                                        <FiAward />
+                                        {medal.emoji}
                                     </motion.div>
                                 )}
 

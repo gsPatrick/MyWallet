@@ -1,0 +1,146 @@
+/* DashboardSkeleton - Shimmer effects only */
+/* Uses real dashboard CSS classes for structure */
+
+/* Shimmer animation */
+.shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 100%) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1.5s infinite !important;
+    border-radius: 6px !important;
+    color: transparent !important;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Shimmer block - for replacing text */
+.shimmerBlock {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    margin: 0 auto;
+}
+
+/* Hero sizes */
+.heroLabel {
+    width: 140px;
+    height: 16px;
+    margin-bottom: 12px;
+}
+
+.heroValue {
+    width: 240px;
+    height: 44px;
+    margin-bottom: 8px;
+}
+
+.heroPeriod {
+    width: 400px;
+    height: 14px;
+}
+
+/* Icon skeleton */
+.iconSkeleton {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Chart button skeleton */
+.chartBtnSkeleton {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Quick item skeleton - no hover */
+.quickItemSkeleton {
+    pointer-events: none;
+    cursor: default;
+}
+
+/* Pulse animation for circle */
+.pulseCircle {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ============================================= */
+/* LIGHT THEME OVERRIDES                         */
+/* ============================================= */
+
+:global([data-theme="light"]) .shimmer {
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.04) 0%,
+            rgba(0, 0, 0, 0.10) 50%,
+            rgba(0, 0, 0, 0.04) 100%) !important;
+    background-size: 200% 100% !important;
+}
+
+:global([data-theme="light"]) .shimmerBlock {
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.04) 0%,
+            rgba(0, 0, 0, 0.10) 50%,
+            rgba(0, 0, 0, 0.04) 100%);
+    background-size: 200% 100%;
+}
+
+:global([data-theme="light"]) .iconSkeleton {
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.04) 0%,
+            rgba(0, 0, 0, 0.10) 50%,
+            rgba(0, 0, 0, 0.04) 100%);
+    background-size: 200% 100%;
+}
+
+:global([data-theme="light"]) .chartBtnSkeleton {
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.04) 0%,
+            rgba(0, 0, 0, 0.10) 50%,
+            rgba(0, 0, 0, 0.04) 100%);
+    background-size: 200% 100%;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .heroPeriod {
+        width: 280px;
+    }
+}

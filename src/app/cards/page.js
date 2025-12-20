@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiPlus, FiCreditCard, FiCalendar, FiRepeat, FiEdit2, FiTrash2,
-    FiX, FiDollarSign, FiTag, FiClock, FiLink, FiChevronLeft, FiChevronRight
+    FiX, FiDollarSign, FiTag, FiClock, FiLink, FiChevronLeft, FiChevronRight,
+    FiBarChart2, FiSliders, FiShoppingBag, FiCoffee, FiHome, FiTruck, FiMusic, FiFilm
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -18,9 +19,10 @@ import CreditCard from '@/components/ui/CreditCard/CreditCard';
 import GhostCard from '@/components/ui/GhostCard';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
+import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
-import { cardsAPI, subscriptionsAPI, openFinanceAPI } from '@/services/api';
+import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI } from '@/services/api';
 import styles from './page.module.css';
 
 // Open Finance cards mock
@@ -88,6 +90,7 @@ export default function CardsPage() {
     const [activeTab, setActiveTab] = useState('cards');
     const [showCardModal, setShowCardModal] = useState(false);
     const [showSubModal, setShowSubModal] = useState(false);
+    const [showFutureModal, setShowFutureModal] = useState(false);
 
     // Edit states
     const [editingCard, setEditingCard] = useState(null);
@@ -95,6 +98,13 @@ export default function CardsPage() {
 
     const [selectedCard, setSelectedCard] = useState(null);
     const [invoiceMonth, setInvoiceMonth] = useState({ month: 12, year: 2024 });
+    const [invoiceViewMode, setInvoiceViewMode] = useState('list'); // 'list' or 'charts' or 'limits' or 'subscriptions'
+    const [editingLimitValue, setEditingLimitValue] = useState('');
+    const [sliderValue, setSliderValue] = useState(0);
+    const [cardTransactions, setCardTransactions] = useState([]);
+    const [cardSubscriptions, setCardSubscriptions] = useState([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
+    const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
     const [subscriptionCardFilter, setSubscriptionCardFilter] = useState('ALL'); // ALL or cardId
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
@@ -107,6 +117,8 @@ export default function CardsPage() {
                     cardsAPI.list(),
                     subscriptionsAPI.list()
                 ]);
+                console.log('💳 [CARDS PAGE] Cards from API:', cardsRes?.data);
+                console.log('📋 [CARDS PAGE] Subscriptions from API:', subsRes?.data);
                 setCards(cardsRes?.data || []);
                 setSubscriptions(subsRes?.data || []);
             } catch (error) {
@@ -212,27 +224,181 @@ export default function CardsPage() {
 
     // Handle Open Finance Connection
     const handleConnectOpenFinance = async () => {
-        try {
-            // In a real scenario, this would likely get a redirect URL
-            // specific to the institution or a general aggregator widget.
-            // For now, we will simulate a request or redirect.
-            alert("Iniciando fluxo de conexão Open Finance...");
-            // Example: const { redirectUrl } = await openFinanceAPI.requestConsent(...);
-            // window.location.href = redirectUrl;
-        } catch (error) {
-            console.error("Error connecting Open Finance:", error);
-            alert("Erro ao conectar Open Finance. Tente novamente.");
-        }
+        setShowFutureModal(true);
     };
 
     // Handle card click to show invoice
-    const handleCardClick = (card, source = 'manual') => {
+    const handleCardClick = async (card, source = 'manual') => {
         setSelectedCard({ ...card, source });
-        setInvoiceMonth({ month: 12, year: 2024 });
+        setInvoiceMonth({ month: new Date().getMonth() + 1, year: new Date().getFullYear() });
+        setInvoiceViewMode('list');
+
+        // Load real transactions for this card
+        setLoadingTransactions(true);
+        try {
+            const txRes = await transactionsAPI.list({
+                cardId: card.id,
+                limit: 100
+            });
+            setCardTransactions(txRes?.data?.transactions || []);
+
+            // Filter subscriptions for this card
+            const cardSubs = subscriptions.filter(s => s.cardId === card.id);
+            setCardSubscriptions(cardSubs);
+        } catch (error) {
+            console.error("Error loading card transactions:", error);
+            setCardTransactions([]);
+            setCardSubscriptions([]);
+        } finally {
+            setLoadingTransactions(false);
+        }
     };
 
     const closeInvoice = () => {
         setSelectedCard(null);
+        setInvoiceViewMode('list');
+        setCardTransactions([]);
+        setCardSubscriptions([]);
+    };
+
+    // Handle edit card from invoice view
+    const handleEditCardFromInvoice = () => {
+        setEditingCard(selectedCard);
+        setShowCardModal(true);
+    };
+
+    // Handle delete card
+    const handleDeleteCard = async () => {
+        if (!selectedCard) return;
+        try {
+            await cardsAPI.deactivate(selectedCard.id);
+            setShowDeleteCardModal(false);
+            setSelectedCard(null);
+            loadData();
+        } catch (error) {
+            console.error("Error deleting card:", error);
+            alert("Erro ao excluir cartão.");
+        }
+    };
+
+    // Open limits view
+    const openLimitsView = () => {
+        if (!selectedCard) return;
+        // Format the limit value to Brazilian format (e.g., 9000 -> "9.000,00")
+        const formattedLimit = selectedCard.creditLimit.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        setEditingLimitValue(formattedLimit);
+        setSliderValue(selectedCard.availableLimit);
+        setInvoiceViewMode('limits');
+    };
+
+    // Helper: Format currency for display (Brazilian format)
+    const formatLimitInput = (value) => {
+        const onlyNumbers = value.replace(/\D/g, '');
+        if (!onlyNumbers) return '';
+        const cents = parseInt(onlyNumbers, 10);
+        return (cents / 100).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    };
+
+    // Helper: Parse formatted value back to number
+    const parseLimitValue = (formatted) => {
+        if (!formatted) return 0;
+        const number = formatted.replace(/\./g, '').replace(',', '.');
+        return parseFloat(number) || 0;
+    };
+
+    // Handle limit input change
+    const handleLimitInputChange = (e) => {
+        const formatted = formatLimitInput(e.target.value);
+        setEditingLimitValue(formatted);
+        // When limit changes, recalculate available = new limit - used amount
+        const newLimit = parseLimitValue(formatted);
+        const usedAmount = selectedCard.creditLimit - selectedCard.availableLimit;
+        const newAvailable = Math.max(0, newLimit - usedAmount);
+        // Always update slider to reflect new available amount
+        setSliderValue(newAvailable);
+    };
+
+    // Handle slider change
+    const handleSliderChange = (e) => {
+        setSliderValue(parseFloat(e.target.value));
+    };
+
+    // Handle save limits
+    const handleSaveLimits = async () => {
+        if (!selectedCard) return;
+        const newLimit = parseLimitValue(editingLimitValue);
+        const newAvailable = sliderValue;
+        const usedAmount = selectedCard.creditLimit - selectedCard.availableLimit;
+        const newBlocked = Math.max(0, newLimit - usedAmount - newAvailable);
+
+        try {
+            await cardsAPI.update(selectedCard.id, {
+                creditLimit: newLimit,
+                availableLimit: newAvailable,
+                blockedLimit: newBlocked
+            });
+            setSelectedCard(prev => ({
+                ...prev,
+                creditLimit: newLimit,
+                availableLimit: newAvailable,
+                blockedLimit: newBlocked
+            }));
+            setInvoiceViewMode('list');
+            loadData();
+        } catch (error) {
+            console.error("Error updating limits:", error);
+            alert("Erro ao atualizar limites.");
+        }
+    };
+
+    // Group transactions by date (day of week)
+    const groupTransactionsByDate = (transactions) => {
+        const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const groups = {};
+
+        transactions.forEach(tx => {
+            const date = new Date(tx.date);
+            const dayName = dayNames[date.getDay()];
+            const dateKey = `${date.getDate()}/${date.getMonth() + 1}`;
+            const key = `${dayName} - ${dateKey}`;
+
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(tx);
+        });
+
+        return groups;
+    };
+
+    // Get icon for transaction category
+    const getCategoryIcon = (description, category) => {
+        const desc = description?.toLowerCase() || '';
+        if (desc.includes('spotify') || desc.includes('music')) return <FiMusic />;
+        if (desc.includes('netflix') || desc.includes('amazon') || desc.includes('disney')) return <FiFilm />;
+        if (desc.includes('uber') || desc.includes('99') || desc.includes('taxi')) return <FiTruck />;
+        if (desc.includes('mercado') || desc.includes('supermercado') || desc.includes('carrefour')) return <FiShoppingBag />;
+        if (desc.includes('restaurante') || desc.includes('ifood') || desc.includes('padaria')) return <FiCoffee />;
+        if (desc.includes('aluguel') || desc.includes('condominio')) return <FiHome />;
+        return <FiCreditCard />;
+    };
+
+    // Mock chart data for spending by month
+    const getChartData = () => {
+        const months = ['AGO', 'SET', 'OUT', 'NOV', 'DEZ', 'JAN', 'FEV', 'MAR'];
+        const year = ['24', '24', '24', '24', '24', '25', '25', '25'];
+        return months.map((m, i) => ({
+            month: m,
+            year: year[i],
+            value: Math.random() * 2000 + 500,
+            isCurrent: i === 4 // DEZ is current
+        }));
     };
 
     // Get current invoice data
@@ -251,6 +417,10 @@ export default function CardsPage() {
             <Header />
 
             <main className={styles.main}>
+                <FutureFeatureModal
+                    isOpen={showFutureModal}
+                    onClose={() => setShowFutureModal(false)}
+                />
                 <div className={styles.container}>
                     {/* Page Header */}
                     <motion.div
@@ -266,9 +436,9 @@ export default function CardsPage() {
                             <Button leftIcon={<FiPlus />} onClick={() => openCardModal()}>Novo Cartão</Button>
                         )}
                         {activeTab === 'openfinance' && !selectedCard && (
-                            <Link href="/open-finance" className={styles.linkBtn}>
+                            <button className={styles.linkBtn} onClick={() => setShowFutureModal(true)}>
                                 <FiLink /> Gerenciar Conexões
-                            </Link>
+                            </button>
                         )}
                         {activeTab === 'subscriptions' && (
                             <Button leftIcon={<FiPlus />} onClick={() => openSubModal()}>Nova Assinatura</Button>
@@ -286,7 +456,7 @@ export default function CardsPage() {
                             <button className={`${styles.tab} ${activeTab === 'cards' ? styles.active : ''}`} onClick={() => setActiveTab('cards')}>
                                 <FiCreditCard /> Meus Cartões
                             </button>
-                            <button className={`${styles.tab} ${activeTab === 'openfinance' ? styles.active : ''}`} onClick={() => setActiveTab('openfinance')}>
+                            <button className={`${styles.tab} ${activeTab === 'openfinance' ? styles.active : ''}`} onClick={() => setShowFutureModal(true)}>
                                 <FiLink /> Open Finance
                             </button>
                             <button className={`${styles.tab} ${activeTab === 'subscriptions' ? styles.active : ''}`} onClick={() => setActiveTab('subscriptions')}>
@@ -314,76 +484,385 @@ export default function CardsPage() {
                                     closingDay={selectedCard.closingDay}
                                     dueDay={selectedCard.dueDay}
                                     color={selectedCard.color}
-                                    holderName="PATRICK SIQUEIRA"
+                                    holderName={selectedCard?.holderName || "NOME DO TITULAR"}
                                     validThru="12/28"
                                 />
+
+                                {/* Action Buttons - Bank Style */}
+                                <div className={styles.actionButtons}>
+                                    <button
+                                        className={`${styles.actionBtn} ${invoiceViewMode === 'list' || invoiceViewMode === 'charts' ? styles.active : ''}`}
+                                        onClick={() => setInvoiceViewMode('list')}
+                                    >
+                                        <div className={styles.actionIcon}>
+                                            <FiCreditCard />
+                                        </div>
+                                        <span>Fatura</span>
+                                    </button>
+                                    <button
+                                        className={`${styles.actionBtn} ${invoiceViewMode === 'subscriptions' ? styles.active : ''}`}
+                                        onClick={() => setInvoiceViewMode('subscriptions')}
+                                    >
+                                        <div className={styles.actionIcon}>
+                                            <FiRepeat />
+                                        </div>
+                                        <span>Assinaturas</span>
+                                    </button>
+                                    <button
+                                        className={`${styles.actionBtn} ${invoiceViewMode === 'limits' ? styles.active : ''}`}
+                                        onClick={openLimitsView}
+                                    >
+                                        <div className={styles.actionIcon}>
+                                            <FiSliders />
+                                        </div>
+                                        <span>Limites</span>
+                                    </button>
+                                    <button
+                                        className={styles.actionBtn}
+                                        onClick={handleEditCardFromInvoice}
+                                    >
+                                        <div className={styles.actionIcon}>
+                                            <FiEdit2 />
+                                        </div>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button
+                                        className={`${styles.actionBtn} ${styles.danger}`}
+                                        onClick={() => setShowDeleteCardModal(true)}
+                                    >
+                                        <div className={styles.actionIcon}>
+                                            <FiTrash2 />
+                                        </div>
+                                        <span>Apagar</span>
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Invoice Details */}
                             <div className={styles.invoiceDetails}>
-                                <div className={styles.invoiceHeader}>
-                                    <h2>Fatura de {monthNames[invoiceMonth.month - 1]} {invoiceMonth.year}</h2>
-                                    <div className={styles.monthSelector}>
-                                        <button onClick={() => setInvoiceMonth(p => ({ ...p, month: Math.max(1, p.month - 1) }))}>
-                                            <FiChevronLeft />
-                                        </button>
-                                        <span>{monthNames[invoiceMonth.month - 1]} {invoiceMonth.year}</span>
-                                        <button onClick={() => setInvoiceMonth(p => ({ ...p, month: Math.min(12, p.month + 1) }))}>
-                                            <FiChevronRight />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className={styles.invoiceSummary}>
-                                    <div className={styles.invoiceMain}>
-                                        <div className={styles.invoiceTotal}>
-                                            <span className={styles.invoiceLabel}>Total da Fatura</span>
-                                            <span className={styles.invoiceValue}>{formatCurrency(currentInvoice.total)}</span>
-                                        </div>
-                                        <div className={`${styles.invoiceStatus} ${styles[currentInvoice.status.toLowerCase()]}`}>
-                                            {currentInvoice.status === 'OPEN' ? 'Aberta' : 'Fechada'}
-                                        </div>
-                                    </div>
-                                    <div className={styles.invoiceMeta}>
-                                        <div>
-                                            <span>Vencimento</span>
-                                            <strong>{formatDate(currentInvoice.dueDate)}</strong>
-                                        </div>
-                                        <div>
-                                            <span>Fechamento</span>
-                                            <strong>Dia {selectedCard.closingDay}</strong>
-                                        </div>
-                                        <div>
-                                            <span>Limite Disponível</span>
-                                            <strong>{formatCurrency(selectedCard.availableLimit)}</strong>
-                                        </div>
-                                        <div>
-                                            <span>Limite Total</span>
-                                            <strong>{formatCurrency(selectedCard.creditLimit)}</strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={styles.invoiceTransactions}>
-                                    <h3>Lançamentos ({currentInvoice.transactions.length})</h3>
-                                    <div className={styles.transactionsList}>
-                                        {currentInvoice.transactions.map(tx => (
-                                            <div key={tx.id} className={styles.txItem}>
-                                                <div className={styles.txInfo}>
-                                                    <span className={styles.txDesc}>{tx.description}</span>
-                                                    <span className={styles.txDate}>
-                                                        {formatDate(tx.date)}
-                                                        {tx.installments && <span className={styles.installment}>{tx.installments}</span>}
-                                                    </span>
-                                                </div>
-                                                <span className={styles.txAmount}>{formatCurrency(tx.amount)}</span>
+                                {/* Header with Month Selector and View Toggle - Only in fatura views */}
+                                {(invoiceViewMode === 'list' || invoiceViewMode === 'charts') && (
+                                    <>
+                                        <div className={styles.invoiceHeader}>
+                                            <div className={styles.monthPill}>
+                                                <button onClick={() => setInvoiceMonth(p => ({ ...p, month: Math.max(1, p.month - 1) }))}>
+                                                    <FiChevronLeft />
+                                                </button>
+                                                <span>{monthNames[invoiceMonth.month - 1]} de {invoiceMonth.year}</span>
+                                                <button onClick={() => setInvoiceMonth(p => ({ ...p, month: Math.min(12, p.month + 1) }))}>
+                                                    <FiChevronRight />
+                                                </button>
                                             </div>
-                                        ))}
+                                            <button
+                                                className={`${styles.viewToggle} ${invoiceViewMode === 'charts' ? styles.active : ''}`}
+                                                onClick={() => setInvoiceViewMode(invoiceViewMode === 'charts' ? 'list' : 'charts')}
+                                            >
+                                                <FiBarChart2 /> Gráfico
+                                            </button>
+                                        </div>
+
+                                        {/* Invoice Summary */}
+                                        <div className={styles.invoiceSummary}>
+                                            <div className={styles.invoiceMain}>
+                                                <div className={`${styles.invoiceStatus} ${styles[currentInvoice.status.toLowerCase()]}`}>
+                                                    {currentInvoice.status === 'OPEN' ? 'Fatura aberta' : 'Fatura fechada'}
+                                                </div>
+                                                <div className={styles.invoiceTotal}>
+                                                    <span className={styles.invoiceValue}>{formatCurrency(currentInvoice.total)}</span>
+                                                </div>
+                                                <div className={styles.invoiceDue}>
+                                                    Vencimento • {formatDate(currentInvoice.dueDate)}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Charts View */}
+                                        {invoiceViewMode === 'charts' && (
+                                            <div className={styles.chartsSection}>
+                                                <div className={styles.chartContainer}>
+                                                    {getChartData().map((bar, idx) => (
+                                                        <div key={idx} className={styles.chartBar}>
+                                                            <div
+                                                                className={`${styles.bar} ${bar.isCurrent ? styles.currentBar : ''}`}
+                                                                style={{ height: `${(bar.value / 2500) * 100}%` }}
+                                                            />
+                                                            <span className={styles.barLabel}>
+                                                                {bar.month} {bar.year}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className={styles.chartLegend}>
+                                                    <div className={styles.legendItem}>
+                                                        <span className={styles.legendDot} />
+                                                        <span>Gastos mensais</span>
+                                                    </div>
+                                                    <div className={`${styles.legendItem} ${styles.current}`}>
+                                                        <span className={styles.legendDot} />
+                                                        <span>Mês atual</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Limits Summary - 4 Rows */}
+                                        <div className={styles.limitsSummary}>
+                                            <div className={styles.limitsInfoRows}>
+                                                <div className={styles.limitsRow}>
+                                                    <span>Limite Total</span>
+                                                    <strong>{formatCurrency(selectedCard.creditLimit)}</strong>
+                                                </div>
+                                                <div className={styles.limitsRow}>
+                                                    <span>Disponível</span>
+                                                    <strong style={{ color: '#10b981' }}>{formatCurrency(selectedCard.availableLimit)}</strong>
+                                                </div>
+                                                <div className={styles.limitsRow}>
+                                                    <span>Bloqueado</span>
+                                                    <strong style={{ color: '#f59e0b' }}>{formatCurrency(selectedCard.blockedLimit || 0)}</strong>
+                                                </div>
+                                                <div className={styles.limitsRow}>
+                                                    <span>Utilizado</span>
+                                                    <strong style={{ color: '#6b7280' }}>{formatCurrency(selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0))}</strong>
+                                                </div>
+                                            </div>
+                                            <div className={styles.limitsBar}>
+                                                <div
+                                                    className={styles.limitsUsed}
+                                                    style={{
+                                                        width: `${((selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) / selectedCard.creditLimit) * 100}%`
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className={styles.limitsFooter}>
+                                                <span>{Math.round(((selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) / selectedCard.creditLimit) * 100)}% utilizado</span>
+                                                <span>Fecha dia {selectedCard.closingDay} • Vence dia {selectedCard.dueDay}</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Transactions List - Grouped by Day */}
+                                {invoiceViewMode === 'list' && (
+                                    <div className={styles.invoiceTransactions}>
+                                        <h3>Lançamentos ({cardTransactions.length})</h3>
+
+                                        {loadingTransactions ? (
+                                            <div className={styles.loadingTx}>Carregando transações...</div>
+                                        ) : cardTransactions.length > 0 ? (
+                                            Object.entries(groupTransactionsByDate(cardTransactions)).map(([dateGroup, txs]) => (
+                                                <div key={dateGroup} className={styles.txGroup}>
+                                                    <div className={styles.txGroupHeader}>{dateGroup}</div>
+                                                    <div className={styles.transactionsList}>
+                                                        {txs.map(tx => (
+                                                            <div key={tx.id} className={styles.txItem}>
+                                                                <div className={styles.txIcon}>
+                                                                    {getCategoryIcon(tx.description)}
+                                                                </div>
+                                                                <div className={styles.txInfo}>
+                                                                    <span className={styles.txDesc}>{tx.description}</span>
+                                                                    <span className={styles.txTime}>
+                                                                        {formatDate(tx.date)}
+                                                                        {tx.installments && <span className={styles.installment}>{tx.currentInstallment}/{tx.installments}</span>}
+                                                                    </span>
+                                                                </div>
+                                                                <span className={styles.txAmount}>{formatCurrency(tx.amount)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className={styles.emptyTx}>
+                                                <FiCreditCard />
+                                                <p>Nenhum lançamento neste cartão</p>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                )}
+
+                                {/* Subscriptions View */}
+                                {invoiceViewMode === 'subscriptions' && (
+                                    <div className={styles.subscriptionsView}>
+                                        <div className={styles.subsViewHeader}>
+                                            <h3>Assinaturas do Cartão</h3>
+                                            <span className={styles.subsTotal}>
+                                                Total: {formatCurrency(cardSubscriptions.reduce((sum, s) => sum + parseFloat(s.amount), 0))}/mês
+                                            </span>
+                                        </div>
+
+                                        {cardSubscriptions.length > 0 ? (
+                                            <div className={styles.subsViewList}>
+                                                {cardSubscriptions.map(sub => (
+                                                    <div key={sub.id} className={styles.subsViewItem}>
+                                                        <div className={styles.subsViewIcon}>
+                                                            {sub.icon ? (
+                                                                sub.icon.startsWith('http') ? (
+                                                                    <img src={sub.icon} alt={sub.name} />
+                                                                ) : (
+                                                                    <span>{sub.icon}</span>
+                                                                )
+                                                            ) : (
+                                                                <FiRepeat />
+                                                            )}
+                                                        </div>
+                                                        <div className={styles.subsViewInfo}>
+                                                            <span className={styles.subsViewName}>{sub.name}</span>
+                                                            <span className={styles.subsViewFreq}>
+                                                                {sub.billingCycle === 'MONTHLY' ? 'Mensal' :
+                                                                    sub.billingCycle === 'YEARLY' ? 'Anual' :
+                                                                        sub.billingCycle === 'WEEKLY' ? 'Semanal' : sub.billingCycle}
+                                                            </span>
+                                                        </div>
+                                                        <span className={styles.subsViewAmount}>
+                                                            {formatCurrency(sub.amount)}<small>/mês</small>
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className={styles.emptyTx}>
+                                                <FiRepeat />
+                                                <p>Nenhuma assinatura vinculada a este cartão</p>
+                                                <Button variant="secondary" onClick={() => openSubModal()}>
+                                                    Adicionar Assinatura
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Limits View - Inline */}
+                                {invoiceViewMode === 'limits' && (
+                                    <div className={styles.limitsView}>
+                                        <div className={styles.limitsViewHeader}>
+                                            <button
+                                                className={styles.backBtn}
+                                                onClick={() => setInvoiceViewMode('list')}
+                                            >
+                                                <FiChevronLeft /> Voltar
+                                            </button>
+                                            <h3>Meus Limites</h3>
+                                        </div>
+
+                                        <div className={styles.limitsEditSection}>
+                                            <div className={styles.limitInputGroup}>
+                                                <label>Limite liberado pelo banco</label>
+                                                <div className={styles.limitInputWrapper}>
+                                                    <span className={styles.currencyPrefix}>R$</span>
+                                                    <input
+                                                        type="text"
+                                                        value={editingLimitValue}
+                                                        onChange={handleLimitInputChange}
+                                                        placeholder="0,00"
+                                                        className={styles.limitInput}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.sliderSection}>
+                                                <label>
+                                                    {sliderValue > 0 ? (
+                                                        <>Limite Disponível: <strong style={{ color: '#10b981' }}>{formatCurrency(sliderValue)}</strong></>
+                                                    ) : (
+                                                        <span style={{ color: '#ef4444' }}>-{formatCurrency(Math.abs(sliderValue))} • Sem limite para uso</span>
+                                                    )}
+                                                </label>
+
+                                                {/* Visual Bar: Used (gray) | Blocked (orange/yellow) | Available (green) */}
+                                                <div className={styles.limitBarContainer}>
+                                                    {/* Used segment (gray - fixed) */}
+                                                    <div
+                                                        className={styles.limitBarUsed}
+                                                        style={{
+                                                            width: `${((selectedCard.creditLimit - selectedCard.availableLimit) / (parseLimitValue(editingLimitValue) || 1)) * 100}%`
+                                                        }}
+                                                    />
+                                                    {/* Blocked + Available track */}
+                                                    <div className={styles.limitBarTrack}>
+                                                        {/* Available segment (green) - controlled by slider */}
+                                                        <div
+                                                            className={styles.limitBarAvailable}
+                                                            style={{
+                                                                width: `${(sliderValue / (Math.max(1, parseLimitValue(editingLimitValue) - (selectedCard.creditLimit - selectedCard.availableLimit)))) * 100}%`
+                                                            }}
+                                                        />
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max={Math.max(0, parseLimitValue(editingLimitValue) - (selectedCard.creditLimit - selectedCard.availableLimit))}
+                                                            step="100"
+                                                            value={sliderValue}
+                                                            onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+                                                            className={styles.rangeSlider}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className={styles.sliderLabels}>
+                                                    <span>0</span>
+                                                    <span>{formatCurrency(parseLimitValue(editingLimitValue))}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.limitsPreview}>
+                                                <div className={styles.previewRow}>
+                                                    <span>Limite liberado:</span>
+                                                    <strong>{formatCurrency(parseLimitValue(editingLimitValue))}</strong>
+                                                </div>
+                                                <div className={styles.previewRow} style={{ color: '#6b7280' }}>
+                                                    <span>Limite utilizado:</span>
+                                                    <strong>{formatCurrency(selectedCard.creditLimit - selectedCard.availableLimit)}</strong>
+                                                </div>
+                                                <div className={styles.previewRow} style={{ color: '#f59e0b' }}>
+                                                    <span>Limite bloqueado:</span>
+                                                    <strong>{formatCurrency(
+                                                        parseLimitValue(editingLimitValue) -
+                                                        (selectedCard.creditLimit - selectedCard.availableLimit) -
+                                                        sliderValue
+                                                    )}</strong>
+                                                </div>
+                                                <div className={styles.previewRow} style={{ color: '#10b981' }}>
+                                                    <span>Limite disponível:</span>
+                                                    <strong>{formatCurrency(sliderValue)}</strong>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.limitsActions}>
+                                                <Button variant="secondary" onClick={() => setInvoiceViewMode('list')}>
+                                                    Cancelar
+                                                </Button>
+                                                <Button onClick={handleSaveLimits}>
+                                                    Salvar Limites
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}
+
+
+                    {/* Delete Card Confirmation Modal */}
+                    <Modal
+                        isOpen={showDeleteCardModal}
+                        onClose={() => setShowDeleteCardModal(false)}
+                        title="Excluir Cartão"
+                        size="sm"
+                    >
+                        <div className={styles.deleteModal}>
+                            <p>Tem certeza que deseja excluir o cartão <strong>{selectedCard?.name}</strong>?</p>
+                            <p className={styles.deleteWarning}>Esta ação não pode ser desfeita.</p>
+                            <div className={styles.deleteActions}>
+                                <Button variant="secondary" onClick={() => setShowDeleteCardModal(false)}>
+                                    Cancelar
+                                </Button>
+                                <Button variant="danger" onClick={handleDeleteCard}>
+                                    Excluir
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
 
 
                     {/* My Cards Tab */}
@@ -401,7 +880,7 @@ export default function CardsPage() {
                                             closingDay={card.closingDay}
                                             dueDay={card.dueDay}
                                             color={card.color}
-                                            holderName={card.holderName || "PATRICK SIQUEIRA"}
+                                            holderName={card.holderName || "NOME DO TITULAR"}
                                             validThru="12/28"
                                         />
                                         <span className={styles.cardHint}>Clique para ver a fatura</span>
@@ -434,7 +913,7 @@ export default function CardsPage() {
                                             closingDay={card.closingDay}
                                             dueDay={card.dueDay}
                                             color={card.color}
-                                            holderName="PATRICK SIQUEIRA"
+                                            holderName={card.holderName || "NOME DO TITULAR"}
                                             validThru="12/28"
                                         />
                                         <div className={styles.ofBadge}><FiLink /> Open Finance</div>

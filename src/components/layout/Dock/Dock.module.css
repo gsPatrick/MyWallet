@@ -244,6 +244,106 @@
     text-align: center;
 }
 
+/* Profile Section in Quick Actions */
+.profileSection {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .profileSection {
+    border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.profileSectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.currentProfile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--accent-primary-light);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.currentProfile span:first-child {
+    font-size: 1.25rem;
+}
+
+.currentProfile span:nth-child(2) {
+    flex: 1;
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.activeBadge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 6px;
+}
+
+.profileSwitchBtn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 6px;
+}
+
+.profileSwitchBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+[data-theme="light"] .profileSwitchBtn {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .profileSwitchBtn:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.profileIconBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.profileIconBox svg {
+    width: 18px;
+    height: 18px;
+}
+
+.profileSwitchBtn span:nth-child(2) {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
 /* MOBILE - Dock stays dock-style but centered at bottom */
 @media (max-width: 768px) {
     .dock {

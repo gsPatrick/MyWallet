@@ -2,15 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiCheck, FiAward } from 'react-icons/fi';
+import {
+    FiX, FiCheck, FiAward, FiStar, FiCalendar, FiZap, FiTarget,
+    FiCheckCircle, FiPieChart, FiTrendingUp, FiDollarSign,
+    FiFlag, FiDisc, FiHexagon
+} from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
 import styles from './FeaturedMedalsSelector.module.css';
+
+const iconMap = {
+    'star': <FiStar />,
+    'calendar': <FiCalendar />,
+    'award': <FiAward />,
+    'crown': <FaCrown />,
+    'zap': <FiZap />,
+    'target': <FiTarget />,
+    'check-circle': <FiCheckCircle />,
+    'pie-chart': <FiPieChart />,
+    'trending-up': <FiTrendingUp />,
+    'dollar-sign': <FiDollarSign />,
+    'flag': <FiFlag />,
+    'medal': <FiDisc />,
+    'diamond': <FiHexagon />
+};
 
 const rarityColors = {
     bronze: '#CD7F32',
     silver: '#C0C0C0',
     gold: '#FFD700',
     platinum: '#E5E4E2',
-    diamond: '#B9F2FF'
+    diamond: '#B9F2FF',
+    emerald: '#50C878',
+    ruby: '#E0115F',
+    legendary: '#FF6B35'
 };
 
 const rarityLabels = {
@@ -18,7 +42,10 @@ const rarityLabels = {
     silver: 'Prata',
     gold: 'Ouro',
     platinum: 'Platina',
-    diamond: 'Diamante'
+    diamond: 'Diamante',
+    emerald: 'Esmeralda',
+    ruby: 'Rubi',
+    legendary: 'Lendário'
 };
 
 export default function FeaturedMedalsSelector({
@@ -98,7 +125,7 @@ export default function FeaturedMedalsSelector({
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             <div className={styles.medalIcon}>
-                                                <FiAward />
+                                                {iconMap[medal.icon] || <FiAward />}
                                                 {isSelected && (
                                                     <div className={styles.checkBadge}>
                                                         <FiCheck />

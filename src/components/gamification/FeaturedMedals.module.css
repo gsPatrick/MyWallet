@@ -45,22 +45,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color, #FFD700), rgba(0, 0, 0, 0.3));
+    background: linear-gradient(135deg, var(--color, #FFD700), rgba(0, 0, 0, 0.2));
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px var(--color);
+    border: 3px solid var(--color, #FFD700);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 12px var(--color);
 }
 
 .medalSlot.empty {
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px dashed rgba(255, 255, 255, 0.2);
+    background: var(--bg-tertiary);
+    border: 2px dashed rgba(150, 150, 150, 0.5);
     box-shadow: none;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(150, 150, 150, 0.6);
 }
 
 .medalIcon {
     font-size: 1.5rem;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(0, 0, 0, 0.8);
 }
 
 .tooltip {

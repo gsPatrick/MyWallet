@@ -10,12 +10,15 @@ import {
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
+import AppShell from '@/components/AppShell';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/utils/formatters';
 import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI, budgetsAPI } from '@/services/api';
 import ActivityList from '@/components/dashboard/ActivityList';
 import SubscriptionWidget from '@/components/dashboard/SubscriptionWidget';
+import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
+import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import styles from './page.module.css';
 
 const mockAllocation = [
@@ -41,6 +44,7 @@ export default function DashboardPage() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [customDate, setCustomDate] = useState({ start: '', end: '' });
     const [chartType, setChartType] = useState('pie'); // pie or bar
+    const [showFutureModal, setShowFutureModal] = useState(false);
 
     // Privacy-aware currency formatting
     const { formatCurrency, formatPercent } = usePrivateCurrency();
@@ -141,14 +145,15 @@ export default function DashboardPage() {
 
     if (isLoading) {
         return (
-            <div className={styles.page}>
-                <Header />
-                <main className={`${styles.main} ${styles.loadingState}`}>
-                    <FiLoader className={styles.spinner} />
-                    <p>Carregando visão geral...</p>
-                </main>
-                <Dock />
-            </div>
+            <AppShell>
+                <div className={styles.page}>
+                    <Header />
+                    <main className={styles.main}>
+                        <DashboardSkeleton />
+                    </main>
+                    <Dock />
+                </div>
+            </AppShell>
         );
     }
 
@@ -167,7 +172,13 @@ export default function DashboardPage() {
                         key={tab.id}
                         id={`tab-${tab.id}`}
                         className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => {
+                            if (tab.id === 'openfinance' || tab.id === 'investments') {
+                                setShowFutureModal(true);
+                            } else {
+                                setActiveTab(tab.id);
+                            }
+                        }}
                     >
                         <Icon />
                         {tab.label}
@@ -197,325 +208,76 @@ export default function DashboardPage() {
     );
 
     return (
-        <div className={styles.page}>
-            <Header leftContent={TabsComponent} rightContent={DateFilterComponent} />
+        <AppShell>
+            <div className={styles.page}>
+                <Header leftContent={TabsComponent} rightContent={DateFilterComponent} />
 
-            <main className={styles.main}>
-                {/* Top Controls - Mobile Only */}
-                <div className={`${styles.topControls} ${styles.mobileOnly}`}>
-                    {TabsComponent}
-                    {DateFilterComponent}
-                </div>
+                <main className={styles.main}>
+                    <FutureFeatureModal
+                        isOpen={showFutureModal}
+                        onClose={() => setShowFutureModal(false)}
+                    />
 
-                {/* Custom Date Picker Modal */}
-                {showDatePicker && (
-                    <motion.div
-                        className={styles.datePickerOverlay}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        onClick={() => setShowDatePicker(false)}
-                    >
+                    {/* Top Controls - Mobile Only */}
+                    <div className={`${styles.topControls} ${styles.mobileOnly}`}>
+                        {TabsComponent}
+                        {DateFilterComponent}
+                    </div>
+
+                    {/* Custom Date Picker Modal */}
+                    {showDatePicker && (
                         <motion.div
-                            className={styles.datePickerModal}
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            onClick={e => e.stopPropagation()}
+                            className={styles.datePickerOverlay}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            onClick={() => setShowDatePicker(false)}
                         >
-                            <h4>Selecionar Período</h4>
-                            <div className={styles.dateInputs}>
-                                <div className={styles.dateInput}>
-                                    <label>Data Inicial</label>
-                                    <input type="date" value={customDate.start} onChange={e => setCustomDate(prev => ({ ...prev, start: e.target.value }))} />
+                            <motion.div
+                                className={styles.datePickerModal}
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <h4>Selecionar Período</h4>
+                                <div className={styles.dateInputs}>
+                                    <div className={styles.dateInput}>
+                                        <label>Data Inicial</label>
+                                        <input type="date" value={customDate.start} onChange={e => setCustomDate(prev => ({ ...prev, start: e.target.value }))} />
+                                    </div>
+                                    <div className={styles.dateInput}>
+                                        <label>Data Final</label>
+                                        <input type="date" value={customDate.end} onChange={e => setCustomDate(prev => ({ ...prev, end: e.target.value }))} />
+                                    </div>
                                 </div>
-                                <div className={styles.dateInput}>
-                                    <label>Data Final</label>
-                                    <input type="date" value={customDate.end} onChange={e => setCustomDate(prev => ({ ...prev, end: e.target.value }))} />
+                                <div className={styles.datePickerActions}>
+                                    <button onClick={() => setShowDatePicker(false)}>Cancelar</button>
+                                    <button className={styles.primary} onClick={() => setShowDatePicker(false)}>Aplicar</button>
                                 </div>
-                            </div>
-                            <div className={styles.datePickerActions}>
-                                <button onClick={() => setShowDatePicker(false)}>Cancelar</button>
-                                <button className={styles.primary} onClick={() => setShowDatePicker(false)}>Aplicar</button>
-                            </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
+                    )}
 
-                {/* GERAL TAB */}
-                {activeTab === 'geral' && (
-                    <>
-                        {/* Hero Balance - Moved outside grid for full width */}
-                        <motion.div id="hero-balance" className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                            <span className={styles.heroLabel}>Patrimônio Total</span>
-                            <span className={styles.heroValue}>{formatCurrency(patrimonioTotal)}</span>
-                            <span className={styles.heroPeriod}>Manual ({formatCurrency(manualTotal)}) + Open Finance ({formatCurrency(openFinanceTotal)}) + Investimentos ({formatCurrency(summary.totalCurrentValue)})</span>
-                        </motion.div>
-
-                        <div className={styles.dashboardGrid}>
-                            {/* LEFT COLUMN: Main Content */}
-                            <div className={styles.dashboardMain}>
-                                {/* Summary Grid: 3 Columns (Income, Expenses, Balance) */}
-                                <motion.div className={styles.summaryGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-
-                                    {/* Column 1: Income */}
-                                    <div className={styles.summaryColumn}>
-                                        <div className={styles.summaryCard}>
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.cardLabel}>Receita Realizada</span>
-                                                <FiTrendingUp className={styles.iconSuccess} />
-                                            </div>
-                                            <span className={`${styles.cardValue} ${styles.income}`}>{formatCurrency(monthlyIncome)}</span>
-                                        </div>
-                                        <div className={`${styles.summaryCard} ${styles.predictionCardBase}`}>
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.cardLabel}>Receita Futura</span>
-                                                <FiClock className={styles.iconSuccess} />
-                                            </div>
-                                            <span className={`${styles.cardValue} ${styles.income} ${styles.predictionText}`}>{formatCurrency(pendingIncome)}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Column 2: Expenses */}
-                                    <div className={styles.summaryColumn}>
-                                        <div className={styles.summaryCard}>
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.cardLabel}>Despesa Realizada</span>
-                                                <FiTrendingDown className={styles.iconDanger} />
-                                            </div>
-                                            <span className={`${styles.cardValue} ${styles.expense}`}>{formatCurrency(monthlyExpenses)}</span>
-                                        </div>
-                                        <div className={`${styles.summaryCard} ${styles.predictionCardBase}`}>
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.cardLabel}>Despesa Futura</span>
-                                                <FiAlertTriangle className={styles.iconWarning} />
-                                            </div>
-                                            <span className={`${styles.cardValue} ${styles.expense} ${styles.predictionText}`}>{formatCurrency(pendingExpenses)}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Column 3: Balance & Results */}
-                                    <div className={styles.summaryColumn}>
-                                        <div className={styles.summaryCard}>
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.cardLabel}>Saldo Previsto (Final)</span>
-                                                <FiDollarSign className={styles.iconPrimary} />
-                                            </div>
-                                            <span className={styles.cardValue} style={{ color: (patrimonioTotal + pendingIncome - pendingExpenses) >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' }}>
-                                                {formatCurrency(totalBalance + pendingIncome - pendingExpenses)}
-                                            </span>
-                                        </div>
-                                        <div className={styles.summaryCard}>
-                                            <div className={styles.cardHeader}>
-                                                <span className={styles.cardLabel}>Rentabilidade Carteira</span>
-                                                <FiPieChart className={styles.iconPrimary} />
-                                            </div>
-                                            <span className={styles.cardValue}>{summary.totalProfitPercent >= 0 ? '+' : ''}{summary.totalProfitPercent.toFixed(2)}%</span>
-                                        </div>
-                                    </div>
-                                </motion.div>
-
-                                {/* Chart Card */}
-                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                                    <div className={styles.allocationCard}>
-                                        <div className={styles.allocationHeader}>
-                                            <h3>Alocação do Orçamento</h3>
-                                            <div className={styles.chartToggle}>
-                                                <button
-                                                    className={`${styles.chartBtn} ${chartType === 'pie' ? styles.active : ''}`}
-                                                    onClick={() => setChartType('pie')}
-                                                    title="Gráfico Pizza"
-                                                >
-                                                    <FiPieChart />
-                                                </button>
-                                                <button
-                                                    className={`${styles.chartBtn} ${chartType === 'bar' ? styles.active : ''}`}
-                                                    onClick={() => setChartType('bar')}
-                                                    title="Gráfico Barras"
-                                                >
-                                                    <FiBarChart2 />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Pie Chart View */}
-                                        {chartType === 'pie' && (
-                                            <div className={styles.pieChartContainer}>
-                                                <div className={styles.pieChart}>
-                                                    <svg viewBox="0 0 100 100" className={styles.pieSvg}>
-                                                        {hasAllocationData ? (
-                                                            (() => {
-                                                                let accumulated = 0;
-                                                                return displayAllocation.map(a => {
-                                                                    const startAngle = (accumulated / 100) * 360;
-                                                                    accumulated += a.percent;
-                                                                    const endAngle = (accumulated / 100) * 360;
-                                                                    const largeArc = a.percent > 50 ? 1 : 0;
-                                                                    const startX = 50 + 40 * Math.cos((startAngle - 90) * Math.PI / 180);
-                                                                    const startY = 50 + 40 * Math.sin((startAngle - 90) * Math.PI / 180);
-                                                                    const endX = 50 + 40 * Math.cos((endAngle - 90) * Math.PI / 180);
-                                                                    const endY = 50 + 40 * Math.sin((endAngle - 90) * Math.PI / 180);
-                                                                    return (
-                                                                        <path
-                                                                            key={a.id}
-                                                                            d={`M 50 50 L ${startX} ${startY} A 40 40 0 ${largeArc} 1 ${endX} ${endY} Z`}
-                                                                            fill={a.color}
-                                                                            className={styles.pieSlice}
-                                                                        />
-                                                                    );
-                                                                });
-                                                            })()
-                                                        ) : (
-                                                            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-light)" strokeWidth="8" opacity="0.3" />
-                                                        )}
-                                                        <circle cx="50" cy="50" r="20" fill="var(--bg-secondary)" />
-                                                    </svg>
-                                                    <div className={styles.pieCenter}>
-                                                        <span className={styles.pieCenterValue}>{hasAllocationData ? '100%' : '0%'}</span>
-                                                        <span className={styles.pieCenterLabel}>{hasAllocationData ? 'Alocado' : 'Sem dados'}</span>
-                                                    </div>
-                                                </div>
-                                                <div className={styles.pieLegend}>
-                                                    {hasAllocationData ? (
-                                                        displayAllocation.map(a => (
-                                                            <div key={a.id} className={styles.legendItem}>
-                                                                <span className={styles.legendDot} style={{ background: a.color }} />
-                                                                <span className={styles.legendName}>{a.name}</span>
-                                                                <span className={styles.legendValue}>{formatCurrency(a.limit)}</span>
-                                                                <span className={styles.legendPercent}>{a.percent}%</span>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className={styles.emptyLegend}>
-                                                            <span>Nenhuma transação ainda</span>
-                                                            <span className={styles.emptyLegendHint}>Adicione transações para ver a alocação</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Bar Chart View */}
-                                        {chartType === 'bar' && (
-                                            <div className={styles.barChartContainer}>
-                                                {hasAllocationData ? (
-                                                    displayAllocation.map(a => {
-                                                        const target = a.limit || 0; // Use budget limit
-                                                        const pct = target > 0 ? (a.spent / target) * 100 : 0;
-                                                        return (
-                                                            <div key={a.id} className={styles.barItem}>
-                                                                <div className={styles.barLabel}>
-                                                                    <span className={styles.barDot} style={{ background: a.color }} />
-                                                                    <span>{a.name}</span>
-                                                                </div>
-                                                                <div className={styles.barTrack} style={{ background: `${a.color}30` }}>
-                                                                    <div
-                                                                        className={styles.barFill}
-                                                                        style={{
-                                                                            width: `${Math.min(100, pct)}%`,
-                                                                            background: pct > 100 ? '#ef4444' : a.color
-                                                                        }}
-                                                                    />
-                                                                    <span className={`${styles.barValueInline} ${pct > 100 ? styles.overBudget : ''}`}>
-                                                                        {formatCurrency(a.spent)} / {formatCurrency(target)}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })
-                                                ) : (
-                                                    <>
-                                                        {['Gastos Essenciais', 'Gastos Pessoais', 'Investimentos', 'Reserva', 'Lazer'].map((name, i) => (
-                                                            <div key={i} className={styles.barItem}>
-                                                                <div className={styles.barLabel}>
-                                                                    <span className={styles.barDot} style={{ background: 'var(--border-light)', opacity: 0.3 }} />
-                                                                    <span style={{ opacity: 0.4 }}>{name}</span>
-                                                                </div>
-                                                                <div className={styles.barTrack} style={{ background: 'rgba(255,255,255,0.05)' }} />
-                                                                <div className={styles.barValues}>
-                                                                    <span style={{ opacity: 0.4 }}>{formatCurrency(0)}</span>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <Link href="/budget-allocation" className={styles.editLink}>
-                                            Editar Alocação →
-                                        </Link>
-                                    </div>
-                                </motion.div>
-                            </div>
-
-                            {/* RIGHT COLUMN: Sidebar (Quick Actions) */}
-                            <div className={styles.dashboardSidebar}>
-                                <div className={styles.quickActions}>
-                                    <h3>Ações Rápidas</h3>
-                                    <div className={styles.quickGrid}>
-                                        <Link href="/transactions?new=true" className={styles.quickItem}>
-                                            <FiPlus />
-                                            <span>Nova Transação</span>
-                                        </Link>
-                                        <Link href="/settings" className={styles.quickItem}>
-                                            <FiHome />
-                                            <span>Perfil</span>
-                                        </Link>
-                                        <Link href="/cards" className={styles.quickItem}>
-                                            <FiCreditCard />
-                                            <span>Cartão</span>
-                                        </Link>
-                                        <Link href="/goals?new=true" className={styles.quickItem}>
-                                            <FiTarget />
-                                            <span>Nova Meta</span>
-                                        </Link>
-                                    </div>
-
-                                    {/* Quick Stats */}
-                                    <div className={styles.quickStats}>
-                                        <div className={styles.statItem}>
-                                            <FiCheckCircle className={styles.statIconSuccess} />
-                                            <div>
-                                                <span className={styles.statValue}>{openFinanceAccounts.length}</span>
-                                                <span className={styles.statLabel}>Bancos conectados</span>
-                                            </div>
-                                        </div>
-                                        <div className={styles.statItem}>
-                                            <FiCreditCard className={styles.statIconPrimary} />
-                                            <div>
-                                                <span className={styles.statValue}>{positions.length}</span>
-                                                <span className={styles.statLabel}>Ativos na carteira</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* MANUAL TAB */}
-                {/* MANUAL TAB */}
-                {/* MANUAL TAB */}
-                {
-                    activeTab === 'manual' && (
+                    {/* GERAL TAB */}
+                    {activeTab === 'geral' && (
                         <>
                             {/* Hero Balance - Moved outside grid for full width */}
-                            <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                                <span className={styles.heroLabel}>Saldo Líquido Manual</span>
-                                <span className={styles.heroValue}>{formatCurrency(monthlyIncome - monthlyExpenses)}</span>
-                                <span className={styles.heroPeriod}>Sem Open Finance</span>
+                            <motion.div id="hero-balance" className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                                <span className={styles.heroLabel}>Patrimônio Total</span>
+                                <span className={styles.heroValue}>{formatCurrency(patrimonioTotal)}</span>
+                                <span className={styles.heroPeriod}>Manual ({formatCurrency(manualTotal)}) + Open Finance ({formatCurrency(openFinanceTotal)}) + Investimentos ({formatCurrency(summary.totalCurrentValue)})</span>
                             </motion.div>
 
                             <div className={styles.dashboardGrid}>
-                                {/* LEFT COLUMN */}
+                                {/* LEFT COLUMN: Main Content */}
                                 <div className={styles.dashboardMain}>
-                                    {/* 3-Col Summary Layout */}
+                                    {/* Summary Grid: 3 Columns (Income, Expenses, Balance) */}
                                     <motion.div className={styles.summaryGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+
                                         {/* Column 1: Income */}
                                         <div className={styles.summaryColumn}>
                                             <div className={styles.summaryCard}>
                                                 <div className={styles.cardHeader}>
-                                                    <span className={styles.cardLabel}>Receita Recebida</span>
+                                                    <span className={styles.cardLabel}>Receita Realizada</span>
                                                     <FiTrendingUp className={styles.iconSuccess} />
                                                 </div>
                                                 <span className={`${styles.cardValue} ${styles.income}`}>{formatCurrency(monthlyIncome)}</span>
@@ -533,60 +295,176 @@ export default function DashboardPage() {
                                         <div className={styles.summaryColumn}>
                                             <div className={styles.summaryCard}>
                                                 <div className={styles.cardHeader}>
-                                                    <span className={styles.cardLabel}>Despesa Paga</span>
+                                                    <span className={styles.cardLabel}>Despesa Realizada</span>
                                                     <FiTrendingDown className={styles.iconDanger} />
                                                 </div>
                                                 <span className={`${styles.cardValue} ${styles.expense}`}>{formatCurrency(monthlyExpenses)}</span>
                                             </div>
                                             <div className={`${styles.summaryCard} ${styles.predictionCardBase}`}>
                                                 <div className={styles.cardHeader}>
-                                                    <span className={styles.cardLabel}>Conta a Pagar</span>
+                                                    <span className={styles.cardLabel}>Despesa Futura</span>
                                                     <FiAlertTriangle className={styles.iconWarning} />
                                                 </div>
                                                 <span className={`${styles.cardValue} ${styles.expense} ${styles.predictionText}`}>{formatCurrency(pendingExpenses)}</span>
                                             </div>
                                         </div>
 
-                                        {/* Column 3: Balance */}
+                                        {/* Column 3: Balance & Results */}
                                         <div className={styles.summaryColumn}>
                                             <div className={styles.summaryCard}>
                                                 <div className={styles.cardHeader}>
-                                                    <span className={styles.cardLabel}>Balanço Real</span>
+                                                    <span className={styles.cardLabel}>Saldo Previsto (Final)</span>
                                                     <FiDollarSign className={styles.iconPrimary} />
                                                 </div>
-                                                <span className={styles.cardValue}>{formatCurrency(monthlyIncome - monthlyExpenses)}</span>
+                                                <span className={styles.cardValue} style={{ color: (patrimonioTotal + pendingIncome - pendingExpenses) >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' }}>
+                                                    {formatCurrency(totalBalance + pendingIncome - pendingExpenses)}
+                                                </span>
                                             </div>
                                             <div className={styles.summaryCard}>
                                                 <div className={styles.cardHeader}>
-                                                    <span className={styles.cardLabel}>Saldo Previsto</span>
-                                                    <FiTarget className={styles.iconPrimary} />
+                                                    <span className={styles.cardLabel}>Rentabilidade Carteira</span>
+                                                    <FiPieChart className={styles.iconPrimary} />
                                                 </div>
-                                                <span className={styles.cardValue}>{formatCurrency((monthlyIncome - monthlyExpenses) + (pendingIncome - pendingExpenses))}</span>
+                                                <span className={styles.cardValue}>{summary.totalProfitPercent >= 0 ? '+' : ''}{summary.totalProfitPercent.toFixed(2)}%</span>
                                             </div>
                                         </div>
                                     </motion.div>
 
-                                    {/* Charts Row */}
-                                    <motion.div
-                                        className={styles.chartsRow}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                    >
-                                        <div className={styles.largeCard} style={{ minHeight: '300px' }}>
-                                            <h3 className={styles.largeCardTitle}>Fluxo de Caixa</h3>
-                                            <div className={styles.emptyState}>Gráfico disponível em breve</div>
-                                        </div>
-                                        <div className={styles.largeCard} style={{ minHeight: '300px', padding: 0, background: 'transparent', border: 'none' }}>
-                                            <ActivityList />
-                                        </div>
-                                        <div className={styles.largeCard} style={{ minHeight: '300px', padding: 0, background: 'transparent', border: 'none' }}>
-                                            <SubscriptionWidget />
+                                    {/* Chart Card */}
+                                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                        <div className={styles.allocationCard}>
+                                            <div className={styles.allocationHeader}>
+                                                <h3>Alocação do Orçamento</h3>
+                                                <div className={styles.chartToggle}>
+                                                    <button
+                                                        className={`${styles.chartBtn} ${chartType === 'pie' ? styles.active : ''}`}
+                                                        onClick={() => setChartType('pie')}
+                                                        title="Gráfico Pizza"
+                                                    >
+                                                        <FiPieChart />
+                                                    </button>
+                                                    <button
+                                                        className={`${styles.chartBtn} ${chartType === 'bar' ? styles.active : ''}`}
+                                                        onClick={() => setChartType('bar')}
+                                                        title="Gráfico Barras"
+                                                    >
+                                                        <FiBarChart2 />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Pie Chart View */}
+                                            {chartType === 'pie' && (
+                                                <div className={styles.pieChartContainer}>
+                                                    <div className={styles.pieChart}>
+                                                        <svg viewBox="0 0 100 100" className={styles.pieSvg}>
+                                                            {hasAllocationData ? (
+                                                                (() => {
+                                                                    let accumulated = 0;
+                                                                    return displayAllocation.map(a => {
+                                                                        const startAngle = (accumulated / 100) * 360;
+                                                                        accumulated += a.percent;
+                                                                        const endAngle = (accumulated / 100) * 360;
+                                                                        const largeArc = a.percent > 50 ? 1 : 0;
+                                                                        const startX = 50 + 40 * Math.cos((startAngle - 90) * Math.PI / 180);
+                                                                        const startY = 50 + 40 * Math.sin((startAngle - 90) * Math.PI / 180);
+                                                                        const endX = 50 + 40 * Math.cos((endAngle - 90) * Math.PI / 180);
+                                                                        const endY = 50 + 40 * Math.sin((endAngle - 90) * Math.PI / 180);
+                                                                        return (
+                                                                            <path
+                                                                                key={a.id}
+                                                                                d={`M 50 50 L ${startX} ${startY} A 40 40 0 ${largeArc} 1 ${endX} ${endY} Z`}
+                                                                                fill={a.color}
+                                                                                className={styles.pieSlice}
+                                                                            />
+                                                                        );
+                                                                    });
+                                                                })()
+                                                            ) : (
+                                                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-light)" strokeWidth="8" opacity="0.3" />
+                                                            )}
+                                                            <circle cx="50" cy="50" r="20" fill="var(--bg-secondary)" />
+                                                        </svg>
+                                                        <div className={styles.pieCenter}>
+                                                            <span className={styles.pieCenterValue}>{hasAllocationData ? '100%' : '0%'}</span>
+                                                            <span className={styles.pieCenterLabel}>{hasAllocationData ? 'Alocado' : 'Sem dados'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={styles.pieLegend}>
+                                                        {hasAllocationData ? (
+                                                            displayAllocation.map(a => (
+                                                                <div key={a.id} className={styles.legendItem}>
+                                                                    <span className={styles.legendDot} style={{ background: a.color }} />
+                                                                    <span className={styles.legendName}>{a.name}</span>
+                                                                    <span className={styles.legendValue}>{formatCurrency(a.limit)}</span>
+                                                                    <span className={styles.legendPercent}>{a.percent}%</span>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className={styles.emptyLegend}>
+                                                                <span>Nenhuma transação ainda</span>
+                                                                <span className={styles.emptyLegendHint}>Adicione transações para ver a alocação</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Bar Chart View */}
+                                            {chartType === 'bar' && (
+                                                <div className={styles.barChartContainer}>
+                                                    {hasAllocationData ? (
+                                                        displayAllocation.map(a => {
+                                                            const target = a.limit || 0; // Use budget limit
+                                                            const pct = target > 0 ? (a.spent / target) * 100 : 0;
+                                                            return (
+                                                                <div key={a.id} className={styles.barItem}>
+                                                                    <div className={styles.barLabel}>
+                                                                        <span className={styles.barDot} style={{ background: a.color }} />
+                                                                        <span>{a.name}</span>
+                                                                    </div>
+                                                                    <div className={styles.barTrack} style={{ background: `${a.color}30` }}>
+                                                                        <div
+                                                                            className={styles.barFill}
+                                                                            style={{
+                                                                                width: `${Math.min(100, pct)}%`,
+                                                                                background: pct > 100 ? '#ef4444' : a.color
+                                                                            }}
+                                                                        />
+                                                                        <span className={`${styles.barValueInline} ${pct > 100 ? styles.overBudget : ''}`}>
+                                                                            {formatCurrency(a.spent)} / {formatCurrency(target)}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <>
+                                                            {['Gastos Essenciais', 'Gastos Pessoais', 'Investimentos', 'Reserva', 'Lazer'].map((name, i) => (
+                                                                <div key={i} className={styles.barItem}>
+                                                                    <div className={styles.barLabel}>
+                                                                        <span className={styles.barDot} style={{ background: 'var(--border-light)', opacity: 0.3 }} />
+                                                                        <span style={{ opacity: 0.4 }}>{name}</span>
+                                                                    </div>
+                                                                    <div className={styles.barTrack} style={{ background: 'rgba(255,255,255,0.05)' }} />
+                                                                    <div className={styles.barValues}>
+                                                                        <span style={{ opacity: 0.4 }}>{formatCurrency(0)}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <Link href="/budget-allocation" className={styles.editLink}>
+                                                Editar Alocação →
+                                            </Link>
                                         </div>
                                     </motion.div>
                                 </div>
 
-                                {/* RIGHT COLUMN: Sidebar */}
+                                {/* RIGHT COLUMN: Sidebar (Quick Actions) */}
                                 <div className={styles.dashboardSidebar}>
                                     <div className={styles.quickActions}>
                                         <h3>Ações Rápidas</h3>
@@ -608,143 +486,283 @@ export default function DashboardPage() {
                                                 <span>Nova Meta</span>
                                             </Link>
                                         </div>
+
+                                        {/* Quick Stats */}
+                                        <div className={styles.quickStats}>
+                                            <div className={styles.statItem}>
+                                                <FiCheckCircle className={styles.statIconSuccess} />
+                                                <div>
+                                                    <span className={styles.statValue}>{openFinanceAccounts.length}</span>
+                                                    <span className={styles.statLabel}>Bancos conectados</span>
+                                                </div>
+                                            </div>
+                                            <div className={styles.statItem}>
+                                                <FiCreditCard className={styles.statIconPrimary} />
+                                                <div>
+                                                    <span className={styles.statValue}>{positions.length}</span>
+                                                    <span className={styles.statLabel}>Ativos na carteira</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </>
-                    )
-                }
+                    )}
 
-                {/* OPEN FINANCE TAB */}
-                {
-                    activeTab === 'openfinance' && (
-                        <>
-                            <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                                <span className={styles.heroLabel}>Saldo Open Finance</span>
-                                <span className={styles.heroValue}>{formatCurrency(openFinanceTotal)}</span>
-                                <span className={styles.heroPeriod}>{openFinanceAccounts.length} contas conectadas</span>
-                            </motion.div>
+                    {/* MANUAL TAB */}
+                    {/* MANUAL TAB */}
+                    {/* MANUAL TAB */}
+                    {
+                        activeTab === 'manual' && (
+                            <>
+                                {/* Hero Balance - Moved outside grid for full width */}
+                                <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                                    <span className={styles.heroLabel}>Saldo Líquido Manual</span>
+                                    <span className={styles.heroValue}>{formatCurrency(monthlyIncome - monthlyExpenses)}</span>
+                                    <span className={styles.heroPeriod}>Sem Open Finance</span>
+                                </motion.div>
 
-                            <motion.div className={styles.summaryRow} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Contas</span><FiLink className={styles.iconPrimary} /></div>
-                                    <span className={styles.cardValue}>{openFinanceAccounts.length}</span>
-                                </div>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Entradas</span><FiTrendingUp className={styles.iconSuccess} /></div>
-                                    <span className={styles.cardValue}>{formatCurrency(ofIncome)}</span>
-                                </div>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Saídas</span><FiTrendingDown className={styles.iconDanger} /></div>
-                                    <span className={styles.cardValue}>{formatCurrency(ofExpenses)}</span>
-                                </div>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Última Sync</span><FiClock className={styles.iconMuted} /></div>
-                                    <span className={styles.cardValue}>Agora</span>
-                                </div>
-                            </motion.div>
-
-                            <motion.div className={styles.bottomGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                                <div className={styles.largeCard}>
-                                    <h3 className={styles.largeCardTitle}>Movimento Bancário</h3>
-                                    <div className={styles.emptyState}>Gráfico disponível em breve</div>
-                                </div>
-                                <div className={styles.largeCard}>
-                                    <h3 className={styles.largeCardTitle}>Contas Conectadas</h3>
-                                    {openFinanceAccounts.length > 0 ? (
-                                        <div className={styles.accountsList}>
-                                            {openFinanceAccounts.map(acc => (
-                                                <div key={acc.id} className={styles.accountItem}>
-                                                    <span className={styles.accName}>{acc.name}</span>
-                                                    <span className={styles.accInst}>{acc.institution}</span>
-                                                    <span className={styles.accBalance}>{formatCurrency(acc.balance || 0)}</span>
+                                <div className={styles.dashboardGrid}>
+                                    {/* LEFT COLUMN */}
+                                    <div className={styles.dashboardMain}>
+                                        {/* 3-Col Summary Layout */}
+                                        <motion.div className={styles.summaryGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                            {/* Column 1: Income */}
+                                            <div className={styles.summaryColumn}>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}>
+                                                        <span className={styles.cardLabel}>Receita Recebida</span>
+                                                        <FiTrendingUp className={styles.iconSuccess} />
+                                                    </div>
+                                                    <span className={`${styles.cardValue} ${styles.income}`}>{formatCurrency(monthlyIncome)}</span>
                                                 </div>
-                                            ))}
+                                                <div className={`${styles.summaryCard} ${styles.predictionCardBase}`}>
+                                                    <div className={styles.cardHeader}>
+                                                        <span className={styles.cardLabel}>Receita Futura</span>
+                                                        <FiClock className={styles.iconSuccess} />
+                                                    </div>
+                                                    <span className={`${styles.cardValue} ${styles.income} ${styles.predictionText}`}>{formatCurrency(pendingIncome)}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Column 2: Expenses */}
+                                            <div className={styles.summaryColumn}>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}>
+                                                        <span className={styles.cardLabel}>Despesa Paga</span>
+                                                        <FiTrendingDown className={styles.iconDanger} />
+                                                    </div>
+                                                    <span className={`${styles.cardValue} ${styles.expense}`}>{formatCurrency(monthlyExpenses)}</span>
+                                                </div>
+                                                <div className={`${styles.summaryCard} ${styles.predictionCardBase}`}>
+                                                    <div className={styles.cardHeader}>
+                                                        <span className={styles.cardLabel}>Conta a Pagar</span>
+                                                        <FiAlertTriangle className={styles.iconWarning} />
+                                                    </div>
+                                                    <span className={`${styles.cardValue} ${styles.expense} ${styles.predictionText}`}>{formatCurrency(pendingExpenses)}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Column 3: Balance */}
+                                            <div className={styles.summaryColumn}>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}>
+                                                        <span className={styles.cardLabel}>Balanço Real</span>
+                                                        <FiDollarSign className={styles.iconPrimary} />
+                                                    </div>
+                                                    <span className={styles.cardValue}>{formatCurrency(monthlyIncome - monthlyExpenses)}</span>
+                                                </div>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}>
+                                                        <span className={styles.cardLabel}>Saldo Previsto</span>
+                                                        <FiTarget className={styles.iconPrimary} />
+                                                    </div>
+                                                    <span className={styles.cardValue}>{formatCurrency((monthlyIncome - monthlyExpenses) + (pendingIncome - pendingExpenses))}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Charts Row */}
+                                        <motion.div
+                                            className={styles.chartsRow}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                        >
+                                            <div className={styles.largeCard} style={{ minHeight: '300px' }}>
+                                                <h3 className={styles.largeCardTitle}>Fluxo de Caixa</h3>
+                                                <div className={styles.emptyState}>Gráfico disponível em breve</div>
+                                            </div>
+                                            <div className={styles.largeCard} style={{ minHeight: '300px', padding: 0, background: 'transparent', border: 'none' }}>
+                                                <ActivityList />
+                                            </div>
+                                            <div className={styles.largeCard} style={{ minHeight: '300px', padding: 0, background: 'transparent', border: 'none' }}>
+                                                <SubscriptionWidget />
+                                            </div>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* RIGHT COLUMN: Sidebar */}
+                                    <div className={styles.dashboardSidebar}>
+                                        <div className={styles.quickActions}>
+                                            <h3>Ações Rápidas</h3>
+                                            <div className={styles.quickGrid}>
+                                                <Link href="/transactions?new=true" className={styles.quickItem}>
+                                                    <FiPlus />
+                                                    <span>Nova Transação</span>
+                                                </Link>
+                                                <Link href="/settings" className={styles.quickItem}>
+                                                    <FiHome />
+                                                    <span>Perfil</span>
+                                                </Link>
+                                                <Link href="/cards" className={styles.quickItem}>
+                                                    <FiCreditCard />
+                                                    <span>Cartão</span>
+                                                </Link>
+                                                <Link href="/goals?new=true" className={styles.quickItem}>
+                                                    <FiTarget />
+                                                    <span>Nova Meta</span>
+                                                </Link>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className={styles.emptyState}>Nenhuma conta conectada.</div>
-                                    )}
-                                </div>
-                                <div className={styles.actionCard}>
-                                    <div className={styles.actionCardInner}>
-                                        <span className={styles.actionText}>Conecte mais contas</span>
-                                        <Link href="/open-finance" className={styles.actionBtn}><FiPlus />Conectar Banco</Link>
                                     </div>
                                 </div>
-                            </motion.div>
-                        </>
-                    )
-                }
+                            </>
+                        )
+                    }
 
-                {/* INVESTMENTS TAB */}
-                {
-                    activeTab === 'investments' && (
-                        <>
-                            <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                                <span className={styles.heroLabel}>Patrimônio Investido</span>
-                                <span className={styles.heroValue}>{formatCurrency(summary.totalCurrentValue)}</span>
-                                <span className={`${styles.heroPeriod} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
-                                    {summary.totalProfit >= 0 ? '+' : ''}{formatCurrency(summary.totalProfit)} ({summary.totalProfitPercent.toFixed(2)}%)
-                                </span>
-                            </motion.div>
+                    {/* OPEN FINANCE TAB */}
+                    {
+                        activeTab === 'openfinance' && (
+                            <>
+                                <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                                    <span className={styles.heroLabel}>Saldo Open Finance</span>
+                                    <span className={styles.heroValue}>{formatCurrency(openFinanceTotal)}</span>
+                                    <span className={styles.heroPeriod}>{openFinanceAccounts.length} contas conectadas</span>
+                                </motion.div>
 
-                            <motion.div className={styles.summaryRow} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Lucro Total</span><FiTrendingUp className={styles.iconSuccess} /></div>
-                                    <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>{formatCurrency(summary.totalProfit)}</span>
-                                </div>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Rentabilidade</span><FiPieChart className={styles.iconPrimary} /></div>
-                                    <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
-                                        {summary.totalProfitPercent >= 0 ? '+' : ''}{summary.totalProfitPercent.toFixed(2)}%
+                                <motion.div className={styles.summaryRow} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Contas</span><FiLink className={styles.iconPrimary} /></div>
+                                        <span className={styles.cardValue}>{openFinanceAccounts.length}</span>
+                                    </div>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Entradas</span><FiTrendingUp className={styles.iconSuccess} /></div>
+                                        <span className={styles.cardValue}>{formatCurrency(ofIncome)}</span>
+                                    </div>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Saídas</span><FiTrendingDown className={styles.iconDanger} /></div>
+                                        <span className={styles.cardValue}>{formatCurrency(ofExpenses)}</span>
+                                    </div>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Última Sync</span><FiClock className={styles.iconMuted} /></div>
+                                        <span className={styles.cardValue}>Agora</span>
+                                    </div>
+                                </motion.div>
+
+                                <motion.div className={styles.bottomGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                    <div className={styles.largeCard}>
+                                        <h3 className={styles.largeCardTitle}>Movimento Bancário</h3>
+                                        <div className={styles.emptyState}>Gráfico disponível em breve</div>
+                                    </div>
+                                    <div className={styles.largeCard}>
+                                        <h3 className={styles.largeCardTitle}>Contas Conectadas</h3>
+                                        {openFinanceAccounts.length > 0 ? (
+                                            <div className={styles.accountsList}>
+                                                {openFinanceAccounts.map(acc => (
+                                                    <div key={acc.id} className={styles.accountItem}>
+                                                        <span className={styles.accName}>{acc.name}</span>
+                                                        <span className={styles.accInst}>{acc.institution}</span>
+                                                        <span className={styles.accBalance}>{formatCurrency(acc.balance || 0)}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className={styles.emptyState}>Nenhuma conta conectada.</div>
+                                        )}
+                                    </div>
+                                    <div className={styles.actionCard}>
+                                        <div className={styles.actionCardInner}>
+                                            <span className={styles.actionText}>Conecte mais contas</span>
+                                            <Link href="/open-finance" className={styles.actionBtn}><FiPlus />Conectar Banco</Link>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </>
+                        )
+                    }
+
+                    {/* INVESTMENTS TAB */}
+                    {
+                        activeTab === 'investments' && (
+                            <>
+                                <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                                    <span className={styles.heroLabel}>Patrimônio Investido</span>
+                                    <span className={styles.heroValue}>{formatCurrency(summary.totalCurrentValue)}</span>
+                                    <span className={`${styles.heroPeriod} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
+                                        {summary.totalProfit >= 0 ? '+' : ''}{formatCurrency(summary.totalProfit)} ({summary.totalProfitPercent.toFixed(2)}%)
                                     </span>
-                                </div>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Total Investido</span><FiTrendingUp className={styles.iconMuted} /></div>
-                                    <span className={styles.cardValue}>{formatCurrency(summary.totalCost)}</span>
-                                </div>
-                                <div className={styles.summaryCard}>
-                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Ativos</span><FiCreditCard className={styles.iconMuted} /></div>
-                                    <span className={styles.cardValue}>{positions.length}</span>
-                                </div>
-                            </motion.div>
+                                </motion.div>
 
-                            <motion.div className={styles.bottomGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                                <div className={styles.largeCard}>
-                                    <h3 className={styles.largeCardTitle}>Evolução Patrimonial</h3>
-                                    <div className={styles.emptyState}>Gráfico disponível em breve</div>
-                                </div>
-                                <div className={styles.largeCard}>
-                                    <h3 className={styles.largeCardTitle}>Posições</h3>
-                                    {positions.length > 0 ? (
-                                        <div className={styles.positionsList}>
-                                            {positions.slice(0, 4).map(pos => (
-                                                <div key={pos.ticker} className={styles.positionItem}>
-                                                    <span className={styles.posTicker}>{pos.ticker}</span>
-                                                    <span className={styles.posValue}>{formatCurrency(pos.currentValue)}</span>
-                                                    <span className={pos.profitPercent >= 0 ? styles.profit : styles.loss}>
-                                                        {pos.profitPercent >= 0 ? '+' : ''}{pos.profitPercent.toFixed(2)}%
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className={styles.emptyState}>Nenhuma posição.</div>
-                                    )}
-                                </div>
-                                <div className={styles.actionCard}>
-                                    <div className={styles.actionCardInner}>
-                                        <span className={styles.actionText}>Registre operações</span>
-                                        <Link href="/investments" className={styles.actionBtn}><FiPlus />Ver Carteira</Link>
+                                <motion.div className={styles.summaryRow} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Lucro Total</span><FiTrendingUp className={styles.iconSuccess} /></div>
+                                        <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>{formatCurrency(summary.totalProfit)}</span>
                                     </div>
-                                </div>
-                            </motion.div>
-                        </>
-                    )
-                }
-            </main >
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Rentabilidade</span><FiPieChart className={styles.iconPrimary} /></div>
+                                        <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
+                                            {summary.totalProfitPercent >= 0 ? '+' : ''}{summary.totalProfitPercent.toFixed(2)}%
+                                        </span>
+                                    </div>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Total Investido</span><FiTrendingUp className={styles.iconMuted} /></div>
+                                        <span className={styles.cardValue}>{formatCurrency(summary.totalCost)}</span>
+                                    </div>
+                                    <div className={styles.summaryCard}>
+                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Ativos</span><FiCreditCard className={styles.iconMuted} /></div>
+                                        <span className={styles.cardValue}>{positions.length}</span>
+                                    </div>
+                                </motion.div>
 
-            <Dock />
-        </div >
+                                <motion.div className={styles.bottomGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                    <div className={styles.largeCard}>
+                                        <h3 className={styles.largeCardTitle}>Evolução Patrimonial</h3>
+                                        <div className={styles.emptyState}>Gráfico disponível em breve</div>
+                                    </div>
+                                    <div className={styles.largeCard}>
+                                        <h3 className={styles.largeCardTitle}>Posições</h3>
+                                        {positions.length > 0 ? (
+                                            <div className={styles.positionsList}>
+                                                {positions.slice(0, 4).map(pos => (
+                                                    <div key={pos.ticker} className={styles.positionItem}>
+                                                        <span className={styles.posTicker}>{pos.ticker}</span>
+                                                        <span className={styles.posValue}>{formatCurrency(pos.currentValue)}</span>
+                                                        <span className={pos.profitPercent >= 0 ? styles.profit : styles.loss}>
+                                                            {pos.profitPercent >= 0 ? '+' : ''}{pos.profitPercent.toFixed(2)}%
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className={styles.emptyState}>Nenhuma posição.</div>
+                                        )}
+                                    </div>
+                                    <div className={styles.actionCard}>
+                                        <div className={styles.actionCardInner}>
+                                            <span className={styles.actionText}>Registre operações</span>
+                                            <Link href="/investments" className={styles.actionBtn}><FiPlus />Ver Carteira</Link>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </>
+                        )
+                    }
+                </main >
+
+                <Dock />
+            </div>
+        </AppShell>
     );
 }

@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
+import AppShell from '@/components/AppShell';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
