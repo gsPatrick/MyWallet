@@ -344,7 +344,7 @@ export default function SignupPage() {
                                     onClick={prevStep}
                                     className={styles.backBtn}
                                 >
-                                    <FiArrowLeft /> Voltar
+                                    Voltar
                                 </Button>
                             )}
                             <Button
@@ -353,11 +353,7 @@ export default function SignupPage() {
                                 loading={isLoading}
                                 fullWidth={step === 1}
                             >
-                                {step < 2 ? (
-                                    <>Continuar <FiArrowRight /></>
-                                ) : (
-                                    <>Criar Conta <FiCheck /></>
-                                )}
+                                {step < 2 ? 'Continuar' : 'Criar Conta'}
                             </Button>
                         </div>
                     </form>

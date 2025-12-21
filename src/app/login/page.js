@@ -226,7 +226,6 @@ export default function LoginPage() {
                             fullWidth
                             loading={isLoading}
                             className={styles.submitBtn}
-                            rightIcon={!isLoading && <FiArrowRight />}
                         >
                             {isLoading ? 'Entrando...' : 'Entrar'}
                         </Button>
