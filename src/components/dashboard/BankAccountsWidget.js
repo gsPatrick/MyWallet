@@ -11,7 +11,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FiPlus, FiChevronRight, FiRefreshCw, FiTarget } from 'react-icons/fi';
+import { FiPlus, FiChevronRight, FiRefreshCw, FiTarget, FiCreditCard } from 'react-icons/fi';
 import bankAccountService from '@/services/bankAccountService';
 import { goalsAPI } from '@/services/api';
 import styles from './BankAccountsWidget.module.css';
@@ -161,9 +161,9 @@ export default function BankAccountsWidget() {
                                             ) : (
                                                 <div
                                                     className={styles.bankIconPlaceholder}
-                                                    style={{ backgroundColor: account.color || '#6b7280' }}
+                                                    style={{ backgroundColor: account.color || '#6366f1' }}
                                                 >
-                                                    {account.bankName?.charAt(0) || 'B'}
+                                                    <FiCreditCard />
                                                 </div>
                                             )}
                                             <div className={styles.accountDetails}>
