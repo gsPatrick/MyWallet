@@ -87,9 +87,17 @@ export function OnboardingProvider({ children }) {
 
     // Start Tour for new users (who don't have onboardingComplete)
     // Tour shows FIRST, then ProfileWizard via AppShell after tour ends
+    // IMPORTANT: Only for users with ACTIVE subscription or OWNER
     useEffect(() => {
         if (profilesLoading) return;
         if (!isAuthenticated || !user) return;
+
+        // PAYWALL CHECK: Don't start onboarding if no active subscription
+        // Let AuthContext handle the redirect to checkout
+        if (user.plan !== 'OWNER' && user.subscriptionStatus !== 'ACTIVE') {
+            console.log('Onboarding: Skipping - user has no active subscription');
+            return;
+        }
 
         // If onboarding is complete, don't show anything
         if (user.onboardingComplete) {
