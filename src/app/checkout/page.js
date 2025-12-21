@@ -27,10 +27,10 @@ const PLANS = [
     {
         id: 'MONTHLY',
         name: 'Mensal',
-        price: 1.00,
-        priceLabel: 'R$ 1,00',
+        price: 29.90,
+        priceLabel: 'R$ 29,90',
         period: '/mês',
-        description: 'TESTE - R$ 1,00',
+        description: 'Cancele quando quiser',
         features: ['Acesso completo', 'Transações ilimitadas', 'Suporte por email'],
         popular: false,
         color: '#6366f1'
