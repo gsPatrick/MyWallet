@@ -3,8 +3,9 @@
 /**
  * Admin Panel - Painel Administrativo
  * ========================================
- * Acesso exclusivo para usuários OWNER
- * Dashboard de métricas, gestão de usuários, etc.
+ * - Dashboard de métricas financeiras
+ * - Gestão de usuários
+ * - Criação de usuários com planos
  * ========================================
  */
 
@@ -13,7 +14,7 @@ import { motion } from 'framer-motion';
 import {
     FiUsers, FiDollarSign, FiTrendingUp, FiUserPlus,
     FiUserMinus, FiSearch, FiGift,
-    FiChevronLeft, FiChevronRight
+    FiChevronLeft, FiChevronRight, FiPlus
 } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import Modal from '@/components/ui/Modal';
@@ -54,11 +55,21 @@ export default function AdminPage() {
     const [filterPlan, setFilterPlan] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
 
-    // Modal state
+    // Grant Modal state
     const [showGrantModal, setShowGrantModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [grantPlan, setGrantPlan] = useState('LIFETIME');
     const [granting, setGranting] = useState(false);
+
+    // Create User Modal state
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [createForm, setCreateForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        plan: 'MONTHLY'
+    });
+    const [creating, setCreating] = useState(false);
 
     // Load dashboard metrics
     useEffect(() => {
@@ -98,6 +109,11 @@ export default function AdminPage() {
         }
     }, [user, page, search, filterPlan, filterStatus]);
 
+    const refreshUsers = async () => {
+        const data = await api.get('/admin/users', { params: { page } });
+        setUsers(data.users || []);
+    };
+
     const handleGrantAccess = async () => {
         if (!selectedUser) return;
 
@@ -106,11 +122,7 @@ export default function AdminPage() {
             await api.post(`/admin/users/${selectedUser.id}/grant`, {
                 planType: grantPlan
             });
-
-            // Refresh users
-            const data = await api.get('/admin/users', { params: { page } });
-            setUsers(data.users || []);
-
+            await refreshUsers();
             setShowGrantModal(false);
             setSelectedUser(null);
         } catch (error) {
@@ -126,13 +138,31 @@ export default function AdminPage() {
 
         try {
             await api.post(`/admin/users/${userId}/revoke`);
-
-            // Refresh users
-            const data = await api.get('/admin/users', { params: { page } });
-            setUsers(data.users || []);
+            await refreshUsers();
         } catch (error) {
             console.error('Erro ao revogar acesso:', error);
             alert('Erro ao revogar acesso');
+        }
+    };
+
+    const handleCreateUser = async () => {
+        if (!createForm.name || !createForm.email || !createForm.password) {
+            alert('Preencha todos os campos');
+            return;
+        }
+
+        setCreating(true);
+        try {
+            await api.post('/admin/users/create', createForm);
+            await refreshUsers();
+            setShowCreateModal(false);
+            setCreateForm({ name: '', email: '', password: '', plan: 'MONTHLY' });
+            alert('Usuário criado com sucesso!');
+        } catch (error) {
+            console.error('Erro ao criar usuário:', error);
+            alert(error?.error || 'Erro ao criar usuário');
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -141,8 +171,13 @@ export default function AdminPage() {
             <div className={styles.container}>
                 {/* Page Header */}
                 <div className={styles.pageHeader}>
-                    <h1>Painel Administrativo</h1>
-                    <p>Gestão de usuários e métricas do sistema</p>
+                    <div className={styles.pageTitle}>
+                        <h1>Painel Administrativo</h1>
+                        <p>Gestão de usuários e métricas do sistema</p>
+                    </div>
+                    <button className={styles.createUserBtn} onClick={() => setShowCreateModal(true)}>
+                        <FiPlus /> Criar Usuário
+                    </button>
                 </div>
 
                 {/* KPI Cards */}
@@ -205,6 +240,41 @@ export default function AdminPage() {
                             <span className={styles.kpiValue}>{dashboard?.newUsersThisMonth || 0}</span>
                         </div>
                     </motion.div>
+                </div>
+
+                {/* Financial Dashboard */}
+                <div className={styles.financialSection}>
+                    <div className={styles.chartCard}>
+                        <h3>Receita por Plano</h3>
+                        <div className={styles.chartPlaceholder}>
+                            Gráfico de receita em desenvolvimento
+                        </div>
+                    </div>
+                    <div className={styles.chartCard}>
+                        <h3>Resumo</h3>
+                        <div className={styles.revenueList}>
+                            <div className={styles.revenueItem}>
+                                <span className={styles.revenueLabel}>Assinaturas Mensais</span>
+                                <span className={`${styles.revenueValue} ${styles.positive}`}>
+                                    {dashboard?.monthlySubscribers || 0}
+                                </span>
+                            </div>
+                            <div className={styles.revenueItem}>
+                                <span className={styles.revenueLabel}>Assinaturas Anuais</span>
+                                <span className={`${styles.revenueValue} ${styles.positive}`}>
+                                    {dashboard?.annualSubscribers || 0}
+                                </span>
+                            </div>
+                            <div className={styles.revenueItem}>
+                                <span className={styles.revenueLabel}>Vitalícios</span>
+                                <span className={styles.revenueValue}>{dashboard?.lifetimeUsers || 0}</span>
+                            </div>
+                            <div className={styles.revenueItem}>
+                                <span className={styles.revenueLabel}>Total de Usuários</span>
+                                <span className={styles.revenueValue}>{dashboard?.totalUsers || 0}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Users Section */}
@@ -353,24 +423,87 @@ export default function AdminPage() {
                 title="Liberar Acesso"
                 size="sm"
             >
-                <div className={styles.grantModal}>
+                <div className={styles.modalContent}>
                     <p>Conceder acesso para <strong>{selectedUser?.name}</strong>?</p>
 
-                    <div className={styles.grantSelect}>
+                    <div className={styles.formGroup}>
                         <label>Selecione o Plano:</label>
                         <select value={grantPlan} onChange={(e) => setGrantPlan(e.target.value)}>
-                            <option value="MONTHLY">Mensal (1 mês grátis)</option>
-                            <option value="ANNUAL">Anual (1 ano grátis)</option>
+                            <option value="MONTHLY">Mensal (1 mês)</option>
+                            <option value="ANNUAL">Anual (1 ano)</option>
                             <option value="LIFETIME">Vitalício (para sempre)</option>
                         </select>
                     </div>
 
-                    <div className={styles.grantActions}>
+                    <div className={styles.modalActions}>
                         <Button variant="secondary" onClick={() => setShowGrantModal(false)}>
                             Cancelar
                         </Button>
                         <Button onClick={handleGrantAccess} disabled={granting}>
                             {granting ? 'Processando...' : 'Confirmar'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Create User Modal */}
+            <Modal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                title="Criar Novo Usuário"
+                size="md"
+            >
+                <div className={styles.modalContent}>
+                    <div className={styles.formRow}>
+                        <div className={styles.formGroup}>
+                            <label>Nome</label>
+                            <input
+                                type="text"
+                                placeholder="Nome completo"
+                                value={createForm.name}
+                                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                            />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                placeholder="email@exemplo.com"
+                                value={createForm.email}
+                                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.formRow}>
+                        <div className={styles.formGroup}>
+                            <label>Senha</label>
+                            <input
+                                type="password"
+                                placeholder="Senha do usuário"
+                                value={createForm.password}
+                                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                            />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label>Plano</label>
+                            <select
+                                value={createForm.plan}
+                                onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value })}
+                            >
+                                <option value="MONTHLY">Mensal</option>
+                                <option value="ANNUAL">Anual</option>
+                                <option value="LIFETIME">Vitalício</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className={styles.modalActions}>
+                        <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleCreateUser} disabled={creating}>
+                            {creating ? 'Criando...' : 'Criar Usuário'}
                         </Button>
                     </div>
                 </div>

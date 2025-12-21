@@ -4,19 +4,19 @@
  * Admin Layout
  * ========================================
  * Layout dedicado para o admin, sem onboarding e dock
+ * Suporta tema claro e escuro
  * ========================================
  */
 
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { NotificationProvider } from '@/contexts/NotificationContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiLogOut, FiHome } from 'react-icons/fi';
+import { FiLogOut, FiHome, FiSun, FiMoon } from 'react-icons/fi';
 import styles from './layout.module.css';
 
-function AdminHeader() {
+function AdminHeader({ theme, toggleTheme }) {
     const { user, logout } = useAuth();
     const router = useRouter();
 
@@ -30,7 +30,7 @@ function AdminHeader() {
             <div className={styles.headerContent}>
                 <Link href="/admin" className={styles.logoLink}>
                     <Image
-                        src="/images/logoparafundopreto.png"
+                        src={theme === 'dark' ? "/images/logoparafundopreto.png" : "/images/logoparafundobranco.png"}
                         alt="MyWallet Admin"
                         width={140}
                         height={50}
@@ -41,11 +41,16 @@ function AdminHeader() {
 
                 <div className={styles.headerRight}>
                     <span className={styles.userName}>{user?.name}</span>
+
+                    <button onClick={toggleTheme} className={styles.themeBtn} title={theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}>
+                        {theme === 'dark' ? <FiSun /> : <FiMoon />}
+                    </button>
+
                     <Link href="/dashboard" className={styles.dashboardLink}>
-                        <FiHome /> Dashboard
+                        <FiHome /> <span>Dashboard</span>
                     </Link>
                     <button onClick={handleLogout} className={styles.logoutBtn}>
-                        <FiLogOut /> Sair
+                        <FiLogOut /> <span>Sair</span>
                     </button>
                 </div>
             </div>
@@ -83,10 +88,23 @@ function AdminGuard({ children }) {
 }
 
 function AdminLayoutContent({ children }) {
+    const [theme, setTheme] = useState('dark');
+
+    useEffect(() => {
+        const saved = localStorage.getItem('admin_theme') || 'dark';
+        setTheme(saved);
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+        localStorage.setItem('admin_theme', newTheme);
+    };
+
     return (
         <AdminGuard>
-            <div className={styles.adminLayout}>
-                <AdminHeader />
+            <div className={`${styles.adminLayout} ${styles[theme]}`} data-theme={theme}>
+                <AdminHeader theme={theme} toggleTheme={toggleTheme} />
                 <main className={styles.adminMain}>
                     {children}
                 </main>
