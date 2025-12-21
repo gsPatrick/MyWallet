@@ -22,7 +22,7 @@ import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
-import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI } from '@/services/api';
+import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI, bankAccountsAPI } from '@/services/api';
 import styles from './page.module.css';
 
 // Open Finance cards mock
@@ -85,6 +85,7 @@ export default function CardsPage() {
 
     const [cards, setCards] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
+    const [bankAccounts, setBankAccounts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [activeTab, setActiveTab] = useState('cards');
@@ -113,14 +114,17 @@ export default function CardsPage() {
         const loadData = async () => {
             setIsLoading(true);
             try {
-                const [cardsRes, subsRes] = await Promise.all([
+                const [cardsRes, subsRes, banksRes] = await Promise.all([
                     cardsAPI.list(),
-                    subscriptionsAPI.list()
+                    subscriptionsAPI.list(),
+                    bankAccountsAPI.list()
                 ]);
                 console.log('💳 [CARDS PAGE] Cards from API:', cardsRes?.data);
                 console.log('📋 [CARDS PAGE] Subscriptions from API:', subsRes?.data);
+                console.log('🏦 [CARDS PAGE] Bank Accounts from API:', banksRes?.data);
                 setCards(cardsRes?.data || []);
                 setSubscriptions(subsRes?.data || []);
+                setBankAccounts(banksRes?.data || []);
             } catch (error) {
                 console.error("Error loading cards:", error);
             } finally {
@@ -146,12 +150,14 @@ export default function CardsPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [cardsRes, subsRes] = await Promise.all([
+            const [cardsRes, subsRes, banksRes] = await Promise.all([
                 cardsAPI.list(),
-                subscriptionsAPI.list()
+                subscriptionsAPI.list(),
+                bankAccountsAPI.list()
             ]);
             setCards(cardsRes?.data || []);
             setSubscriptions(subsRes?.data || []);
+            setBankAccounts(banksRes?.data || []);
         } catch (error) {
             console.error("Error loading data:", error);
         } finally {
@@ -1080,6 +1086,7 @@ export default function CardsPage() {
                 onClose={() => { setShowCardModal(false); setEditingCard(null); }}
                 onSave={handleSaveCard}
                 editingCard={editingCard}
+                bankAccounts={bankAccounts}
             />
 
             {/* Subscription Modal with Gallery */}

@@ -121,7 +121,7 @@ export default function Features() {
                         <div className={styles.dashboardGlow} />
                         <div className={styles.dashboardPlaceholder}>
                             <Image
-                                src="/images/dashboard-screenshot.png"
+                                src="/images/dashboard.png"
                                 alt="Dashboard MyWallet"
                                 fill
                                 style={{ objectFit: 'cover', borderRadius: '16px' }}

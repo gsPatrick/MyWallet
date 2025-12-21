@@ -231,5 +231,14 @@ export const dasAPI = {
     ensureGuides: () => api.post('/das/ensure'),
 };
 
+// Bank Accounts API
+export const bankAccountsAPI = {
+    list: () => api.get('/bank-accounts'),
+    get: (id) => api.get(`/bank-accounts/${id}`),
+    create: (data) => api.post('/bank-accounts', data),
+    update: (id, data) => api.put(`/bank-accounts/${id}`, data),
+    delete: (id) => api.delete(`/bank-accounts/${id}`),
+};
+
 export default api;
 

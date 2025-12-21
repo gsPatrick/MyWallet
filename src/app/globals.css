@@ -205,6 +205,9 @@ textarea,
 select {
   font-family: inherit;
   font-size: inherit;
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-medium);
 }
 
 img,
