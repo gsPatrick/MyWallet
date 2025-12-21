@@ -104,6 +104,37 @@ export default function Features() {
                     </p>
                 </motion.div>
 
+                {/* Dashboard Screenshot */}
+                <motion.div
+                    className={styles.dashboardWrapper}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7 }}
+                >
+                    <motion.div
+                        className={styles.dashboardContainer}
+                        variants={floatAnimation}
+                        initial="initial"
+                        animate="animate"
+                    >
+                        <div className={styles.dashboardGlow} />
+                        <div className={styles.dashboardPlaceholder}>
+                            <Image
+                                src="/images/dashboard-screenshot.png"
+                                alt="Dashboard MyWallet"
+                                fill
+                                style={{ objectFit: 'cover', borderRadius: '16px' }}
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                            <div className={styles.dashboardPlaceholderContent}>
+                                <FiPieChart size={56} />
+                                <span>Screenshot do Dashboard</span>
+                            </div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+
                 {/* Alternating Feature Sections */}
                 <div className={styles.featuresAlternating}>
                     {mainFeatures.map((feature, index) => (

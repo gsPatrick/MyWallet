@@ -44,6 +44,49 @@
     margin-right: auto;
 }
 
+/* Dashboard Screenshot */
+.dashboardWrapper {
+    margin-bottom: 80px;
+}
+
+.dashboardContainer {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.dashboardGlow {
+    position: absolute;
+    inset: -30px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    border-radius: 40px;
+    filter: blur(50px);
+    z-index: 0;
+}
+
+.dashboardPlaceholder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(145deg, #1a1a2e 0%, #2d2d4a 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dashboardPlaceholderContent {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1rem;
+}
+
 /* Alternating Feature Rows */
 .featuresAlternating {
     display: flex;
