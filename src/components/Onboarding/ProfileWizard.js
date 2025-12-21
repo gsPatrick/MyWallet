@@ -340,8 +340,16 @@ export default function ProfileWizard({ onComplete }) {
                 return profileType !== null;
             case 'config':
                 if (profileType === 'PERSONAL') return personalName.trim() !== '';
-                if (profileType === 'BUSINESS') return businessName.trim() !== '';
-                if (profileType === 'HYBRID') return personalName.trim() !== '' && businessName.trim() !== '';
+                if (profileType === 'BUSINESS') {
+                    const cnpjValid = businessCnpj.replace(/\D/g, '').length === 14;
+                    const cpfValid = businessCpf.replace(/\D/g, '').length === 11;
+                    return businessName.trim() !== '' && cnpjValid && cpfValid;
+                }
+                if (profileType === 'HYBRID') {
+                    const cnpjValid = businessCnpj.replace(/\D/g, '').length === 14;
+                    const cpfValid = businessCpf.replace(/\D/g, '').length === 11;
+                    return personalName.trim() !== '' && businessName.trim() !== '' && cnpjValid && cpfValid;
+                }
                 return false;
             case 'default':
                 return defaultProfile !== null;
@@ -626,7 +634,7 @@ export default function ProfileWizard({ onComplete }) {
                 }
             }
 
-            // 7. Reset to default profile and RELOAD to apply context
+            // 7. Reset to default profile
             if (defaultProfileId && typeof window !== 'undefined') {
                 localStorage.setItem('investpro_profile_id', defaultProfileId);
                 console.log('💾 [WIZARD] Final profileId set to:', defaultProfileId);
@@ -634,12 +642,13 @@ export default function ProfileWizard({ onComplete }) {
 
             await refreshProfiles();
 
-            // 8. Reload page after a short delay to ensure all contexts load with correct profile
-            // This is necessary because ProfileContext was already loaded before onboarding
-            setTimeout(() => {
-                console.log('🔄 [WIZARD] Reloading page to apply profile context...');
-                window.location.reload();
-            }, 500);
+            console.log('═══════════════════════════════════════════════════');
+            console.log('✅ [WIZARD] ONBOARDING COMPLETE - Showing completion screen');
+            console.log('═══════════════════════════════════════════════════');
+
+            // Success - show completion screen
+            setLoading(false);
+            setStep('complete');
         } catch (e) {
             console.error('═══════════════════════════════════════════════════');
             console.error('❌ [WIZARD] Error saving profiles:', e);
@@ -647,9 +656,10 @@ export default function ProfileWizard({ onComplete }) {
             console.error('   - ErrorName:', e?.errorName);
             console.error('   - Full object:', JSON.stringify(e, null, 2));
             console.error('═══════════════════════════════════════════════════');
+            setLoading(false);
+            // Even on error, show complete so user can try again or continue
+            setStep('complete');
         }
-        setLoading(false);
-        setStep('complete');
     };
 
     const handleBack = () => {
@@ -1225,21 +1235,6 @@ export default function ProfileWizard({ onComplete }) {
                                         </div>
                                     </div>
                                 )}
-
-                                {/* Business Balance */}
-                                <div className={styles.inputGroup}>
-                                    <label>Saldo Inicial da Empresa (opcional)</label>
-                                    <div className={styles.currencyInput}>
-                                        <span>R$</span>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={businessBalance}
-                                            onChange={(e) => handleCurrencyChange(e.target.value, setBusinessBalance)}
-                                            placeholder="0,00"
-                                        />
-                                    </div>
-                                </div>
 
                                 {businessSubtype === 'MEI' && (
                                     <p className={styles.hint}>

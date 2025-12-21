@@ -453,19 +453,120 @@
     box-shadow: 0 8px 20px -5px rgba(34, 197, 94, 0.4);
 }
 
-/* Mobile */
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .overlay {
+        align-items: flex-end;
+    }
+
+    .container {
+        padding: 1.75rem;
+        border-radius: 20px 20px 0 0;
+        max-height: 90vh;
+    }
+
+    .stepContent h2 {
+        font-size: 1.25rem;
+    }
+
+    .iconWrapper {
+        width: 64px;
+        height: 64px;
+    }
+
+    .iconWrapper svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .description {
+        font-size: 0.875rem;
+    }
+
+    .navigation {
+        margin-top: 1.5rem;
+    }
+
+    .backBtn,
+    .nextBtn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
 @media (max-width: 480px) {
     .container {
-        padding: 1.5rem;
+        padding: 1.5rem 1rem;
         max-height: 95vh;
+    }
+
+    .progressBar {
+        margin-bottom: 1.5rem;
+    }
+
+    .iconWrapper {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 1rem;
+    }
+
+    .iconWrapper svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .stepContent h2 {
+        font-size: 1.125rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .description {
+        font-size: 0.8125rem;
+        margin-bottom: 1rem;
     }
 
     .inputRow {
         grid-template-columns: 1fr;
     }
 
+    .inputGroup input,
+    .inputGroup select {
+        padding: 0.75rem;
+        font-size: 0.9375rem;
+    }
+
     .popularGrid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.375rem;
+    }
+
+    .popularItem {
+        padding: 0.625rem;
+    }
+
+    .popularItem span {
+        font-size: 0.8125rem;
+    }
+
+    .popularItem small {
+        font-size: 0.6875rem;
+    }
+
+    .itemsList {
+        max-height: 160px;
+    }
+
+    .listItem {
+        padding: 0.625rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .itemInfo strong {
+        font-size: 0.875rem;
+    }
+
+    .itemInfo span {
+        font-size: 0.75rem;
     }
 
     .addForm {
@@ -478,5 +579,50 @@
 
     .addForm .currencyInput {
         max-width: 100%;
+    }
+
+    .addBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .navigation {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+
+    .backBtn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem;
+        order: 1;
+    }
+
+    .nextBtn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 0.9375rem;
+        order: 0;
+    }
+
+    .summary {
+        padding: 0.75rem;
+        margin: 1rem 0;
+    }
+
+    .summary div {
+        font-size: 0.875rem;
+        padding: 0.375rem 0;
+    }
+
+    .hint {
+        font-size: 0.8125rem;
+        padding: 0.625rem;
+    }
+
+    .totalBar {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
     }
 }

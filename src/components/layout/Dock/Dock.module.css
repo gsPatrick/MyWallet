@@ -386,7 +386,12 @@
 
     .quickActionsModal {
         bottom: 80px;
-        width: 95%;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        transform: none;
+        width: calc(100% - 24px);
+        max-width: 380px;
         padding: 16px;
     }
 

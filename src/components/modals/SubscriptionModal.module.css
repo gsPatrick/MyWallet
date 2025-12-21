@@ -291,12 +291,12 @@
 
 /* Light Theme Overrides */
 [data-theme="light"] .inputLabel {
-    color: rgba(0, 0, 0, 0.7);
+    color: #1a1a2e;
 }
 
 [data-theme="light"] .selectInput {
     background: rgba(0, 0, 0, 0.04);
-    border-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.15);
     color: #1a1a2e;
 }
 
@@ -320,6 +320,15 @@
 
 [data-theme="light"] .modalActions {
     border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .formRow {
+    color: #1a1a2e;
+}
+
+[data-theme="light"] .buttonAligned button {
+    color: var(--primary-color, #3b82f6);
+    border-color: var(--primary-color, #3b82f6);
 }
 
 [data-theme="light"] .searchIcon {

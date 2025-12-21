@@ -675,7 +675,7 @@
 .summaryLabel {
     display: block;
     font-size: 0.8125rem;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     margin-bottom: 2px;
 }
 
@@ -1990,6 +1990,36 @@
 
     .invoiceMeta {
         gap: var(--spacing-md);
+    }
+
+    /* Fix Filter Bar on Mobile */
+    .filterBar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+    }
+
+    .filterGroup {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filterSelect {
+        width: 100%;
+        text-align: center;
+        text-align-last: center;
+        /* For mobile centering of select text */
+    }
+
+    .filterBar button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Improve contrast for summary labels on mobile (and globally if needed) */
+    .summaryLabel {
+        color: var(--text-secondary);
+        /* Was tertiary, making it brighter */
     }
 }
 

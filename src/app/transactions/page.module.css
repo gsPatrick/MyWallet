@@ -37,18 +37,83 @@
 .summaryGrid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px;
+    /* Tighter gap */
     margin-bottom: var(--spacing-xl);
 }
 
 .summaryCard {
     background: rgba(30, 30, 35, 0.6);
     border-radius: 12px;
-    padding: 16px;
+    padding: 12px;
+    /* Smaller desktop padding */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
+    /* Tighter internal gap */
+}
+
+/* ... existing variants ... */
+
+.summaryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summaryLabel {
+    font-size: 0.7rem;
+    /* Smaller labels */
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.summaryValue {
+    font-size: 1rem;
+    /* Smaller values */
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+/* Visibility Utilities */
+.desktopOnly {
+    display: block;
+}
+
+.mobileOnly {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .desktopOnly {
+        display: none !important;
+    }
+
+    .mobileOnly {
+        display: flex !important;
+        width: 100%;
+    }
+
+    /* Restore Mobile Output Sizes */
+    .summaryGrid {
+        gap: 12px;
+    }
+
+    .summaryCard {
+        padding: 16px;
+        gap: 8px;
+    }
+
+    .summaryLabel {
+        font-size: 0.75rem;
+    }
+
+    .summaryValue {
+        font-size: 1.25rem;
+    }
+
 }
 
 [data-theme="light"] .summaryCard {
@@ -108,10 +173,19 @@
 }
 
 /* Charts Grid container - keeping it but adjusting */
+/* Charts Grid */
 .chartsGrid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 340px;
     gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+@media (max-width: 900px) {
+    .chartsGrid {
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 /* Filters */
@@ -124,24 +198,7 @@
 }
 
 /* Filter Toggle */
-.filterToggle {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
 
-.filterToggle:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-}
 
 .headerActions {
     display: flex;
@@ -159,6 +216,56 @@
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-light);
     margin-bottom: var(--spacing-xl);
+}
+
+/* Visibility Utilities */
+.desktopOnly {
+    display: block;
+}
+
+.mobileOnly {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .desktopOnly {
+        display: none !important;
+    }
+
+    .mobileOnly {
+        display: flex !important;
+        width: 100%;
+    }
+
+    /* Mobile Improvements */
+    .headerActions {
+        flex-direction: column;
+        width: 100%;
+        gap: var(--spacing-sm);
+    }
+
+    .headerActions button {
+        width: 100%;
+    }
+
+    .chartHeader {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .chartFilters {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .chartSubFilters {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .chartCard {
+        align-items: center;
+    }
 }
 
 .filterSection {
@@ -734,6 +841,24 @@
     margin-top: var(--spacing-md);
 }
 
+
+.filterTriggerContainer {
+    margin-bottom: var(--spacing-md);
+    display: none;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    .filterTriggerContainer {
+        display: flex;
+    }
+}
+
+.filterTriggerContainer button {
+    width: auto;
+    min-width: 200px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .main {
@@ -756,9 +881,20 @@
         gap: var(--spacing-md);
     }
 
+    .filterTriggerContainer {
+        width: 100%;
+    }
+
+    .filterTriggerContainer button {
+        width: 100%;
+    }
+
     .headerActions {
         width: 100%;
         justify-content: center;
+        flex-direction: column;
+        /* Stack buttons vertically on mobile */
+        gap: var(--spacing-sm);
     }
 
     .tipsBanner {
@@ -788,19 +924,99 @@
     }
 
     .filterGroup {
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
     }
 
+    .filterBtn {
+        width: 100%;
+        justify-content: center;
+        padding: var(--spacing-md);
+        /* Larger touch target */
+        font-size: 0.9375rem;
+        /* Larger text */
+    }
+
+    .filterSelect {
+        width: 100%;
+        padding: var(--spacing-md);
+        font-size: 0.9375rem;
+    }
+
+    /* Larger Transaction Items for Mobile */
     .transactionItem {
-        flex-wrap: wrap;
+        padding: var(--spacing-lg) var(--spacing-md);
+        /* More breathing room */
+        gap: var(--spacing-lg);
+        align-items: flex-start;
+        /* Align to top for better multiline handling */
+    }
+
+    .transactionIcon {
+        width: 56px;
+        /* Bigger icon */
+        height: 56px;
+        font-size: 1.5rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .transactionInfo {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        justify-content: center;
+        min-height: 56px;
+        /* Match icon height */
+    }
+
+    .transactionDesc {
+        font-size: 1.125rem;
+        /* Bigger title */
+        font-weight: 600;
+        white-space: normal;
+        /* Allow wrap */
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .transactionMeta {
+        font-size: 0.875rem;
+    }
+
+    .transactionAmount {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        height: 56px;
+    }
+
+    .transactionAmount>span:first-child {
+        font-size: 1.25rem;
+        /* Bigger amount */
+        font-weight: 700;
+    }
+
+    .transactionDate {
+        font-size: 0.8125rem;
     }
 
     .transactionActions {
         width: 100%;
         margin-left: 0;
-        margin-top: var(--spacing-sm);
+        margin-top: var(--spacing-md);
         justify-content: flex-end;
+        border-top: 1px solid var(--border-light);
+        padding-top: var(--spacing-sm);
+    }
+
+    .filterTriggerContainer {
+        width: 100%;
+    }
+
+    .filterTriggerContainer button {
+        width: 100%;
     }
 
     .formRow {
@@ -925,26 +1141,28 @@
 
 .chartHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-sm);
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
     color: var(--text-secondary);
+    gap: var(--spacing-md);
+    width: 100%;
 }
 
 .chartHeader h3 {
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
 .chartFilters {
     display: flex;
-    gap: 4px;
+    gap: var(--spacing-sm);
 }
 
 .chartFilterBtn {
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 0.6875rem;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
     font-weight: 600;
     background: var(--bg-tertiary);
     color: var(--text-tertiary);
@@ -966,16 +1184,17 @@
 
 .chartSubFilters {
     display: flex;
-    gap: 4px;
-    margin-bottom: var(--spacing-md);
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    width: 100%;
 }
 
 .chartSubBtn {
-    flex: 1;
-    padding: 6px 8px;
-    border-radius: var(--radius-sm);
-    font-size: 0.625rem;
-    font-weight: 500;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
     background: var(--bg-tertiary);
     color: var(--text-tertiary);
@@ -1001,11 +1220,12 @@
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-lg);
+    width: 100%;
 }
 
 .pieChart {
-    width: 160px;
-    height: 160px;
+    width: 240px;
+    height: 240px;
     position: relative;
 }
 

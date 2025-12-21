@@ -335,25 +335,34 @@
     .summaryRow {
         grid-template-columns: 1fr;
     }
+
+    .formRow {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: var(--spacing-md);
+    }
 }
 
 @media (max-width: 768px) {
     .pageHeader {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
         gap: var(--spacing-md);
     }
 
     .goalsGrid {
         grid-template-columns: 1fr;
+        width: 100%;
+        justify-items: stretch;
+    }
+
+    .ghostGoalContainer {
+        max-width: 100%;
     }
 }
 
-@media (max-width: 640px) {
-    .formRow {
-        grid-template-columns: 1fr;
-    }
-}
+
 
 /* Goal Actions */
 .goalActions {

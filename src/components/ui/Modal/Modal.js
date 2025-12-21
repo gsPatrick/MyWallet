@@ -60,10 +60,10 @@ export default function Modal({
                     {/* Modal */}
                     <motion.div
                         className={`${styles.modal} ${styles[size]}`}
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        initial={{ opacity: 0, y: '100%' }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: '100%' }}
+                        transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="modal-title"

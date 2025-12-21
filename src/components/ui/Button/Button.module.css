@@ -87,6 +87,26 @@
     filter: brightness(1.1);
 }
 
+.outline {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.outline:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .outline {
+    color: var(--primary-color, #6366f1);
+    border-color: var(--primary-color, #6366f1);
+}
+
+[data-theme="light"] .outline:hover:not(:disabled) {
+    background: rgba(99, 102, 241, 0.1);
+}
+
 /* Full Width */
 .fullWidth {
     width: 100%;

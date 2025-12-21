@@ -312,17 +312,108 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .main {
+        /* No header on mobile */
+        padding-top: var(--spacing-lg);
+    }
+
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+
     .profileHeader {
         flex-direction: column;
         text-align: center;
+        padding: var(--spacing-lg);
+        gap: var(--spacing-lg);
+    }
+
+    .avatarSection {
+        width: 100%;
+    }
+
+    .avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .userInfo {
+        width: 100%;
+    }
+
+    .userName {
+        font-size: 1.5rem;
     }
 
     .userMeta {
         align-items: center;
     }
 
+    .userMeta span {
+        font-size: 0.875rem;
+        justify-content: center;
+    }
+
+    .statsCard,
+    .achievementsCard {
+        padding: var(--spacing-lg);
+    }
+
+    .cardHeader {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        align-items: flex-start;
+    }
+
+    .cardTitle {
+        font-size: 1rem;
+    }
+
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .statItem {
+        padding: var(--spacing-md);
+    }
+
+    .statValue {
+        font-size: 1.125rem;
+    }
+
+    .statLabel {
+        font-size: 0.75rem;
+    }
+
+    .achievementItem {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+
+    .achievementIcon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .achievementName {
+        font-size: 0.9375rem;
+    }
+
+    .achievementDate {
+        font-size: 0.75rem;
+    }
+
+    .profileMedalBadge {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .xpHeader {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
     }
 }
 

@@ -47,7 +47,7 @@ const dockItems = [
 const quickActions = [
     { id: 'new-transaction', href: '/transactions?new=true', icon: FiPlus, label: 'Nova Transação', color: '#22c55e' },
     { id: 'new-goal', href: '/goals?new=true', icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6' },
-    { id: 'profile', href: '/settings', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
+    { id: 'profile', href: '/profile/me', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
     { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartão', color: '#f59e0b' },
     { id: 'banks', href: '/banks', icon: BsBank2, label: 'Bancos', color: '#0ea5e9' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },

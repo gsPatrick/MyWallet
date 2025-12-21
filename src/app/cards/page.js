@@ -439,7 +439,7 @@ export default function CardsPage() {
                             <p className={styles.pageSubtitle}>Gerencie seus cartões e gastos recorrentes</p>
                         </div>
                         {activeTab === 'cards' && !selectedCard && (
-                            <Button leftIcon={<FiPlus />} onClick={() => openCardModal()}>Novo Cartão</Button>
+                            <Button leftIcon={<FiPlus />} size="lg" onClick={() => openCardModal()}>Novo Cartão</Button>
                         )}
                         {activeTab === 'openfinance' && !selectedCard && (
                             <button className={styles.linkBtn} onClick={() => setShowFutureModal(true)}>
@@ -447,7 +447,7 @@ export default function CardsPage() {
                             </button>
                         )}
                         {activeTab === 'subscriptions' && (
-                            <Button leftIcon={<FiPlus />} onClick={() => openSubModal()}>Nova Assinatura</Button>
+                            <Button leftIcon={<FiPlus />} size="lg" onClick={() => openSubModal()}>Nova Assinatura</Button>
                         )}
                         {selectedCard && (
                             <Button variant="secondary" leftIcon={<FiChevronLeft />} onClick={closeInvoice}>
@@ -965,9 +965,7 @@ export default function CardsPage() {
                                         ))}
                                     </select>
                                 </div>
-                                <Button onClick={() => openSubModal()} leftIcon={<FiPlus />}>
-                                    Nova Assinatura
-                                </Button>
+
                             </div>
 
                             <Card className={styles.subsCard}>

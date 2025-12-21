@@ -6,7 +6,7 @@ import styles from './Button.module.css';
 
 const Button = forwardRef(({
     children,
-    variant = 'primary', // primary, secondary, ghost, danger, success
+    variant = 'primary', // primary, secondary, ghost, danger, success, outline
     size = 'md', // sm, md, lg
     fullWidth = false,
     loading = false,

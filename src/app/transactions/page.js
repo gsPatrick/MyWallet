@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     FiPlus, FiFilter, FiCalendar, FiTrendingUp, FiTrendingDown, FiEdit, FiTrash2,
@@ -34,6 +34,7 @@ import styles from './page.module.css';
 function TransactionsContent() {
     // URL params for auto-open modal
     const searchParams = useSearchParams();
+    const router = useRouter();
 
     // Privacy-aware formatting
     const { formatCurrency } = usePrivateCurrency();
@@ -469,19 +470,30 @@ function TransactionsContent() {
                             <p className={styles.pageSubtitle}>Gerencie suas receitas, despesas e assinaturas</p>
                         </div>
                         <div className={styles.headerActions}>
-                            <button id="filter-bar" className={styles.filterToggle} onClick={() => setShowFilters(!showFilters)}>
-                                <FiFilter />
-                                Filtros
-                            </button>
-                            <Link
-                                href="/banks?transfer=true"
-                                className={styles.transferBtn}
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '10px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
+                            <div className={styles.desktopOnly}>
+                                <Button
+                                    leftIcon={<FiFilter />}
+                                    size="lg"
+                                    variant="secondary"
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className={showFilters ? styles.activeFilter : ''}
+                                >
+                                    Filtros
+                                </Button>
+                            </div>
+                            <Button
+                                leftIcon={<FiRepeat />}
+                                size="lg"
+                                onClick={() => router.push('/banks?transfer=true')}
+                                variant="secondary"
                             >
-                                <FiRepeat />
                                 Transferir
-                            </Link>
-                            <Button leftIcon={<FiPlus />} onClick={() => setShowAddModal(true)}>
+                            </Button>
+                            <Button
+                                leftIcon={<FiPlus />}
+                                size="lg"
+                                onClick={() => setShowAddModal(true)}
+                            >
                                 Nova Transação
                             </Button>
                         </div>
@@ -661,6 +673,22 @@ function TransactionsContent() {
                                 </div>
                             </div>
                         </motion.div>
+                    </div>
+
+
+
+                    {/* Filter Trigger Button (Mobile Only) */}
+                    <div className={`${styles.filterTriggerContainer} ${styles.mobileOnly}`}>
+                        <Button
+                            leftIcon={<FiFilter />}
+                            size="lg"
+                            fullWidth
+                            variant="secondary"
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={showFilters ? styles.activeFilter : ''}
+                        >
+                            Filtros
+                        </Button>
                     </div>
 
                     {/* Filters Panel */}

@@ -145,3 +145,102 @@
     font-weight: 600;
     color: #ccc;
 }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .tooltipCard {
+        /* Fixed to bottom for mobile - always visible and accessible */
+        position: fixed !important;
+        bottom: 24px !important;
+        top: auto !important;
+        left: 12px !important;
+        right: 12px !important;
+        transform: none !important;
+        width: auto !important;
+        max-width: none !important;
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    .spotlight {
+        border-radius: 8px;
+    }
+
+    .cardContent {
+        gap: 10px;
+    }
+
+    .title {
+        font-size: 1rem;
+        padding-right: 50px;
+        /* Space for step indicator */
+    }
+
+    .description {
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    .footer {
+        margin-top: 12px;
+        gap: 12px;
+    }
+
+    .skipBtn {
+        font-size: 0.8125rem;
+        padding: 10px 0;
+    }
+
+    .nextBtn {
+        padding: 12px 18px;
+        font-size: 0.875rem;
+        border-radius: 10px;
+    }
+
+    .stepIndicator {
+        top: 20px;
+        right: 20px;
+        font-size: 0.6875rem;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 380px) {
+    .tooltipCard {
+        bottom: 16px !important;
+        left: 8px !important;
+        right: 8px !important;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .title {
+        font-size: 0.9375rem;
+    }
+
+    .description {
+        font-size: 0.8125rem;
+    }
+
+    .footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .nextBtn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px;
+    }
+
+    .skipBtn {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+    }
+
+    .stepIndicator {
+        top: 16px;
+        right: 16px;
+    }
+}

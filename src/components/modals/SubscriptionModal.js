@@ -283,7 +283,11 @@ export default function SubscriptionModal({
                             onChange={(e) => handleSetBillingDay(parseInt(e.target.value))}
                         />
                         <div className={styles.buttonAligned}>
-                            <Button size="sm" variant="outline" onClick={handleStartToday}>
+                            <Button
+                                size="sm"
+                                variant={form.nextBillingDate === new Date().toISOString().split('T')[0] ? 'primary' : 'outline'}
+                                onClick={handleStartToday}
+                            >
                                 Começar Hoje
                             </Button>
                         </div>
