@@ -17,8 +17,13 @@ export function MedalProvider({ children }) {
     const isProcessingRef = useRef(false);
 
     // Check for new medals when user logs in (only after onboarding complete)
+    // Skip for OWNER users - admins don't receive medals
     useEffect(() => {
         if (isAuthenticated && user && user.onboardingComplete) {
+            // Skip medal checks for OWNER (admin)
+            if (user.plan === 'OWNER') {
+                return;
+            }
             // Small delay to ensure auth is fully settled
             const timer = setTimeout(() => {
                 checkForNewMedals();

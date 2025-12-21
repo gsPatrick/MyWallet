@@ -99,6 +99,13 @@ export function OnboardingProvider({ children }) {
             return;
         }
 
+        // OWNER users skip onboarding entirely - they go straight to admin
+        if (user.plan === 'OWNER') {
+            console.log('Onboarding: Skipping - user is OWNER (admin)');
+            setPhase('complete');
+            return;
+        }
+
         // If onboarding is complete, don't show anything
         if (user.onboardingComplete) {
             setPhase('complete');
