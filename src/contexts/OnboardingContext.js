@@ -112,24 +112,14 @@ export function OnboardingProvider({ children }) {
             return;
         }
 
-        // If user doesn't have profiles yet, show tour first
+        // Onboarding not complete - show tour first
         // After tour completes/skips, AppShell will show ProfileWizard
-        if (!hasProfiles) {
-            const timer = setTimeout(() => {
-                setPhase('tour');
-                setShowTour(true);
-            }, 500);
-            return () => clearTimeout(timer);
-        }
-
-        // User has profiles but onboarding not complete - skip to complete
-        // (ProfileWizard was already shown by AppShell)
-        setPhase('complete');
-        // Mark as complete
-        api.put('/auth/onboarding-complete').then(() => {
-            refreshUser?.();
-            setTimeout(() => triggerMedalCheck?.(), 1000);
-        }).catch(console.error);
+        console.log('Onboarding: Starting tour for user');
+        const timer = setTimeout(() => {
+            setPhase('tour');
+            setShowTour(true);
+        }, 500);
+        return () => clearTimeout(timer);
 
     }, [isAuthenticated, user, hasProfiles, profilesLoading]);
 
