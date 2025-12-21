@@ -45,6 +45,20 @@ export function AuthProvider({ children }) {
         }
     };
 
+    // Helper: Determine redirect path based on user subscription
+    const getRedirectPath = (userData) => {
+        // OWNER = admin
+        if (userData?.plan === 'OWNER') {
+            return '/admin';
+        }
+        // ACTIVE subscription = dashboard
+        if (userData?.subscriptionStatus === 'ACTIVE') {
+            return '/dashboard';
+        }
+        // Everyone else = checkout (paywall)
+        return '/checkout';
+    };
+
     const login = async (email, password) => {
         setIsLoading(true);
         try {
@@ -58,17 +72,10 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('investpro_user', JSON.stringify(userData));
                 setUser(userData);
 
-                // PAYWALL: Check subscription status
-                // OWNER goes to admin panel ONLY
-                if (userData.plan === 'OWNER') {
-                    return { success: true, redirect: '/admin' };
-                }
-                // Active subscription = go to dashboard
-                if (userData.subscriptionStatus === 'ACTIVE') {
-                    return { success: true, redirect: '/dashboard' };
-                }
-                // No active subscription = go to checkout
-                return { success: true, redirect: '/checkout' };
+                // PAYWALL: Determine redirect
+                const redirect = getRedirectPath(userData);
+                console.log('User data:', userData, 'Redirect:', redirect);
+                return { success: true, redirect };
             }
 
             // Alternative format
@@ -78,7 +85,11 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('investpro_token', token);
                 localStorage.setItem('investpro_user', JSON.stringify(userData));
                 setUser(userData);
-                return { success: true };
+
+                // PAYWALL: Determine redirect
+                const redirect = getRedirectPath(userData);
+                console.log('User data (alt):', userData, 'Redirect:', redirect);
+                return { success: true, redirect };
             }
 
             throw new Error(response?.error || response?.message || 'Erro ao fazer login');
@@ -103,17 +114,10 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('investpro_user', JSON.stringify(userData));
                 setUser(userData);
 
-                // PAYWALL: New users are always FREE, redirect to checkout
-                // OWNER goes to admin panel
-                if (userData.plan === 'OWNER') {
-                    return { success: true, redirect: '/admin' };
-                }
-                // Active subscription = go to dashboard
-                if (userData.subscriptionStatus === 'ACTIVE') {
-                    return { success: true, redirect: '/dashboard' };
-                }
-                // New user = go to checkout
-                return { success: true, redirect: '/checkout' };
+                // PAYWALL: Determine redirect (new users go to checkout)
+                const redirect = getRedirectPath(userData);
+                console.log('Register user data:', userData, 'Redirect:', redirect);
+                return { success: true, redirect };
             }
 
             // Alternative format
@@ -123,7 +127,11 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('investpro_token', token);
                 localStorage.setItem('investpro_user', JSON.stringify(userData));
                 setUser(userData);
-                return { success: true };
+
+                // PAYWALL: Determine redirect
+                const redirect = getRedirectPath(userData);
+                console.log('Register user data (alt):', userData, 'Redirect:', redirect);
+                return { success: true, redirect };
             }
 
             throw new Error(response?.error || response?.message || 'Erro ao registrar');
