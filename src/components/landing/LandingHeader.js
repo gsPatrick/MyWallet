@@ -1,13 +1,25 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { usePageTransition } from '@/components/PageTransition';
+import { PWAInstallPrompt } from '@/components/PWA';
 import styles from './LandingHeader.module.css';
 
 export default function LandingHeader() {
     const { navigateWithTransition } = usePageTransition();
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handleLoginClick = (e) => {
         e.preventDefault();
@@ -45,6 +57,9 @@ export default function LandingHeader() {
                 </nav>
 
                 <div className={styles.actions}>
+                    {/* PWA Install Button - Mobile Only */}
+                    {isMobile && <PWAInstallPrompt variant="button" />}
+
                     <button onClick={handleLoginClick} className={styles.loginBtn}>
                         Entrar
                     </button>
