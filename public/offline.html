@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
@@ -20,26 +22,32 @@
             justify-content: center;
             padding: 20px;
         }
+
         .container {
             text-align: center;
             max-width: 400px;
         }
+
         .icon {
             font-size: 64px;
             margin-bottom: 24px;
         }
+
         h1 {
             font-size: 24px;
             margin-bottom: 16px;
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         p {
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.6;
             margin-bottom: 24px;
         }
+
         button {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
@@ -51,11 +59,13 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
+
         button:hover {
             transform: scale(1.02);
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="icon">📡</div>
@@ -64,4 +74,5 @@
         <button onclick="location.reload()">Tentar novamente</button>
     </div>
 </body>
+
 </html>

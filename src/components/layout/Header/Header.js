@@ -197,7 +197,7 @@ export default function Header({ leftContent, rightContent }) {
                     {/* Logo - Centered */}
                     <Link href="/dashboard" className={styles.logo}>
                         <img
-                            src='/images/logoparafundopreto.png'
+                            src={theme === 'dark' ? '/images/logoparafundopreto.png' : '/images/logoparafundobranco.png'}
                             alt="MyWallet"
                             width={120}
                             className={styles.logoImage}

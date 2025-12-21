@@ -348,13 +348,13 @@
 @media (max-width: 768px) {
     .dock {
         padding: var(--spacing-xs) var(--spacing-sm);
-        padding-bottom: env(safe-area-inset-bottom, 8px);
+        padding-bottom: env(safe-area-inset-bottom, 10px);
     }
 
     .dockContainer {
-        gap: 3px;
-        padding: 8px 10px;
-        border-radius: 18px;
+        gap: 4px;
+        padding: 10px 12px;
+        border-radius: 20px;
         max-width: calc(100vw - 24px);
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(80px) saturate(180%);
@@ -366,13 +366,13 @@
     }
 
     .dockItem {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
     }
 
     .icon {
-        font-size: 1rem;
+        font-size: 1.125rem;
     }
 
     .tooltip {
@@ -380,8 +380,8 @@
     }
 
     .dockDivider {
-        height: 18px;
-        margin: 0 2px;
+        height: 20px;
+        margin: 0 3px;
     }
 
     .quickActionsModal {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,13 +25,17 @@ import {
     FiBriefcase,
     FiUsers,
     FiDatabase,
-    FiLogOut
+    FiLogOut,
+    FiRepeat
 } from 'react-icons/fi';
 import { BsBank2 } from 'react-icons/bs';
 import { usePrivacy } from '@/contexts/PrivacyContext';
 import { useProfiles } from '@/contexts/ProfileContext';
 import { useAuth } from '@/contexts/AuthContext';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
+import QuickTransactionModal from '@/components/modals/QuickTransactionModal';
+import QuickGoalModal from '@/components/modals/QuickGoalModal';
+import QuickTransferModal from '@/components/modals/QuickTransferModal';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import styles from './Dock.module.css';
 
@@ -47,10 +51,10 @@ const dockItems = [
 ];
 
 const quickActions = [
-    { id: 'new-transaction', href: '/transactions?new=true', icon: FiPlus, label: 'Nova Transação', color: '#22c55e' },
-    { id: 'new-goal', href: '/goals?new=true', icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6' },
+    { id: 'new-transaction', href: null, icon: FiPlus, label: 'Nova Transação', color: '#22c55e', isModal: 'transaction' },
+    { id: 'new-goal', href: null, icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6', isModal: 'goal' },
+    { id: 'new-transfer', href: null, icon: FiRepeat, label: 'Nova Transferência', color: '#f59e0b', isModal: 'transfer' },
     { id: 'profile', href: '/profile/me', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
-    { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartão', color: '#f59e0b' },
     { id: 'banks', href: '/banks', icon: BsBank2, label: 'Bancos', color: '#0ea5e9' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
     { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
@@ -69,9 +73,46 @@ export default function Dock() {
     const [profileSwitching, setProfileSwitching] = useState({ isActive: false, type: null });
     const [showFutureModal, setShowFutureModal] = useState(false);
 
+    // Quick Action Modals
+    const [showTransactionModal, setShowTransactionModal] = useState(false);
+    const [showGoalModal, setShowGoalModal] = useState(false);
+    const [showTransferModal, setShowTransferModal] = useState(false);
+
     const handleLogout = async () => {
         setShowQuickActions(false);
         await logout();
+    };
+
+    // Handle modal open from quick actions
+    const handleOpenTransactionModal = () => {
+        setShowQuickActions(false);
+        setShowTransactionModal(true);
+    };
+
+    const handleOpenGoalModal = () => {
+        setShowQuickActions(false);
+        setShowGoalModal(true);
+    };
+
+    const handleOpenTransferModal = () => {
+        setShowQuickActions(false);
+        setShowTransferModal(true);
+    };
+
+    // When modal closes, reopen quick actions
+    const handleTransactionModalClose = () => {
+        setShowTransactionModal(false);
+        setShowQuickActions(true);
+    };
+
+    const handleGoalModalClose = () => {
+        setShowGoalModal(false);
+        setShowQuickActions(true);
+    };
+
+    const handleTransferModalClose = () => {
+        setShowTransferModal(false);
+        setShowQuickActions(true);
     };
 
     const isActive = (href) => {
@@ -234,6 +275,27 @@ export default function Dock() {
                                         );
                                     }
 
+                                    // Modal actions (Transaction & Goal)
+                                    if (action.isModal) {
+                                        const handleClick = action.isModal === 'transaction'
+                                            ? handleOpenTransactionModal
+                                            : action.isModal === 'goal'
+                                                ? handleOpenGoalModal
+                                                : handleOpenTransferModal;
+                                        return (
+                                            <button
+                                                key={action.id}
+                                                className={styles.quickActionItem}
+                                                onClick={handleClick}
+                                            >
+                                                <div className={styles.quickActionIcon} style={{ background: `${action.color}20`, color: action.color }}>
+                                                    <Icon />
+                                                </div>
+                                                <span>{action.label}</span>
+                                            </button>
+                                        );
+                                    }
+
                                     return (
                                         <Link
                                             key={action.id}
@@ -310,6 +372,29 @@ export default function Dock() {
                     </>
                 )}
             </AnimatePresence>
+
+            {/* Quick Action Modals */}
+            <QuickTransactionModal
+                isOpen={showTransactionModal}
+                onClose={handleTransactionModalClose}
+                onSuccess={() => {
+                    // Optional: refresh data or show notification
+                }}
+            />
+            <QuickGoalModal
+                isOpen={showGoalModal}
+                onClose={handleGoalModalClose}
+                onSuccess={() => {
+                    // Optional: refresh data or show notification
+                }}
+            />
+            <QuickTransferModal
+                isOpen={showTransferModal}
+                onClose={handleTransferModalClose}
+                onSuccess={() => {
+                    // Optional: refresh data or show notification
+                }}
+            />
         </>
     );
 }
