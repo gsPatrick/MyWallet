@@ -16,11 +16,23 @@ import {
     FiFileText, FiCreditCard, FiRepeat, FiPlus, FiEdit2, FiTrash2,
     FiTool, FiHome
 } from 'react-icons/fi';
+import { BiWallet } from 'react-icons/bi';
 import { profilesAPI, cardsAPI, subscriptionsAPI } from '@/services/api';
+import bankAccountService from '@/services/bankAccountService';
 import { useProfiles } from '@/contexts/ProfileContext';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
+import BankAccountModal from './BankAccountModal';
+import cardBanksData from '@/data/cardBanks.json';
 import styles from './ProfileWizard.module.css';
+
+// Convert banks object to array for mapping (with safety check)
+const banksArray = cardBanksData?.banks
+    ? Object.entries(cardBanksData.banks).map(([key, bank]) => ({
+        key,
+        ...bank
+    }))
+    : [];
 
 const PROFILE_TYPES = [
     {
@@ -152,9 +164,45 @@ export default function ProfileWizard({ onComplete }) {
     // Modal states
     const [showCardModal, setShowCardModal] = useState(false);
     const [showSubModal, setShowSubModal] = useState(false);
+    const [showBankModal, setShowBankModal] = useState(false);
     const [editingCard, setEditingCard] = useState(null);
     const [editingSub, setEditingSub] = useState(null);
+    const [editingBank, setEditingBank] = useState(null);
     const [currentProfileContext, setCurrentProfileContext] = useState('personal'); // 'personal' or 'business'
+    const [reopenCardModal, setReopenCardModal] = useState(false); // Flag to reopen CardModal after adding bank
+
+    // Bank Accounts - Personal (array of banks)
+    const [personalBanks, setPersonalBanks] = useState([
+        // Auto-default wallet
+        {
+            bankKey: 'custom',
+            bankName: 'Carteira',
+            nickname: 'MyWallet (Pessoal)',
+            icon: null,
+            color: '#6366F1',
+            balance: 0,
+            isDefault: true,
+            isCustom: true
+        }
+    ]);
+
+    // Bank Accounts - Business (array of banks)
+    const [businessBanks, setBusinessBanks] = useState([
+        // Auto-default wallet
+        {
+            bankKey: 'custom',
+            bankName: 'Carteira',
+            nickname: 'MyWallet (Empresa)',
+            icon: null,
+            color: '#10B981',
+            balance: 0,
+            isDefault: true,
+            isCustom: true
+        }
+    ]);
+
+    // Salary linked bank
+    const [salaryBankIndex, setSalaryBankIndex] = useState(0);
 
     const handleCurrencyChange = (value, setter) => {
         const masked = applyCurrencyMask(value);
@@ -230,6 +278,62 @@ export default function ProfileWizard({ onComplete }) {
         }
     };
 
+    // Bank Account Modal handlers
+    const openBankModal = (profileContext, bank = null, index = null) => {
+        setCurrentProfileContext(profileContext);
+        setEditingBank(bank ? { ...bank, _index: index } : null);
+        setShowBankModal(true);
+    };
+
+    const handleSaveBank = (bankData) => {
+        const banks = currentProfileContext === 'personal' ? personalBanks : businessBanks;
+        const setBanks = currentProfileContext === 'personal' ? setPersonalBanks : setBusinessBanks;
+
+        if (bankData._index !== undefined) {
+            // Editing existing
+            const updated = [...banks];
+            updated[bankData._index] = { ...bankData, isDefault: banks[bankData._index]?.isDefault };
+            setBanks(updated);
+        } else {
+            // Adding new - if first, set as default
+            const isFirst = banks.length === 0;
+            setBanks([...banks, { ...bankData, isDefault: isFirst }]);
+        }
+        setShowBankModal(false);
+        setEditingBank(null);
+
+        // Reopen CardModal if it was open before adding bank
+        if (reopenCardModal) {
+            setReopenCardModal(false);
+            setShowCardModal(true);
+        }
+    };
+
+    const removeBank = (profileContext, idx) => {
+        if (profileContext === 'personal') {
+            const updated = personalBanks.filter((_, i) => i !== idx);
+            // If removed was default, set first as default
+            if (personalBanks[idx]?.isDefault && updated.length > 0) {
+                updated[0].isDefault = true;
+            }
+            setPersonalBanks(updated);
+        } else {
+            const updated = businessBanks.filter((_, i) => i !== idx);
+            if (businessBanks[idx]?.isDefault && updated.length > 0) {
+                updated[0].isDefault = true;
+            }
+            setBusinessBanks(updated);
+        }
+    };
+
+    const setDefaultBank = (profileContext, idx) => {
+        if (profileContext === 'personal') {
+            setPersonalBanks(personalBanks.map((b, i) => ({ ...b, isDefault: i === idx })));
+        } else {
+            setBusinessBanks(businessBanks.map((b, i) => ({ ...b, isDefault: i === idx })));
+        }
+    };
+
     const canProceed = () => {
         switch (step) {
             case 'type':
@@ -253,11 +357,13 @@ export default function ProfileWizard({ onComplete }) {
             if (profileType === 'HYBRID') {
                 setStep('default');
             } else if (profileType === 'BUSINESS') {
-                setStep('financial_business');
+                setStep('banks_business'); // Banks first
             } else {
-                setStep('financial_personal');
+                setStep('banks_personal'); // Banks first
             }
         } else if (step === 'default') {
+            setStep('banks_personal'); // Banks first for both profiles in hybrid
+        } else if (step === 'banks_personal') {
             setStep('financial_personal');
         } else if (step === 'financial_personal') {
             setStep('cards_personal');
@@ -265,10 +371,12 @@ export default function ProfileWizard({ onComplete }) {
             setStep('subs_personal');
         } else if (step === 'subs_personal') {
             if (profileType === 'HYBRID') {
-                setStep('financial_business');
+                setStep('banks_business');
             } else {
                 await submitWizard();
             }
+        } else if (step === 'banks_business') {
+            setStep('financial_business');
         } else if (step === 'financial_business') {
             setStep('cards_business');
         } else if (step === 'cards_business') {
@@ -364,6 +472,56 @@ export default function ProfileWizard({ onComplete }) {
             // Maps to track old card references -> new card IDs
             const personalCardIdMap = new Map(); // oldRef -> newId
             const businessCardIdMap = new Map();
+
+            // 2.5. Create bank accounts for profiles from banks arrays
+            // Personal bank accounts
+            if (personalProfileId && personalBanks.length > 0) {
+                localStorage.setItem('investpro_profile_id', personalProfileId);
+                for (const bank of personalBanks) {
+                    try {
+                        await bankAccountService.create({
+                            bankName: bank.bankName || 'Carteira',
+                            bankCode: bank.bankKey !== 'custom' ? bank.bankKey : null,
+                            nickname: bank.nickname,
+                            color: bank.color || '#6366F1',
+                            icon: bank.icon || null,
+                            type: 'CONTA_CORRENTE',
+                            initialBalance: bank.balance || 0,
+                            isDefault: bank.isDefault || false
+                        });
+                        console.log('🏦 [WIZARD] Created personal bank account:', bank.nickname);
+                    } catch (bankError) {
+                        console.error('⚠️ [WIZARD] Error creating bank account (non-blocking):', bankError);
+                    }
+                }
+            }
+
+            // Business bank accounts
+            if (businessProfileId && businessBanks.length > 0) {
+                localStorage.setItem('investpro_profile_id', businessProfileId);
+                for (const bank of businessBanks) {
+                    try {
+                        await bankAccountService.create({
+                            bankName: bank.bankName || 'Carteira',
+                            bankCode: bank.bankKey !== 'custom' ? bank.bankKey : null,
+                            nickname: bank.nickname,
+                            color: bank.color || '#10b981',
+                            icon: bank.icon || null,
+                            type: 'CONTA_CORRENTE',
+                            initialBalance: bank.balance || 0,
+                            isDefault: bank.isDefault || false
+                        });
+                        console.log('🏦 [WIZARD] Created business bank account:', bank.nickname);
+                    } catch (bankError) {
+                        console.error('⚠️ [WIZARD] Error creating business bank account (non-blocking):', bankError);
+                    }
+                }
+            }
+
+            // Restore default profile for subsequent operations
+            if (defaultProfileId) {
+                localStorage.setItem('investpro_profile_id', defaultProfileId);
+            }
 
             // 3. Create cards for personal profile and track IDs
             if (personalCards.length > 0 && personalProfileId) {
@@ -497,31 +655,35 @@ export default function ProfileWizard({ onComplete }) {
     const handleBack = () => {
         if (step === 'config') setStep('type');
         else if (step === 'default') setStep('config');
-        else if (step === 'financial_personal') {
+        else if (step === 'banks_personal') {
             if (profileType === 'HYBRID') setStep('default');
             else setStep('config');
         }
+        else if (step === 'financial_personal') setStep('banks_personal');
         else if (step === 'cards_personal') setStep('financial_personal');
         else if (step === 'subs_personal') setStep('cards_personal');
-        else if (step === 'financial_business') {
+        else if (step === 'banks_business') {
             if (profileType === 'HYBRID') setStep('subs_personal');
             else setStep('config');
         }
+        else if (step === 'financial_business') setStep('banks_business');
         else if (step === 'cards_business') setStep('financial_business');
         else if (step === 'subs_business') setStep('cards_business');
     };
 
     const getProgressWidth = () => {
         const steps = {
-            'type': 8,
-            'config': 16,
-            'default': 24,
+            'type': 6,
+            'config': 12,
+            'default': 18,
+            'banks_personal': 24,
             'financial_personal': 32,
-            'cards_personal': 44,
-            'subs_personal': 56,
-            'financial_business': 68,
-            'cards_business': 80,
-            'subs_business': 92,
+            'cards_personal': 40,
+            'subs_personal': 48,
+            'banks_business': 56,
+            'financial_business': 64,
+            'cards_business': 72,
+            'subs_business': 84,
             'complete': 100
         };
         return `${steps[step] || 0}%`;
@@ -766,25 +928,120 @@ export default function ProfileWizard({ onComplete }) {
                                     </div>
                                 </div>
 
+                                {/* Salary Bank Selector */}
                                 <div className={styles.inputGroup}>
-                                    <label>Saldo Inicial (opcional)</label>
-                                    <div className={styles.currencyInput}>
-                                        <span>R$</span>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={initialBalance}
-                                            onChange={(e) => handleCurrencyChange(e.target.value, setInitialBalance)}
-                                            placeholder="0,00"
-                                        />
+                                    <label>Conta para receber o salário</label>
+                                    <div className={styles.bankSelector}>
+                                        {(() => {
+                                            const selectedBank = personalBanks[salaryBankIndex] || personalBanks.find(b => b.isDefault) || personalBanks[0];
+                                            return (
+                                                <div className={styles.selectedBank}>
+                                                    {selectedBank?.icon ? (
+                                                        <img src={selectedBank.icon} alt={selectedBank.bankName} className={styles.selectedBankLogo} />
+                                                    ) : (
+                                                        <div className={styles.selectedBankIcon} style={{ background: selectedBank?.color || '#6366F1' }}>
+                                                            <BiWallet />
+                                                        </div>
+                                                    )}
+                                                    <span>{selectedBank?.nickname || 'MyWallet (Pessoal)'}</span>
+                                                </div>
+                                            );
+                                        })()}
+                                        <select
+                                            value={salaryBankIndex}
+                                            onChange={(e) => setSalaryBankIndex(Number(e.target.value))}
+                                        >
+                                            {personalBanks.map((bank, idx) => (
+                                                <option key={idx} value={idx}>
+                                                    {bank.nickname}{bank.isDefault ? ' (Padrão)' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
 
                                 <p className={styles.hint}>
-                                    💡 Você pode ajustar isso depois nas configurações
+                                    💡 O salário será depositado automaticamente na conta selecionada acima
                                 </p>
                             </motion.div>
                         )}
+
+                        {/* STEP: Banks - Personal */}
+                        {step === 'banks_personal' && (
+                            <motion.div
+                                key="banks_personal"
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className={styles.stepContent}
+                            >
+                                <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, #6366F1, #8b5cf6)' }}>
+                                    <BiWallet />
+                                </div>
+                                <h2>Suas Contas Bancárias (Pessoal)</h2>
+                                <p className={styles.description}>
+                                    Configure suas contas e carteiras para controlar suas finanças pessoais
+                                </p>
+
+                                {/* Bank List */}
+                                <div className={styles.itemsList}>
+                                    {personalBanks.map((bank, idx) => (
+                                        <div key={idx} className={styles.itemRow}>
+                                            {bank.icon ? (
+                                                <div className={styles.bankLogoIcon}>
+                                                    <img src={bank.icon} alt={bank.bankName} />
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className={styles.subIcon}
+                                                    style={{ background: bank.color || '#6366F1' }}
+                                                >
+                                                    <BiWallet />
+                                                </div>
+                                            )}
+                                            <div className={styles.itemInfo}>
+                                                <strong>{bank.nickname}</strong>
+                                                <span>
+                                                    {bank.bankName} • {formatCurrency(bank.balance)}
+                                                    {bank.isDefault && ' (Padrão)'}
+                                                </span>
+                                            </div>
+                                            <div className={styles.itemActions}>
+                                                {!bank.isDefault && (
+                                                    <button
+                                                        onClick={() => setDefaultBank('personal', idx)}
+                                                        title="Definir como padrão"
+                                                        className={styles.setDefaultBtn}
+                                                    >
+                                                        <FiCheck />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => openBankModal('personal', bank, idx)}>
+                                                    <FiEdit2 />
+                                                </button>
+                                                {personalBanks.length > 1 && (
+                                                    <button onClick={() => removeBank('personal', idx)}>
+                                                        <FiTrash2 />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => openBankModal('personal')}
+                                >
+                                    <FiPlus /> Adicionar Banco/Carteira
+                                </button>
+
+                                <p className={styles.hint}>
+                                    💡 Você já tem a carteira padrão "MyWallet". Adicione outros bancos se desejar.
+                                </p>
+                            </motion.div>
+                        )}
+
 
                         {/* STEP: Cards - Personal */}
                         {step === 'cards_personal' && (
@@ -992,6 +1249,83 @@ export default function ProfileWizard({ onComplete }) {
                             </motion.div>
                         )}
 
+                        {/* STEP: Banks - Business */}
+                        {step === 'banks_business' && (
+                            <motion.div
+                                key="banks_business"
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className={styles.stepContent}
+                            >
+                                <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+                                    <BiWallet />
+                                </div>
+                                <h2>Suas Contas Bancárias (Empresa)</h2>
+                                <p className={styles.description}>
+                                    Configure as contas da sua empresa para controlar as finanças PJ
+                                </p>
+
+                                {/* Bank List */}
+                                <div className={styles.itemsList}>
+                                    {businessBanks.map((bank, idx) => (
+                                        <div key={idx} className={styles.itemRow}>
+                                            {bank.icon ? (
+                                                <div className={styles.bankLogoIcon}>
+                                                    <img src={bank.icon} alt={bank.bankName} />
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className={styles.subIcon}
+                                                    style={{ background: bank.color || '#10B981' }}
+                                                >
+                                                    <BiWallet />
+                                                </div>
+                                            )}
+                                            <div className={styles.itemInfo}>
+                                                <strong>{bank.nickname}</strong>
+                                                <span>
+                                                    {bank.bankName} • {formatCurrency(bank.balance)}
+                                                    {bank.isDefault && ' (Padrão)'}
+                                                </span>
+                                            </div>
+                                            <div className={styles.itemActions}>
+                                                {!bank.isDefault && (
+                                                    <button
+                                                        onClick={() => setDefaultBank('business', idx)}
+                                                        title="Definir como padrão"
+                                                        className={styles.setDefaultBtn}
+                                                    >
+                                                        <FiCheck />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => openBankModal('business', bank, idx)}>
+                                                    <FiEdit2 />
+                                                </button>
+                                                {businessBanks.length > 1 && (
+                                                    <button onClick={() => removeBank('business', idx)}>
+                                                        <FiTrash2 />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => openBankModal('business')}
+                                >
+                                    <FiPlus /> Adicionar Banco/Carteira
+                                </button>
+
+                                <p className={styles.hint}>
+                                    💡 Você já tem a carteira padrão "MyWallet (Empresa)". Adicione outros bancos se desejar.
+                                </p>
+                            </motion.div>
+                        )}
+
+
                         {/* STEP: Cards - Business */}
                         {step === 'cards_business' && (
                             <motion.div
@@ -1180,6 +1514,12 @@ export default function ProfileWizard({ onComplete }) {
                 onClose={() => { setShowCardModal(false); setEditingCard(null); }}
                 onSave={handleSaveCard}
                 editingCard={editingCard}
+                bankAccounts={currentProfileContext === 'personal' ? personalBanks : businessBanks}
+                onAddNewBank={() => {
+                    setReopenCardModal(true);
+                    setShowCardModal(false);
+                    openBankModal(currentProfileContext);
+                }}
             />
 
             {/* Subscription Modal */}
@@ -1189,6 +1529,15 @@ export default function ProfileWizard({ onComplete }) {
                 onSave={handleSaveSub}
                 editingSub={editingSub}
                 cards={getCurrentCards()}
+            />
+
+            {/* Bank Account Modal */}
+            <BankAccountModal
+                isOpen={showBankModal}
+                onClose={() => { setShowBankModal(false); setEditingBank(null); }}
+                onSave={handleSaveBank}
+                editingBank={editingBank}
+                profileType={currentProfileContext === 'personal' ? 'PERSONAL' : 'BUSINESS'}
             />
         </>
     );

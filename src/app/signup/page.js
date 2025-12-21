@@ -135,7 +135,8 @@ export default function SignupPage() {
                 setSignupPhase('redirect');
                 setTimeout(() => {
                     addNotification({ type: 'success', title: 'Conta criada!', message: 'Bem-vindo ao MyWallet' });
-                    router.push('/dashboard');
+                    // Use dynamic redirect from AuthContext (paywall logic)
+                    router.push(result.redirect || '/checkout');
                 }, 800);
             }, 1800);
         } else {

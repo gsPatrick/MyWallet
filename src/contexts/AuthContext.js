@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { authAPI } from '@/services/api';
 
 const AuthContext = createContext({
@@ -56,7 +57,18 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('investpro_token', accessToken);
                 localStorage.setItem('investpro_user', JSON.stringify(userData));
                 setUser(userData);
-                return { success: true };
+
+                // PAYWALL: Check subscription status
+                // OWNER goes to admin panel ONLY
+                if (userData.plan === 'OWNER') {
+                    return { success: true, redirect: '/admin' };
+                }
+                // Active subscription = go to dashboard
+                if (userData.subscriptionStatus === 'ACTIVE') {
+                    return { success: true, redirect: '/dashboard' };
+                }
+                // No active subscription = go to checkout
+                return { success: true, redirect: '/checkout' };
             }
 
             // Alternative format
@@ -90,7 +102,18 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('investpro_token', accessToken);
                 localStorage.setItem('investpro_user', JSON.stringify(userData));
                 setUser(userData);
-                return { success: true };
+
+                // PAYWALL: New users are always FREE, redirect to checkout
+                // OWNER goes to admin panel
+                if (userData.plan === 'OWNER') {
+                    return { success: true, redirect: '/admin' };
+                }
+                // Active subscription = go to dashboard
+                if (userData.subscriptionStatus === 'ACTIVE') {
+                    return { success: true, redirect: '/dashboard' };
+                }
+                // New user = go to checkout
+                return { success: true, redirect: '/checkout' };
             }
 
             // Alternative format

@@ -216,6 +216,28 @@
     font-style: italic;
 }
 
+/* Bank Icon in Goal Card */
+.bankIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: white;
+    padding: 2px;
+}
+
+.bankIconPlaceholder {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
 /* Storage Section in Modal */
 .storageSection {
     padding: var(--spacing-lg);

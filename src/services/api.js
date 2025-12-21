@@ -222,4 +222,14 @@ export const profilesAPI = {
     switchProfile: (id) => api.put(`/profiles/${id}/switch`),
 };
 
+// DAS API (Central do DAS - Business Only)
+export const dasAPI = {
+    generateGuides: (year) => api.post('/das/generate', { year }),
+    listGuides: (year) => api.get(`/das/guides/${year}`),
+    payGuide: (guideId, data) => api.post(`/das/pay/${guideId}`, data),
+    getSummary: () => api.get('/das/summary'),
+    ensureGuides: () => api.post('/das/ensure'),
+};
+
 export default api;
+

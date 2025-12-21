@@ -13,10 +13,13 @@ import Dock from '@/components/layout/Dock';
 import AppShell from '@/components/AppShell';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfiles } from '@/contexts/ProfileContext';
 import { formatDate } from '@/utils/formatters';
 import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI, budgetsAPI } from '@/services/api';
+import bankAccountService from '@/services/bankAccountService';
 import ActivityList from '@/components/dashboard/ActivityList';
 import SubscriptionWidget from '@/components/dashboard/SubscriptionWidget';
+import BankAccountsWidget from '@/components/dashboard/BankAccountsWidget';
 import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import styles from './page.module.css';
@@ -39,6 +42,7 @@ const dateFilters = [
 
 export default function DashboardPage() {
     const { user, updateUser } = useAuth();
+    const { currentProfile } = useProfiles();
     const [activeTab, setActiveTab] = useState('geral');
     const [dateFilter, setDateFilter] = useState('month');
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -56,22 +60,24 @@ export default function DashboardPage() {
     const [transactions, setTransactions] = useState([]);
     const [dashboardSummary, setDashboardSummary] = useState(null);
     const [budgets, setBudgets] = useState([]);
+    const [bankAccountsTotal, setBankAccountsTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         loadDashboardData();
-    }, []);
+    }, [currentProfile?.id]); // Reload when profile changes
 
     const loadDashboardData = async () => {
         setIsLoading(true);
         try {
-            const [portfolioRes, accountsRes, cardsRes, transactionsRes, summaryRes, budgetsRes] = await Promise.all([
+            const [portfolioRes, accountsRes, cardsRes, transactionsRes, summaryRes, budgetsRes, bankBalanceRes] = await Promise.all([
                 reportsAPI.getPortfolio(),
                 openFinanceAPI.listAccounts().catch(() => []),
                 openFinanceAPI.listCards().catch(() => ({ data: [] })),
                 transactionsAPI.list({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0] }),
                 dashboardAPI.getSummary().catch(() => ({})),
-                budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } }))
+                budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } })),
+                bankAccountService.getTotalBalance().catch(() => ({ data: { totalBalance: 0 } }))
             ]);
             setPortfolioData(portfolioRes);
             setOpenFinanceAccounts(accountsRes?.data || accountsRes || []);
@@ -79,6 +85,7 @@ export default function DashboardPage() {
             setTransactions(transactionsRes?.data?.transactions || transactionsRes || []);
             setDashboardSummary(summaryRes?.data || summaryRes || {});
             setBudgets(budgetsRes?.data?.allocations || budgetsRes?.allocations || []);
+            setBankAccountsTotal(bankBalanceRes?.data?.totalBalance || 0);
         } catch (error) {
             console.error("Erro ao carregar dashboard:", error);
         } finally {
@@ -90,18 +97,17 @@ export default function DashboardPage() {
     const positions = portfolioData?.positions || [];
 
     const openFinanceTotal = openFinanceAccounts.reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
-    const manualTotal = dashboardSummary?.manualTotalBalance || 0;
-    const totalBalance = summary.totalCurrentValue + openFinanceTotal + manualTotal;
+    // Use bank accounts total instead of manualTotalBalance for accurate balance
+    const totalBalance = summary.totalCurrentValue + openFinanceTotal + bankAccountsTotal;
     const patrimonioTotal = totalBalance;
 
     // Debug log - remove after testing
     console.log('Dashboard Patrimonio Debug:', {
         investments: summary.totalCurrentValue,
         openFinance: openFinanceTotal,
-        manual: manualTotal,
+        bankAccounts: bankAccountsTotal,
         total: patrimonioTotal,
-        dashboardSummaryRaw: dashboardSummary,
-        manualTotalBalanceValue: dashboardSummary?.manualTotalBalance
+        dashboardSummaryRaw: dashboardSummary
     });
 
     // Calculate OF entries/exits from transactions with source='OPEN_FINANCE'
@@ -264,7 +270,7 @@ export default function DashboardPage() {
                             <motion.div id="hero-balance" className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
                                 <span className={styles.heroLabel}>Patrimônio Total</span>
                                 <span className={styles.heroValue}>{formatCurrency(patrimonioTotal)}</span>
-                                <span className={styles.heroPeriod}>Manual ({formatCurrency(manualTotal)}) + Open Finance ({formatCurrency(openFinanceTotal)}) + Investimentos ({formatCurrency(summary.totalCurrentValue)})</span>
+                                <span className={styles.heroPeriod}>Contas ({formatCurrency(bankAccountsTotal)}) + Open Finance ({formatCurrency(openFinanceTotal)}) + Investimentos ({formatCurrency(summary.totalCurrentValue)})</span>
                             </motion.div>
 
                             <div className={styles.dashboardGrid}>
@@ -464,47 +470,10 @@ export default function DashboardPage() {
                                     </motion.div>
                                 </div>
 
-                                {/* RIGHT COLUMN: Sidebar (Quick Actions) */}
+                                {/* RIGHT COLUMN: Sidebar (Bank Accounts) */}
                                 <div className={styles.dashboardSidebar}>
-                                    <div className={styles.quickActions}>
-                                        <h3>Ações Rápidas</h3>
-                                        <div className={styles.quickGrid}>
-                                            <Link href="/transactions?new=true" className={styles.quickItem}>
-                                                <FiPlus />
-                                                <span>Nova Transação</span>
-                                            </Link>
-                                            <Link href="/settings" className={styles.quickItem}>
-                                                <FiHome />
-                                                <span>Perfil</span>
-                                            </Link>
-                                            <Link href="/cards" className={styles.quickItem}>
-                                                <FiCreditCard />
-                                                <span>Cartão</span>
-                                            </Link>
-                                            <Link href="/goals?new=true" className={styles.quickItem}>
-                                                <FiTarget />
-                                                <span>Nova Meta</span>
-                                            </Link>
-                                        </div>
-
-                                        {/* Quick Stats */}
-                                        <div className={styles.quickStats}>
-                                            <div className={styles.statItem}>
-                                                <FiCheckCircle className={styles.statIconSuccess} />
-                                                <div>
-                                                    <span className={styles.statValue}>{openFinanceAccounts.length}</span>
-                                                    <span className={styles.statLabel}>Bancos conectados</span>
-                                                </div>
-                                            </div>
-                                            <div className={styles.statItem}>
-                                                <FiCreditCard className={styles.statIconPrimary} />
-                                                <div>
-                                                    <span className={styles.statValue}>{positions.length}</span>
-                                                    <span className={styles.statLabel}>Ativos na carteira</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    {/* Bank Accounts Widget */}
+                                    <BankAccountsWidget />
                                 </div>
                             </div>
                         </>
@@ -605,27 +574,8 @@ export default function DashboardPage() {
 
                                     {/* RIGHT COLUMN: Sidebar */}
                                     <div className={styles.dashboardSidebar}>
-                                        <div className={styles.quickActions}>
-                                            <h3>Ações Rápidas</h3>
-                                            <div className={styles.quickGrid}>
-                                                <Link href="/transactions?new=true" className={styles.quickItem}>
-                                                    <FiPlus />
-                                                    <span>Nova Transação</span>
-                                                </Link>
-                                                <Link href="/settings" className={styles.quickItem}>
-                                                    <FiHome />
-                                                    <span>Perfil</span>
-                                                </Link>
-                                                <Link href="/cards" className={styles.quickItem}>
-                                                    <FiCreditCard />
-                                                    <span>Cartão</span>
-                                                </Link>
-                                                <Link href="/goals?new=true" className={styles.quickItem}>
-                                                    <FiTarget />
-                                                    <span>Nova Meta</span>
-                                                </Link>
-                                            </div>
-                                        </div>
+                                        {/* Bank Accounts Widget */}
+                                        <BankAccountsWidget />
                                     </div>
                                 </div>
                             </>

@@ -18,13 +18,16 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import BudgetExceededModal from '@/components/modals/BudgetExceededModal';
 import CategoryModal from '@/components/modals/CategoryModal';
+import BankAccountModal from '@/components/modals/BankAccountModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 
 import { formatDate } from '@/utils/formatters';
 import { transactionsAPI, cardsAPI, budgetsAPI } from '@/services/api';
 import categoriesService from '@/services/categoriesService';
+import bankAccountService from '@/services/bankAccountService';
 import { mockTransactions } from '@/utils/mockData';
 import subscriptionIcons from '@/data/subscriptionIcons.json';
+import cardBanks from '@/data/cardBanks.json';
 import styles from './page.module.css';
 
 
@@ -44,6 +47,7 @@ export default function TransactionsPage() {
     const [filterType, setFilterType] = useState('Todas');
     const [filterCategory, setFilterCategory] = useState('Todas');
     const [filterCard, setFilterCard] = useState('all');
+    const [filterBank, setFilterBank] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
     const [customDate, setCustomDate] = useState({ start: '', end: '' });
 
@@ -61,6 +65,10 @@ export default function TransactionsPage() {
     // Removed inline category state in favor of component
     const [categoryList, setCategoryList] = useState([]);
 
+    // Bank Accounts for selector
+    const [bankAccounts, setBankAccounts] = useState([]);
+    const [defaultBankAccountId, setDefaultBankAccountId] = useState('');
+
     // Budget Allocations for linking
     const [budgetAllocations, setBudgetAllocations] = useState([]);
 
@@ -68,6 +76,9 @@ export default function TransactionsPage() {
     const [showBudgetModal, setShowBudgetModal] = useState(false);
     const [budgetExceededData, setBudgetExceededData] = useState(null);
     const [pendingTransaction, setPendingTransaction] = useState(null);
+    const [showBankModal, setShowBankModal] = useState(false);
+
+
 
     // Edit and Delete states
     const [editingTransaction, setEditingTransaction] = useState(null);
@@ -89,6 +100,7 @@ export default function TransactionsPage() {
         cardId: '',
         installments: '',
         imageUrl: '', // For subscriptions/logos
+        bankAccountId: '', // Bank account for balance tracking
     });
 
     // Constants
@@ -111,6 +123,21 @@ export default function TransactionsPage() {
             setShowAddModal(true);
         }
     }, [searchParams]);
+
+    // Debug: Log bank accounts when modal opens
+    useEffect(() => {
+        if (showAddModal) {
+            console.log('🏦 [TRANSACTIONS MODAL] Bank Accounts:', bankAccounts);
+            console.log('🏦 [TRANSACTIONS MODAL] Default Bank ID:', defaultBankAccountId);
+        }
+    }, [showAddModal, bankAccounts, defaultBankAccountId]);
+
+    // Auto-fill bankAccountId when default account is loaded (low friction UX)
+    useEffect(() => {
+        if (defaultBankAccountId && !newTransaction.bankAccountId) {
+            setNewTransaction(prev => ({ ...prev, bankAccountId: defaultBankAccountId }));
+        }
+    }, [defaultBankAccountId]);
 
     // Load data from API
     useEffect(() => {
@@ -140,13 +167,16 @@ export default function TransactionsPage() {
                 const startStr = startDate.toISOString().split('T')[0];
                 const endStr = endDate.toISOString().split('T')[0];
 
-                const [txRes, catRes, cardsRes, categoriesRes, allocationsRes] = await Promise.all([
+                const [txRes, catRes, cardsRes, categoriesRes, allocationsRes, bankAccountsRes] = await Promise.all([
                     transactionsAPI.list({ startDate: startStr, endDate: endStr }),
                     transactionsAPI.getCategories(),
                     cardsAPI.list(),
                     categoriesService.list(),
-                    budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } }))
+                    budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } })),
+                    bankAccountService.list().catch((err) => { console.error('Bank accounts fetch error:', err); return []; })
                 ]);
+
+                console.log('🏦 [TRANSACTIONS] Raw bankAccountsRes:', bankAccountsRes);
 
                 // Apply local filters
                 let filtered = txRes?.data?.transactions || [];
@@ -165,6 +195,9 @@ export default function TransactionsPage() {
                 if (filterStatus !== 'all') {
                     filtered = filtered.filter(t => t.status === filterStatus);
                 }
+                if (filterBank !== 'all') {
+                    filtered = filtered.filter(t => t.bankAccountId === filterBank);
+                }
 
                 // Filter by recurring if selected
                 if (filterType === 'RECURRING') {
@@ -175,6 +208,16 @@ export default function TransactionsPage() {
                 setCards(cardsRes.data || []);
                 setApiCategories(categoriesRes?.data || []);
                 setCategoryList(categoriesRes?.data || []);
+
+                // Bank accounts with default
+                // bankAccountService.list() returns array directly, not { data: [] }
+                const accounts = Array.isArray(bankAccountsRes) ? bankAccountsRes : (bankAccountsRes?.data || []);
+                console.log('🏦 [TRANSACTIONS] Parsed accounts:', accounts);
+                setBankAccounts(accounts);
+                const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
+                if (defaultAcc) {
+                    setDefaultBankAccountId(defaultAcc.id);
+                }
                 setBudgetAllocations(allocationsRes?.data?.allocations || []);
             } catch (error) {
                 console.error("Failed to load data:", error);
@@ -184,7 +227,7 @@ export default function TransactionsPage() {
         };
 
         loadData();
-    }, [filterDate, filterType, filterCategory, filterCard, filterStatus, customDate]);
+    }, [filterDate, filterType, filterCategory, filterCard, filterBank, filterStatus, customDate]);
 
     // Derived totals - separate completed and pending
     const completedTransactions = transactions.filter(t => t.status !== 'PENDING' && t.status !== 'CANCELLED');
@@ -312,6 +355,7 @@ export default function TransactionsPage() {
             status: 'COMPLETED',
             cardId: '',
             installments: '',
+            bankAccountId: defaultBankAccountId, // Pre-fill with default account (low friction)
         });
         setTransactionMode('single');
     };
@@ -321,6 +365,18 @@ export default function TransactionsPage() {
         if (newCat) {
             setCategoryList(prev => [...prev, newCat]);
             setNewTransaction(prev => ({ ...prev, categoryId: newCat.id, category: newCat.name }));
+        }
+    };
+
+    const handleBankCreated = async () => {
+        // Reload bank accounts
+        try {
+            const res = await bankAccountService.list();
+            setBankAccounts(res.data || []);
+            // Auto-select the last added account (assuming it's at the end or we find it)
+            // Ideally backend returns the new account, but for now just reload
+        } catch (error) {
+            console.error("Failed to reload bank accounts:", error);
         }
     };
 
@@ -346,6 +402,7 @@ export default function TransactionsPage() {
             cardId: tx.cardId || '',
             installments: tx.installments?.total?.toString() || '',
             imageUrl: tx.imageUrl || '',
+            bankAccountId: tx.bankAccountId || defaultBankAccountId,
         });
         setTransactionMode(tx.isRecurring ? 'recurring' : tx.installments ? 'installment' : 'single');
         setShowAddModal(true);
@@ -416,6 +473,14 @@ export default function TransactionsPage() {
                                 <FiFilter />
                                 Filtros
                             </button>
+                            <Link
+                                href="/banks?transfer=true"
+                                className={styles.transferBtn}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '10px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
+                            >
+                                <FiRepeat />
+                                Transferir
+                            </Link>
                             <Button leftIcon={<FiPlus />} onClick={() => setShowAddModal(true)}>
                                 Nova Transação
                             </Button>
@@ -673,6 +738,24 @@ export default function TransactionsPage() {
                                 </div>
                             </div>
 
+
+                            {/* Bank Account Filter */}
+                            <div className={styles.filterSection}>
+                                <label className={styles.filterSectionLabel}>Banco / Conta</label>
+                                <select
+                                    className={styles.filterSelect}
+                                    value={filterBank}
+                                    onChange={(e) => setFilterBank(e.target.value)}
+                                >
+                                    <option value="all">Todas as Contas</option>
+                                    {bankAccounts.map(acc => (
+                                        <option key={acc.id} value={acc.id}>{acc.nickname || acc.bankName}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Status Filter */}
+
                             {/* Category Filter */}
                             <div className={styles.filterSection}>
                                 <label className={styles.filterSectionLabel}>Categoria</label>
@@ -772,6 +855,15 @@ export default function TransactionsPage() {
                                                     {tx.source === 'CARD' && tx.sourceType && (
                                                         <span className={styles.cardBadge}><FiCreditCard /> {tx.sourceType}</span>
                                                     )}
+                                                    {/* Show Bank Account for manual transactions */}
+                                                    {(!tx.cardId && tx.bankAccountId) && (
+                                                        (() => {
+                                                            const acc = bankAccounts.find(a => a.id === tx.bankAccountId);
+                                                            return acc ? (
+                                                                <span className={styles.bankBadge}><FiHome /> {acc.nickname || acc.bankName}</span>
+                                                            ) : null;
+                                                        })()
+                                                    )}
                                                     {tx.installments && (
                                                         <span className={styles.installmentBadge}>
                                                             <FiLayers /> {tx.installments.current}/{tx.installments.total}
@@ -800,7 +892,7 @@ export default function TransactionsPage() {
                         )}
                     </Card>
                 </div>
-            </main>
+            </main >
 
             <Dock />
 
@@ -923,6 +1015,77 @@ export default function TransactionsPage() {
                         </div>
                     </div>
 
+                    {/* Bank Account Selector - Conditional Visibility */}
+                    {transactionMode === 'single' && (
+                        <div className={styles.formRow}>
+                            <div className={styles.inputGroup} style={{ width: '100%' }}>
+                                <div className={styles.labelWithAction}>
+                                    <label className={styles.inputLabel}>Conta/Banco</label>
+                                    <button type="button" className={styles.addCategoryBtn} onClick={() => setShowBankModal(true)}>
+                                        <FiPlus /> Nova
+                                    </button>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    {/* Bank Logo Indicator */}
+                                    {newTransaction.bankAccountId && (() => {
+                                        const selectedBank = bankAccounts.find(a => a.id === newTransaction.bankAccountId);
+                                        return selectedBank?.icon ? (
+                                            <img
+                                                src={selectedBank.icon}
+                                                alt={selectedBank.bankName}
+                                                style={{
+                                                    width: '32px',
+                                                    height: '32px',
+                                                    objectFit: 'contain',
+                                                    borderRadius: '6px',
+                                                    background: '#fff',
+                                                    padding: '4px'
+                                                }}
+                                            />
+                                        ) : (
+                                            <div style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '6px',
+                                                background: selectedBank?.color || '#6b7280',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: '#fff',
+                                                fontWeight: 600,
+                                                fontSize: '14px'
+                                            }}>
+                                                {(selectedBank?.bankName || 'B').charAt(0)}
+                                            </div>
+                                        );
+                                    })()}
+                                    <select
+                                        className={styles.selectInput}
+                                        value={newTransaction.bankAccountId}
+                                        onChange={(e) => setNewTransaction(prev => ({ ...prev, bankAccountId: e.target.value }))}
+                                        style={{
+                                            flex: 1,
+                                            borderLeft: newTransaction.bankAccountId
+                                                ? `4px solid ${bankAccounts.find(a => a.id === newTransaction.bankAccountId)?.color || '#6b7280'}`
+                                                : undefined
+                                        }}
+                                    >
+                                        <option value="">Selecione uma conta...</option>
+                                        {bankAccounts.length > 0 ? (
+                                            bankAccounts.map(acc => (
+                                                <option key={acc.id} value={acc.id}>
+                                                    {acc.nickname || acc.bankName} {acc.isDefault ? '(Padrão)' : ''}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            <option value="" disabled>Nenhuma conta cadastrada</option>
+                                        )}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className={styles.formRow}>
                         {newTransaction.status === 'PENDING' && transactionMode !== 'recurring' && (
                             <Input
@@ -1038,7 +1201,7 @@ export default function TransactionsPage() {
                     )}
 
                     {/* Card Selection */}
-                    {newTransaction.type === 'EXPENSE' && (
+                    {transactionMode !== 'single' && (
                         <div className={styles.cardSection}>
                             <div className={styles.inputGroup}>
                                 <label className={styles.inputLabel}>Vincular ao Cartão</label>
@@ -1076,6 +1239,13 @@ export default function TransactionsPage() {
                 onClose={() => setShowCategoryModal(false)}
                 onSuccess={handleCategoryCreated}
                 type={newTransaction.type}
+            />
+
+            {/* Bank Account Creation Modal */}
+            <BankAccountModal
+                isOpen={showBankModal}
+                onClose={() => setShowBankModal(false)}
+                onSuccess={handleBankCreated}
             />
 
             {/* Icon Picker Modal */}
@@ -1145,29 +1315,31 @@ export default function TransactionsPage() {
             </Modal>
 
             {/* Delete Success Toast */}
-            {deleteSuccess && (
-                <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 50 }}
-                    style={{
-                        position: 'fixed',
-                        top: 'calc(var(--header-height) + 16px)',
-                        right: '24px',
-                        background: 'var(--accent-success)',
-                        color: 'white',
-                        padding: '12px 24px',
-                        borderRadius: 'var(--radius-md)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: 'var(--shadow-lg)',
-                        zIndex: 9999
-                    }}
-                >
-                    <FiCheck /> Transação excluída com sucesso!
-                </motion.div>
-            )}
-        </div>
+            {
+                deleteSuccess && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        style={{
+                            position: 'fixed',
+                            top: 'calc(var(--header-height) + 16px)',
+                            right: '24px',
+                            background: 'var(--accent-success)',
+                            color: 'white',
+                            padding: '12px 24px',
+                            borderRadius: 'var(--radius-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: 'var(--shadow-lg)',
+                            zIndex: 9999
+                        }}
+                    >
+                        <FiCheck /> Transação excluída com sucesso!
+                    </motion.div>
+                )
+            }
+        </div >
     );
 }

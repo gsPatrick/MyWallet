@@ -686,6 +686,12 @@
     color: var(--accent-primary);
 }
 
+.bankBadge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
 /* Recurring/Installment Sections */
 .recurringSection,
 .installmentSection,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiTrendingUp, FiTrendingDown, FiClock, FiCheckCircle, FiXCircle, FiArrowRight } from 'react-icons/fi';
+import { FiTrendingUp, FiTrendingDown, FiClock, FiCheckCircle, FiXCircle, FiArrowRight, FiRepeat } from 'react-icons/fi';
 import { dashboardAPI } from '@/services/api';
 import styles from './ActivityList.module.css';
 
@@ -42,6 +42,8 @@ export default function ActivityList() {
                 return <FiTrendingUp className={styles.iconIncome} />;
             case 'EXPENSE':
                 return <FiTrendingDown className={styles.iconExpense} />;
+            case 'INTERNAL_TRANSFER':
+                return <FiRepeat className={styles.iconTransfer} />;
             default:
                 return <FiArrowRight className={styles.iconTransfer} />;
         }
@@ -65,6 +67,7 @@ export default function ActivityList() {
             case 'INCOME': return 'Receita';
             case 'EXPENSE': return 'Despesa';
             case 'TRANSFER': return 'Transferência';
+            case 'INTERNAL_TRANSFER': return 'Transferência Interna';
             default: return type;
         }
     };

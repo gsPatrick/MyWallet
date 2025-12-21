@@ -135,6 +135,174 @@
     color: rgba(0, 0, 0, 0.4);
 }
 
+/* Bank Account Selector */
+.bankAccountSelector {
+    flex: 1;
+    position: relative;
+}
+
+.bankAccountButton {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bankAccountButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.bankAccountIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: white;
+    padding: 3px;
+}
+
+.bankAccountIconFallback {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bankAccountIconFallback svg {
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+.bankAccountName {
+    flex: 1;
+    text-align: left;
+    color: white;
+    font-size: 0.9375rem;
+}
+
+.chevron {
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.chevron.open {
+    transform: rotate(180deg);
+}
+
+/* Bank Dropdown */
+.bankDropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.bankDropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bankDropdownItem:last-child {
+    border-bottom: none;
+}
+
+.bankDropdownItem:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.bankDropdownItem.selected {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.dropdownIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: white;
+    padding: 2px;
+}
+
+.dropdownIconFallback {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dropdownIconFallback svg {
+    width: 14px;
+    height: 14px;
+    color: white;
+}
+
+.defaultBadge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+.emptyDropdown {
+    padding: 1rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+}
+
+.addNewBankButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    color: #3b82f6;
+    font-weight: 500;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+}
+
+.addNewBankButton:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.addNewBankButton svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* Color Picker */
 .colorPicker {
     display: flex;

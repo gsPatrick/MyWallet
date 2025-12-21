@@ -19,7 +19,8 @@ import GoalDetailsModal from '@/components/goals/GoalDetailsModal'; // Added imp
 import GoalHistoryModal from '@/components/goals/GoalHistoryModal'; // Added Import
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
-import { goalsAPI, openFinanceAPI, budgetsAPI } from '@/services/api';
+import { goalsAPI, budgetsAPI } from '@/services/api';
+import bankAccountService from '@/services/bankAccountService';
 import styles from './page.module.css';
 
 const goalColors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6'];
@@ -52,7 +53,6 @@ export default function GoalsPage() {
     const { formatCurrency } = usePrivateCurrency();
 
     const [goals, setGoals] = useState([]);
-    const [accounts, setAccounts] = useState([]);
     const [budgetAllocations, setBudgetAllocations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -63,16 +63,15 @@ export default function GoalsPage() {
         targetAmount: '', // Formatted string
         currentAmount: '', // Formatted string
         deadline: '',
-        deadline: '',
-        // category: '', // Removed from UI
         priority: 'MEDIUM',
         color: '#6366f1',
-        storageType: 'manual',
-        linkedAccountId: '',
-        manualBank: '',
+        bankAccountId: '', // Conta vinculada do sistema
         isInfinite: false, // Caixinha mode
         budgetAllocationId: '', // Vínculo ao orçamento
     });
+
+    // Bank accounts from user's profile
+    const [bankAccounts, setBankAccounts] = useState([]);
 
     // Quick Value Update State
     const [valueModal, setValueModal] = useState({ show: false, goal: null, type: 'add', amount: '' });
@@ -112,13 +111,13 @@ export default function GoalsPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [goalsRes, accountsRes, allocationsRes] = await Promise.all([
+            const [goalsRes, bankAccountsRes, allocationsRes] = await Promise.all([
                 goalsAPI.list(),
-                openFinanceAPI.listAccounts(),
+                bankAccountService.list(),
                 budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } }))
             ]);
             setGoals(goalsRes);
-            setAccounts(accountsRes || []);
+            setBankAccounts(bankAccountsRes?.data || bankAccountsRes || []);
             setBudgetAllocations(allocationsRes?.data?.allocations || []);
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -140,12 +139,9 @@ export default function GoalsPage() {
                 targetAmount: formatCurrencyBR(parseFloat(goal.targetAmount || 0)),
                 currentAmount: formatCurrencyBR(parseFloat(goal.currentAmount)),
                 deadline: goal.deadline ? goal.deadline.split('T')[0] : '',
-                category: categoryMap[goal.category] || 'Outros',
                 priority: goal.priority,
                 color: goal.color,
-                storageType: goal.storageType || 'manual',
-                linkedAccountId: goal.linkedAccountId || '',
-                manualBank: goal.manualBank || '',
+                bankAccountId: goal.bankAccountId || '',
                 isInfinite: goal.isInfinite || false,
                 budgetAllocationId: goal.budgetAllocationId || '',
             });
@@ -156,15 +152,9 @@ export default function GoalsPage() {
                 targetAmount: '',
                 currentAmount: '0',
                 deadline: '',
-                targetAmount: '',
-                currentAmount: '0',
-                deadline: '',
-                // category: '',
                 priority: 'MEDIUM',
                 color: '#6366f1',
-                storageType: 'manual',
-                linkedAccountId: '',
-                manualBank: '',
+                bankAccountId: '',
                 isInfinite: false,
                 budgetAllocationId: '',
             });
@@ -178,11 +168,9 @@ export default function GoalsPage() {
                 ...formData,
                 targetAmount: formData.isInfinite ? null : parseBRCurrency(formData.targetAmount),
                 currentAmount: parseBRCurrency(formData.currentAmount),
-                targetAmount: formData.isInfinite ? null : parseBRCurrency(formData.targetAmount),
-                currentAmount: parseBRCurrency(formData.currentAmount),
                 category: 'OTHER', // Default since UI removed
                 deadline: formData.deadline || null,
-                linkedAccountId: formData.linkedAccountId || null,
+                bankAccountId: formData.bankAccountId || null,
                 budgetAllocationId: formData.budgetAllocationId || null,
             };
 
@@ -368,7 +356,10 @@ export default function GoalsPage() {
                                     daysLeftText = diff > 0 ? `${diff} dias restantes` : 'Prazo vencido';
                                 }
 
-                                const linkedAccount = goal.linkedAccountId ? getLinkedAccount(goal.linkedAccountId) : null;
+                                // Find linked bank account
+                                const linkedBank = goal.bankAccountId
+                                    ? bankAccounts.find(acc => acc.id === goal.bankAccountId)
+                                    : null;
 
                                 return (
                                     <motion.div
@@ -446,16 +437,24 @@ export default function GoalsPage() {
 
                                             {/* Bank/Account Info */}
                                             <div className={styles.storageInfo}>
-                                                {goal.storageType === 'openfinance' && linkedAccount ? (
+                                                {linkedBank ? (
                                                     <div className={styles.linkedAccount}>
-                                                        <FiLink className={styles.linkIcon} />
-                                                        <span>{linkedAccount.institution} - {linkedAccount.bankName || linkedAccount.name}</span>
-                                                        <span className={styles.autoSync}>Sincronizado</span>
-                                                    </div>
-                                                ) : goal.manualBank ? (
-                                                    <div className={styles.manualBank}>
-                                                        <FiHome />
-                                                        <span>{goal.manualBank}</span>
+                                                        {linkedBank.icon ? (
+                                                            <img
+                                                                src={linkedBank.icon}
+                                                                alt={linkedBank.bankName}
+                                                                className={styles.bankIcon}
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        ) : (
+                                                            <div
+                                                                className={styles.bankIconPlaceholder}
+                                                                style={{ background: linkedBank.color || '#6366f1' }}
+                                                            >
+                                                                {linkedBank.bankName?.charAt(0) || 'B'}
+                                                            </div>
+                                                        )}
+                                                        <span>{linkedBank.nickname || linkedBank.bankName}</span>
                                                     </div>
                                                 ) : (
                                                     <div className={styles.noBank}>
@@ -589,55 +588,24 @@ export default function GoalsPage() {
                             />
                         </div>
                     </div>
-                    {/* Storage/Bank Selection */}
-                    <div className={styles.storageSection}>
-                        <label className={styles.inputLabel}>Onde está guardando?</label>
-                        <div className={styles.storageToggle}>
-                            <button
-                                type="button"
-                                className={`${styles.toggleBtn} ${formData.storageType === 'manual' ? styles.active : ''}`}
-                                onClick={() => setFormData(prev => ({ ...prev, storageType: 'manual', linkedAccountId: '' }))}
-                            >
-                                <FiHome /> Manual
-                            </button>
-                            <button
-                                type="button"
-                                className={`${styles.toggleBtn} ${formData.storageType === 'openfinance' ? styles.active : ''}`}
-                                onClick={() => setFormData(prev => ({ ...prev, storageType: 'openfinance', manualBank: '' }))}
-                            >
-                                <FiLink /> Open Finance
-                            </button>
-                        </div>
-
-                        {formData.storageType === 'manual' ? (
-                            <Input
-                                label="Banco ou Instituição"
-                                placeholder="Ex: Nubank, Banco Inter, Caixinha..."
-                                leftIcon={<FiHome />}
-                                value={formData.manualBank}
-                                onChange={(e) => setFormData(prev => ({ ...prev, manualBank: e.target.value }))}
-                                fullWidth
-                            />
-                        ) : (
-                            <div className={styles.inputGroup}>
-                                <label className={styles.inputLabel}>Vincular à Conta</label>
-                                <select
-                                    className={styles.selectInput}
-                                    value={formData.linkedAccountId}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, linkedAccountId: e.target.value }))}
-                                >
-                                    <option value="">Selecione uma conta...</option>
-                                    {accounts.map(acc => (
-                                        <option key={acc.id} value={acc.id}>
-                                            {acc.institution} - {acc.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <span className={styles.helperText}>
-                                    O saldo será atualizado automaticamente via Open Finance
-                                </span>
-                            </div>
-                        )}
+                    {/* Bank Account Selection */}
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>💳 Conta Bancária Vinculada</label>
+                        <select
+                            className={styles.selectInput}
+                            value={formData.bankAccountId}
+                            onChange={(e) => setFormData(prev => ({ ...prev, bankAccountId: e.target.value }))}
+                        >
+                            <option value="">Nenhuma conta vinculada</option>
+                            {bankAccounts.map(acc => (
+                                <option key={acc.id} value={acc.id}>
+                                    {acc.nickname || acc.bankName} - {formatCurrency(acc.balance || 0)}
+                                </option>
+                            ))}
+                        </select>
+                        <span className={styles.helperText}>
+                            Vincule esta meta a uma conta para monitorar o saldo reservado
+                        </span>
                     </div>
 
                     {/* Budget Allocation Link */}

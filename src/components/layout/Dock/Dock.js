@@ -23,8 +23,10 @@ import {
     FiFileText,
     FiUser,
     FiBriefcase,
-    FiUsers
+    FiUsers,
+    FiDatabase
 } from 'react-icons/fi';
+import { BsBank2 } from 'react-icons/bs';
 import { usePrivacy } from '@/contexts/PrivacyContext';
 import { useProfiles } from '@/contexts/ProfileContext';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
@@ -47,9 +49,13 @@ const quickActions = [
     { id: 'new-goal', href: '/goals?new=true', icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6' },
     { id: 'profile', href: '/settings', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
     { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartão', color: '#f59e0b' },
+    { id: 'banks', href: '/banks', icon: BsBank2, label: 'Bancos', color: '#0ea5e9' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
     { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
 ];
+
+// DAS shortcut for BUSINESS profiles only
+const dasAction = { id: 'das', href: '/business/das', icon: FiDatabase, label: 'DAS', color: '#ef4444' };
 
 export default function Dock() {
     const pathname = usePathname();
@@ -199,6 +205,7 @@ export default function Dock() {
                             </div>
 
                             <div className={styles.quickActionsGrid}>
+                                {/* Regular quick actions */}
                                 {quickActions.map((action) => {
                                     const Icon = action.icon;
                                     return (
@@ -215,6 +222,19 @@ export default function Dock() {
                                         </Link>
                                     );
                                 })}
+                                {/* DAS shortcut for BUSINESS profiles (MEI/ME) */}
+                                {currentProfile?.type === 'BUSINESS' && (
+                                    <Link
+                                        href={dasAction.href}
+                                        className={styles.quickActionItem}
+                                        onClick={() => setShowQuickActions(false)}
+                                    >
+                                        <div className={styles.quickActionIcon} style={{ background: `${dasAction.color}20`, color: dasAction.color }}>
+                                            <dasAction.icon />
+                                        </div>
+                                        <span>{dasAction.label}</span>
+                                    </Link>
+                                )}
                             </div>
 
                             {/* Profile Switcher Section */}

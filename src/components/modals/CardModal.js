@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { FiCreditCard, FiDollarSign, FiSearch, FiX, FiImage } from 'react-icons/fi';
+import { FiCreditCard, FiDollarSign, FiImage, FiPlus, FiChevronDown } from 'react-icons/fi';
+import { BiWallet } from 'react-icons/bi';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -23,6 +24,7 @@ const cardColors = [
 
 const defaultForm = {
     name: '',
+    bankAccountId: null,
     bankName: '',
     bankIcon: '',
     brand: 'VISA',
@@ -38,27 +40,19 @@ const defaultForm = {
 
 // Helper to format currency (Brazilian format: 1.000,00)
 const formatCurrencyInput = (value) => {
-    // Remove tudo que não é número
     const onlyNumbers = value.replace(/\D/g, '');
-
     if (!onlyNumbers) return '';
-
-    // Converte para centavos
     const cents = parseInt(onlyNumbers, 10);
-
-    // Formata com casas decimais
     const formatted = (cents / 100).toLocaleString('pt-BR', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
-
     return formatted;
 };
 
 // Parse formatted value back to number
 const parseCurrencyValue = (formatted) => {
     if (!formatted) return 0;
-    // Remove pontos e substitui vírgula por ponto
     const number = formatted.replace(/\./g, '').replace(',', '.');
     return parseFloat(number) || 0;
 };
@@ -68,22 +62,16 @@ export default function CardModal({
     onClose,
     onSave,
     editingCard = null,
-    isLoading = false
+    isLoading = false,
+    bankAccounts = [], // NEW: List of user's bank accounts
+    onAddNewBank = null, // NEW: Callback to open bank creation modal
 }) {
     const [form, setForm] = useState(defaultForm);
-    const [showBankGallery, setShowBankGallery] = useState(false);
     const [showBrandGallery, setShowBrandGallery] = useState(false);
-    const [bankSearch, setBankSearch] = useState('');
+    const [showBankDropdown, setShowBankDropdown] = useState(false);
     const [limitTouched, setLimitTouched] = useState(false);
 
-    // Get banks and brands from JSON
-    const banks = useMemo(() => {
-        return Object.entries(cardData.banks || {}).map(([key, value]) => ({
-            key,
-            ...value,
-        }));
-    }, []);
-
+    // Get brands from JSON
     const brands = useMemo(() => {
         return Object.entries(cardData.brands || {}).map(([key, value]) => ({
             key: key.toUpperCase(),
@@ -91,17 +79,11 @@ export default function CardModal({
         }));
     }, []);
 
-    // Filter banks by search
-    const filteredBanks = useMemo(() => {
-        return banks.filter(bank =>
-            bank.name.toLowerCase().includes(bankSearch.toLowerCase())
-        );
-    }, [banks, bankSearch]);
-
     useEffect(() => {
         if (editingCard) {
             setForm({
                 name: editingCard.name || '',
+                bankAccountId: editingCard.bankAccountId || null,
                 bankName: editingCard.bankName || '',
                 bankIcon: editingCard.bankIcon || '',
                 brand: editingCard.brand || 'VISA',
@@ -116,20 +98,34 @@ export default function CardModal({
             });
             setLimitTouched(editingCard.creditLimit !== editingCard.availableLimit);
         } else {
-            setForm(defaultForm);
+            // Auto-select default bank account if available
+            const defaultBank = bankAccounts.find(b => b.isDefault) || bankAccounts[0];
+            if (defaultBank) {
+                setForm({
+                    ...defaultForm,
+                    bankAccountId: defaultBank.id || defaultBank._index,
+                    bankName: defaultBank.nickname || defaultBank.bankName,
+                    bankIcon: defaultBank.icon || null,
+                    color: defaultBank.color || '#1a1a2e',
+                    name: '',
+                });
+            } else {
+                setForm(defaultForm);
+            }
             setLimitTouched(false);
         }
-    }, [editingCard, isOpen]);
+    }, [editingCard, isOpen, bankAccounts]);
 
-    const handleSelectBank = (bank) => {
+    const handleSelectBankAccount = (account, idx) => {
         setForm(prev => ({
             ...prev,
-            bankName: bank.name,
-            bankIcon: bank.icon,
-            color: bank.color, // Auto-set card color from bank
-            name: prev.name || bank.name, // Auto-set card name if empty
+            bankAccountId: account.id || idx,
+            bankName: account.nickname || account.bankName,
+            bankIcon: account.icon || null,
+            color: account.color || prev.color,
+            name: prev.name || account.nickname || account.bankName,
         }));
-        setShowBankGallery(false);
+        setShowBankDropdown(false);
     };
 
     const handleSelectBrand = (brand) => {
@@ -146,7 +142,6 @@ export default function CardModal({
         setForm(prev => ({
             ...prev,
             creditLimit: formatted,
-            // Auto-fill available limit if not touched
             availableLimit: !limitTouched ? formatted : prev.availableLimit,
         }));
     };
@@ -162,6 +157,7 @@ export default function CardModal({
     const handleSave = () => {
         const payload = {
             name: form.name,
+            bankAccountId: form.bankAccountId,
             bankName: form.bankName,
             bankIcon: form.bankIcon,
             brand: form.brand,
@@ -177,31 +173,107 @@ export default function CardModal({
         onSave?.(payload, editingCard?.id);
     };
 
+    const handleAddNewBank = () => {
+        setShowBankDropdown(false);
+        onAddNewBank?.();
+    };
+
     // Get current brand info
     const currentBrand = brands.find(b => b.key === form.brand);
+
+    // Get selected bank account for display
+    const selectedBankAccount = bankAccounts.find(
+        (b, idx) => (b.id || idx) === form.bankAccountId
+    ) || bankAccounts.find(b => b.isDefault) || bankAccounts[0];
 
     return (
         <>
             <Modal
-                isOpen={isOpen && !showBankGallery && !showBrandGallery}
+                isOpen={isOpen && !showBrandGallery}
                 onClose={onClose}
                 title={editingCard ? 'Editar Cartão' : 'Novo Cartão'}
                 size="md"
             >
                 <div className={styles.modalForm}>
-                    {/* Bank Selection */}
+                    {/* Bank Account Selection */}
                     <div className={styles.selectionRow}>
-                        <div className={styles.selectionItem} onClick={() => setShowBankGallery(true)}>
-                            <div className={styles.selectionPreview} style={{ borderColor: form.bankIcon ? form.color : undefined }}>
-                                {form.bankIcon ? (
-                                    <img src={form.bankIcon} alt={form.bankName} className={styles.selectionIcon} />
-                                ) : (
-                                    <FiCreditCard className={styles.selectionPlaceholder} />
-                                )}
-                            </div>
+                        <div className={styles.selectionItem}>
                             <div className={styles.selectionInfo}>
-                                <span className={styles.selectionLabel}>Banco</span>
-                                <span className={styles.selectionValue}>{form.bankName || 'Selecionar banco'}</span>
+                                <span className={styles.selectionLabel}>Conta Vinculada</span>
+                            </div>
+                            <div className={styles.bankAccountSelector}>
+                                <button
+                                    type="button"
+                                    className={styles.bankAccountButton}
+                                    onClick={() => setShowBankDropdown(!showBankDropdown)}
+                                >
+                                    {selectedBankAccount?.icon ? (
+                                        <img
+                                            src={selectedBankAccount.icon}
+                                            alt={selectedBankAccount.bankName}
+                                            className={styles.bankAccountIcon}
+                                        />
+                                    ) : (
+                                        <div
+                                            className={styles.bankAccountIconFallback}
+                                            style={{ background: selectedBankAccount?.color || form.color || '#6366F1' }}
+                                        >
+                                            <BiWallet />
+                                        </div>
+                                    )}
+                                    <span className={styles.bankAccountName}>
+                                        {form.bankName || selectedBankAccount?.nickname || 'Selecionar conta'}
+                                    </span>
+                                    <FiChevronDown className={`${styles.chevron} ${showBankDropdown ? styles.open : ''}`} />
+                                </button>
+
+                                {/* Dropdown */}
+                                {showBankDropdown && (
+                                    <div className={styles.bankDropdown}>
+                                        {bankAccounts.length > 0 ? (
+                                            <>
+                                                {bankAccounts.map((account, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        className={`${styles.bankDropdownItem} ${(account.id || idx) === form.bankAccountId ? styles.selected : ''
+                                                            }`}
+                                                        onClick={() => handleSelectBankAccount(account, idx)}
+                                                    >
+                                                        {account.icon ? (
+                                                            <img src={account.icon} alt={account.bankName} className={styles.dropdownIcon} />
+                                                        ) : (
+                                                            <div
+                                                                className={styles.dropdownIconFallback}
+                                                                style={{ background: account.color || '#6366F1' }}
+                                                            >
+                                                                <BiWallet />
+                                                            </div>
+                                                        )}
+                                                        <span>{account.nickname || account.bankName}</span>
+                                                        {account.isDefault && <span className={styles.defaultBadge}>Padrão</span>}
+                                                    </button>
+                                                ))}
+                                            </>
+                                        ) : (
+                                            <div className={styles.emptyDropdown}>
+                                                Nenhuma conta cadastrada
+                                            </div>
+                                        )}
+
+                                        {/* Add New Bank Button */}
+                                        {onAddNewBank && (
+                                            <button
+                                                type="button"
+                                                className={styles.addNewBankButton}
+                                                onClick={handleAddNewBank}
+                                            >
+                                                <FiPlus />
+                                                <span>Adicionar Nova Conta</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -305,60 +377,6 @@ export default function CardModal({
                         </Button>
                         <Button onClick={handleSave} disabled={isLoading || !form.name || !form.bankName}>
                             {isLoading ? 'Salvando...' : editingCard ? 'Salvar' : 'Criar Cartão'}
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
-
-            {/* Bank Gallery Modal */}
-            <Modal
-                isOpen={showBankGallery}
-                onClose={() => setShowBankGallery(false)}
-                title="Selecionar Banco"
-                size="lg"
-            >
-                <div className={styles.galleryContent}>
-                    <div className={styles.gallerySearch}>
-                        <FiSearch className={styles.searchIcon} />
-                        <input
-                            type="text"
-                            placeholder="Buscar banco..."
-                            value={bankSearch}
-                            onChange={(e) => setBankSearch(e.target.value)}
-                            className={styles.searchInput}
-                        />
-                        {bankSearch && (
-                            <button className={styles.clearSearch} onClick={() => setBankSearch('')}>
-                                <FiX />
-                            </button>
-                        )}
-                    </div>
-
-                    <div className={styles.galleryGrid}>
-                        {filteredBanks.map(bank => (
-                            <button
-                                key={bank.key}
-                                className={styles.galleryItem}
-                                onClick={() => handleSelectBank(bank)}
-                                style={{ '--item-color': bank.color }}
-                            >
-                                <div className={styles.galleryItemIcon}>
-                                    {bank.icon ? (
-                                        <img src={bank.icon} alt={bank.name} className={styles.galleryIcon} />
-                                    ) : (
-                                        <div className={styles.galleryIconFallback} style={{ background: bank.color }}>
-                                            {bank.name.charAt(0)}
-                                        </div>
-                                    )}
-                                </div>
-                                <span className={styles.galleryItemName}>{bank.name}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className={styles.galleryActions}>
-                        <Button variant="secondary" onClick={() => setShowBankGallery(false)}>
-                            Cancelar
                         </Button>
                     </div>
                 </div>

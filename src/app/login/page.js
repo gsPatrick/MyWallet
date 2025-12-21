@@ -58,7 +58,8 @@ export default function LoginPage() {
             setTimeout(() => {
                 setLoginPhase('redirect');
                 setTimeout(() => {
-                    router.push('/dashboard');
+                    // Use dynamic redirect from AuthContext (paywall logic)
+                    router.push(result.redirect || '/dashboard');
                 }, 800);
             }, 1800);
         } else {
