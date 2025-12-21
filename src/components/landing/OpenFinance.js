@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FiLink } from 'react-icons/fi';
+import { FiLink, FiClock } from 'react-icons/fi';
 import styles from './OpenFinance.module.css';
 
 const banks = [
@@ -27,11 +27,14 @@ export default function OpenFinance() {
                     <div className={styles.badge}>
                         <FiLink /> Open Finance
                     </div>
+                    <div className={styles.comingSoonBadge}>
+                        <FiClock /> Em breve
+                    </div>
                     <h2 className={styles.title}>
                         Conecte todas suas contas
                     </h2>
                     <p className={styles.text}>
-                        Integração direta com os principais bancos e instituições financeiras do Brasil.
+                        Em breve você poderá conectar diretamente com os principais bancos e instituições financeiras do Brasil.
                         Seus dados em um só lugar, de forma segura e automática.
                     </p>
                 </motion.div>
@@ -64,7 +67,7 @@ export default function OpenFinance() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.4 }}
                 >
-                    E mais de 50 outras instituições
+                    E mais de 50 outras instituições • Disponível em breve
                 </motion.p>
             </div>
         </section>
