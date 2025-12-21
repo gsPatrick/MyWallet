@@ -15,12 +15,42 @@ const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
+    const router = useRouter();
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         checkAuth();
     }, []);
+
+    // PAYWALL: Global protection - redirect to checkout if no active subscription
+    useEffect(() => {
+        if (isLoading || !user) return;
+
+        // Get current path
+        const currentPath = window.location.pathname;
+
+        // Skip paywall for these paths
+        const publicPaths = ['/login', '/signup', '/checkout', '/admin', '/forgot-password', '/'];
+        if (publicPaths.some(path => currentPath === path || currentPath.startsWith(path + '?'))) {
+            return;
+        }
+
+        // OWNER can access everything
+        if (user.plan === 'OWNER') {
+            return;
+        }
+
+        // ACTIVE subscription can access everything
+        if (user.subscriptionStatus === 'ACTIVE') {
+            return;
+        }
+
+        // No active subscription = redirect to checkout
+        console.log('PAYWALL: User without subscription trying to access:', currentPath);
+        console.log('User subscription status:', user.subscriptionStatus, 'Plan:', user.plan);
+        router.push('/checkout');
+    }, [user, isLoading, router]);
 
     const checkAuth = async () => {
         try {
