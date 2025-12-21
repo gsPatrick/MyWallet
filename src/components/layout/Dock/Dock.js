@@ -24,11 +24,13 @@ import {
     FiUser,
     FiBriefcase,
     FiUsers,
-    FiDatabase
+    FiDatabase,
+    FiLogOut
 } from 'react-icons/fi';
 import { BsBank2 } from 'react-icons/bs';
 import { usePrivacy } from '@/contexts/PrivacyContext';
 import { useProfiles } from '@/contexts/ProfileContext';
+import { useAuth } from '@/contexts/AuthContext';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import styles from './Dock.module.css';
@@ -52,6 +54,7 @@ const quickActions = [
     { id: 'banks', href: '/banks', icon: BsBank2, label: 'Bancos', color: '#0ea5e9' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
     { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
+    { id: 'logout', href: null, icon: FiLogOut, label: 'Sair', color: '#ef4444', isLogout: true },
 ];
 
 // DAS shortcut for BUSINESS profiles only
@@ -61,9 +64,15 @@ export default function Dock() {
     const pathname = usePathname();
     const { hideData, toggleHideData } = usePrivacy();
     const { profiles, currentProfile, switchProfile } = useProfiles();
+    const { logout } = useAuth();
     const [showQuickActions, setShowQuickActions] = useState(false);
     const [profileSwitching, setProfileSwitching] = useState({ isActive: false, type: null });
     const [showFutureModal, setShowFutureModal] = useState(false);
+
+    const handleLogout = async () => {
+        setShowQuickActions(false);
+        await logout();
+    };
 
     const isActive = (href) => {
         if (href === '/dashboard') return pathname === '/dashboard';
@@ -208,6 +217,23 @@ export default function Dock() {
                                 {/* Regular quick actions */}
                                 {quickActions.map((action) => {
                                     const Icon = action.icon;
+
+                                    // Logout action - use button instead of Link
+                                    if (action.isLogout) {
+                                        return (
+                                            <button
+                                                key={action.id}
+                                                className={styles.quickActionItem}
+                                                onClick={handleLogout}
+                                            >
+                                                <div className={styles.quickActionIcon} style={{ background: `${action.color}20`, color: action.color }}>
+                                                    <Icon />
+                                                </div>
+                                                <span>{action.label}</span>
+                                            </button>
+                                        );
+                                    }
+
                                     return (
                                         <Link
                                             key={action.id}

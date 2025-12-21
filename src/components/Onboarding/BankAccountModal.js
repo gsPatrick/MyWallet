@@ -42,15 +42,33 @@ const COLOR_PALETTE = [
     '#6B7280', // Gray (for wallets)
 ];
 
-// Currency mask helper
-const applyCurrencyMask = (value) => {
-    let digits = value.replace(/\D/g, '');
-    digits = digits.replace(/^0+/, '') || '0';
-    digits = digits.padStart(3, '0');
-    const cents = digits.slice(-2);
-    let reais = digits.slice(0, -2);
-    reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${reais},${cents}`;
+// Currency input helper - allows free typing with comma/period
+const handleCurrencyInput = (value) => {
+    // Allow digits, comma, and period
+    let cleaned = value.replace(/[^\d.,]/g, '');
+
+    // Replace period with comma (Brazilian format)
+    cleaned = cleaned.replace(/\./g, ',');
+
+    // Only allow one comma
+    const firstCommaIndex = cleaned.indexOf(',');
+    if (firstCommaIndex !== -1) {
+        const beforeComma = cleaned.slice(0, firstCommaIndex + 1);
+        const afterComma = cleaned.slice(firstCommaIndex + 1).replace(/,/g, '');
+        cleaned = beforeComma + afterComma.slice(0, 2);
+    }
+
+    return cleaned;
+};
+
+// Format currency for display
+const formatCurrencyDisplay = (value) => {
+    if (!value) return '';
+    const parts = value.split(',');
+    let integerPart = parts[0]?.replace(/^0+/, '') || '0';
+    const decimalPart = parts[1] || '';
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return value.includes(',') ? `${integerPart},${decimalPart}` : integerPart;
 };
 
 const parseCurrencyValue = (maskedValue) => {
@@ -125,8 +143,13 @@ export default function BankAccountModal({
     };
 
     const handleCurrencyChange = (e) => {
-        const masked = applyCurrencyMask(e.target.value);
-        setBalance(masked);
+        const cleaned = handleCurrencyInput(e.target.value);
+        setBalance(cleaned);
+    };
+
+    const handleBalanceBlur = () => {
+        const formatted = formatCurrencyDisplay(balance);
+        setBalance(formatted);
     };
 
     if (!isOpen) return null;
@@ -236,9 +259,10 @@ export default function BankAccountModal({
                                 <span>R$</span>
                                 <input
                                     type="text"
-                                    inputMode="numeric"
+                                    inputMode="decimal"
                                     value={balance}
                                     onChange={handleCurrencyChange}
+                                    onBlur={handleBalanceBlur}
                                     placeholder="0,00"
                                 />
                             </div>

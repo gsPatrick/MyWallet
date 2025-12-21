@@ -220,10 +220,18 @@ textarea {
   padding-right: env(safe-area-inset-right);
 }
 
-/* PWA Standalone mode - hide bottom safe area */
+/* PWA Standalone mode - iOS Dynamic Island / Notch support */
 @media (display-mode: standalone) {
+
+  /* Add top padding for Dynamic Island */
   body {
+    padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Ensure html also has the padding for full coverage */
+  html {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 
   /* Adjust dock for safe area */

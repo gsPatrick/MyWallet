@@ -10,6 +10,10 @@ import TourOverlay from '@/components/Onboarding/TourOverlay';
 
 const OnboardingContext = createContext({});
 
+// localStorage keys
+const TOUR_COMPLETED_KEY = 'mywallet_tour_completed';
+const ONBOARDING_PHASE_KEY = 'mywallet_onboarding_phase';
+
 const TOUR_STEPS = [
     // --- DASHBOARD ---
     {
@@ -85,6 +89,33 @@ export function OnboardingProvider({ children }) {
     const [showTour, setShowTour] = useState(false);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
+    // Helper to get saved phase from localStorage
+    const getSavedPhase = useCallback(() => {
+        if (typeof window === 'undefined') return null;
+        return localStorage.getItem(ONBOARDING_PHASE_KEY);
+    }, []);
+
+    // Helper to check if tour was completed before
+    const wasTourCompleted = useCallback(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem(TOUR_COMPLETED_KEY) === 'true';
+    }, []);
+
+    // Save phase to localStorage
+    const savePhase = useCallback((newPhase) => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(ONBOARDING_PHASE_KEY, newPhase);
+        }
+        setPhase(newPhase);
+    }, []);
+
+    // Mark tour as completed
+    const markTourComplete = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+        }
+    }, []);
+
     // Start Tour for new users (who don't have onboardingComplete)
     // Tour shows FIRST, then ProfileWizard via AppShell after tour ends
     // IMPORTANT: Only for users with ACTIVE subscription or OWNER
@@ -93,35 +124,49 @@ export function OnboardingProvider({ children }) {
         if (!isAuthenticated || !user) return;
 
         // PAYWALL CHECK: Don't start onboarding if no active subscription
-        // Let AuthContext handle the redirect to checkout
         if (user.plan !== 'OWNER' && user.subscriptionStatus !== 'ACTIVE') {
             console.log('Onboarding: Skipping - user has no active subscription');
             return;
         }
 
-        // OWNER users skip onboarding entirely - they go straight to admin
+        // OWNER users skip onboarding entirely
         if (user.plan === 'OWNER') {
             console.log('Onboarding: Skipping - user is OWNER (admin)');
-            setPhase('complete');
+            savePhase('complete');
             return;
         }
 
-        // If onboarding is complete, don't show anything
+        // ✅ If onboarding is COMPLETE (backend says so), skip everything
         if (user.onboardingComplete) {
-            setPhase('complete');
+            console.log('Onboarding: Complete (from backend)');
+            savePhase('complete');
+            // Clear localStorage since onboarding is done
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem(ONBOARDING_PHASE_KEY);
+                localStorage.removeItem(TOUR_COMPLETED_KEY);
+            }
+            return;
+        }
+
+        // ✅ Check localStorage for saved phase
+        const savedPhase = getSavedPhase();
+
+        // If tour was already completed, go straight to profile_config
+        if (wasTourCompleted() || savedPhase === 'profile_config') {
+            console.log('Onboarding: Tour already completed, showing ProfileWizard');
+            savePhase('profile_config');
             return;
         }
 
         // Onboarding not complete - show tour first
-        // After tour completes/skips, AppShell will show ProfileWizard
         console.log('Onboarding: Starting tour for user');
         const timer = setTimeout(() => {
-            setPhase('tour');
+            savePhase('tour');
             setShowTour(true);
         }, 500);
         return () => clearTimeout(timer);
 
-    }, [isAuthenticated, user, hasProfiles, profilesLoading]);
+    }, [isAuthenticated, user, hasProfiles, profilesLoading, getSavedPhase, wasTourCompleted, savePhase]);
 
     // Navigation Effect: Ensure we are on the right page for the step
     useEffect(() => {
@@ -137,25 +182,32 @@ export function OnboardingProvider({ children }) {
         if (currentStepIndex < TOUR_STEPS.length - 1) {
             setCurrentStepIndex(prev => prev + 1);
         } else {
-            // Tour finished - AppShell will show ProfileWizard automatically
+            // Tour finished - mark as complete and show ProfileWizard
             setShowTour(false);
-            setPhase('profile_config');
+            markTourComplete();
+            savePhase('profile_config');
             router.push('/dashboard');
         }
     };
 
     const handleSkip = async () => {
-        // Skip tour - AppShell will show ProfileWizard automatically
+        // Skip tour - mark as complete and show ProfileWizard
         setShowTour(false);
-        setPhase('profile_config');
+        markTourComplete();
+        savePhase('profile_config');
         router.push('/dashboard');
     };
 
     const startOnboarding = useCallback(() => {
+        // Clear saved state and restart
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(TOUR_COMPLETED_KEY);
+            localStorage.removeItem(ONBOARDING_PHASE_KEY);
+        }
         setCurrentStepIndex(0);
-        setPhase('tour');
+        savePhase('tour');
         setShowTour(true);
-    }, []);
+    }, [savePhase]);
 
     const currentStep = TOUR_STEPS[currentStepIndex];
 

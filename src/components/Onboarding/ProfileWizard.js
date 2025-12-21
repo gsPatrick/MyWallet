@@ -8,7 +8,7 @@
  * ========================================
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiArrowRight, FiArrowLeft, FiCheck, FiCheckCircle,
@@ -78,19 +78,52 @@ const BUSINESS_SUBTYPES = [
     }
 ];
 
-// Currency mask helper
-const applyCurrencyMask = (value) => {
-    let digits = value.replace(/\D/g, '');
-    digits = digits.replace(/^0+/, '') || '0';
-    digits = digits.padStart(3, '0');
-    const cents = digits.slice(-2);
-    let reais = digits.slice(0, -2);
-    reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${reais},${cents}`;
+// Currency input helper - allows free typing, only validates characters
+const handleCurrencyInput = (value) => {
+    // Allow digits, comma, and period (will be treated as comma)
+    // Remove any character that is not a digit, comma, or period
+    let cleaned = value.replace(/[^\d.,]/g, '');
+
+    // Replace period with comma (Brazilian format)
+    cleaned = cleaned.replace(/\./g, ',');
+
+    // Only allow one comma
+    const firstCommaIndex = cleaned.indexOf(',');
+    if (firstCommaIndex !== -1) {
+        const beforeComma = cleaned.slice(0, firstCommaIndex + 1);
+        const afterComma = cleaned.slice(firstCommaIndex + 1).replace(/,/g, '');
+        cleaned = beforeComma + afterComma.slice(0, 2); // Max 2 decimal places
+    }
+
+    return cleaned;
+};
+
+// Format currency for display (add thousand separators)
+const formatCurrencyDisplay = (value) => {
+    if (!value) return '';
+
+    // Split by comma
+    const parts = value.split(',');
+    let integerPart = parts[0] || '';
+    const decimalPart = parts[1] || '';
+
+    // Remove leading zeros but keep at least empty string
+    integerPart = integerPart.replace(/^0+/, '');
+
+    // Add thousand separators
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    if (!integerPart) integerPart = '0';
+
+    if (value.includes(',')) {
+        return `${integerPart},${decimalPart}`;
+    }
+    return integerPart;
 };
 
 const parseCurrencyValue = (maskedValue) => {
     if (!maskedValue) return 0;
+    // Remove thousand separators (dots) and replace comma with dot for parsing
     const normalized = maskedValue.replace(/\./g, '').replace(',', '.');
     return parseFloat(normalized) || 0;
 };
@@ -123,43 +156,60 @@ const applyCpfMask = (value) => {
     return digits;
 };
 
+// localStorage key for wizard state
+const WIZARD_STATE_KEY = 'mywallet_wizard_state';
+
 export default function ProfileWizard({ onComplete }) {
     const { refreshProfiles } = useProfiles();
-    const [step, setStep] = useState('type');
+
+    // Load saved state from localStorage
+    const getSavedState = () => {
+        if (typeof window === 'undefined') return null;
+        try {
+            const saved = localStorage.getItem(WIZARD_STATE_KEY);
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const savedState = getSavedState();
+
+    const [step, setStep] = useState(savedState?.step || 'type');
     const [loading, setLoading] = useState(false);
 
     // Form states - Personal
-    const [profileType, setProfileType] = useState(null);
-    const [personalName, setPersonalName] = useState('Minha Casa');
-    const [salary, setSalary] = useState('');
-    const [salaryDay, setSalaryDay] = useState('5');
-    const [initialBalance, setInitialBalance] = useState('');
+    const [profileType, setProfileType] = useState(savedState?.profileType || null);
+    const [personalName, setPersonalName] = useState(savedState?.personalName || 'Minha Casa');
+    const [salary, setSalary] = useState(savedState?.salary || '');
+    const [salaryDay, setSalaryDay] = useState(savedState?.salaryDay || '5');
+    const [initialBalance, setInitialBalance] = useState(savedState?.initialBalance || '');
 
     // Form states - Business
-    const [businessName, setBusinessName] = useState('');
-    const [businessSubtype, setBusinessSubtype] = useState('MEI');
-    const [businessCnpj, setBusinessCnpj] = useState('');
-    const [businessCpf, setBusinessCpf] = useState('');
-    const [defaultProfile, setDefaultProfile] = useState('PERSONAL');
+    const [businessName, setBusinessName] = useState(savedState?.businessName || '');
+    const [businessSubtype, setBusinessSubtype] = useState(savedState?.businessSubtype || 'MEI');
+    const [businessCnpj, setBusinessCnpj] = useState(savedState?.businessCnpj || '');
+    const [businessCpf, setBusinessCpf] = useState(savedState?.businessCpf || '');
+    const [defaultProfile, setDefaultProfile] = useState(savedState?.defaultProfile || 'PERSONAL');
 
     // DAS
-    const [dasValue, setDasValue] = useState('');
-    const [dasDueDay, setDasDueDay] = useState('20');
+    const [dasValue, setDasValue] = useState(savedState?.dasValue || '');
+    const [dasDueDay, setDasDueDay] = useState(savedState?.dasDueDay || '20');
 
     // Pró-labore (only for ME)
-    const [proLabore, setProLabore] = useState('');
-    const [proLaboreDay, setProLaboreDay] = useState('5');
+    const [proLabore, setProLabore] = useState(savedState?.proLabore || '');
+    const [proLaboreDay, setProLaboreDay] = useState(savedState?.proLaboreDay || '5');
 
     // Business initial balance
-    const [businessBalance, setBusinessBalance] = useState('');
+    const [businessBalance, setBusinessBalance] = useState(savedState?.businessBalance || '');
 
     // Cards & Subscriptions - Personal
-    const [personalCards, setPersonalCards] = useState([]);
-    const [personalSubs, setPersonalSubs] = useState([]);
+    const [personalCards, setPersonalCards] = useState(savedState?.personalCards || []);
+    const [personalSubs, setPersonalSubs] = useState(savedState?.personalSubs || []);
 
     // Cards & Subscriptions - Business
-    const [businessCards, setBusinessCards] = useState([]);
-    const [businessSubs, setBusinessSubs] = useState([]);
+    const [businessCards, setBusinessCards] = useState(savedState?.businessCards || []);
+    const [businessSubs, setBusinessSubs] = useState(savedState?.businessSubs || []);
 
     // Modal states
     const [showCardModal, setShowCardModal] = useState(false);
@@ -172,7 +222,7 @@ export default function ProfileWizard({ onComplete }) {
     const [reopenCardModal, setReopenCardModal] = useState(false); // Flag to reopen CardModal after adding bank
 
     // Bank Accounts - Personal (array of banks)
-    const [personalBanks, setPersonalBanks] = useState([
+    const [personalBanks, setPersonalBanks] = useState(savedState?.personalBanks || [
         // Auto-default wallet
         {
             bankKey: 'custom',
@@ -187,7 +237,7 @@ export default function ProfileWizard({ onComplete }) {
     ]);
 
     // Bank Accounts - Business (array of banks)
-    const [businessBanks, setBusinessBanks] = useState([
+    const [businessBanks, setBusinessBanks] = useState(savedState?.businessBanks || [
         // Auto-default wallet
         {
             bankKey: 'custom',
@@ -202,11 +252,59 @@ export default function ProfileWizard({ onComplete }) {
     ]);
 
     // Salary linked bank
-    const [salaryBankIndex, setSalaryBankIndex] = useState(0);
+    const [salaryBankIndex, setSalaryBankIndex] = useState(savedState?.salaryBankIndex || 0);
+
+    // ✅ Save state to localStorage whenever it changes
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (step === 'complete') {
+            // Clear saved state when onboarding completes
+            localStorage.removeItem(WIZARD_STATE_KEY);
+            return;
+        }
+
+        const stateToSave = {
+            step,
+            profileType,
+            personalName,
+            salary,
+            salaryDay,
+            initialBalance,
+            businessName,
+            businessSubtype,
+            businessCnpj,
+            businessCpf,
+            defaultProfile,
+            dasValue,
+            dasDueDay,
+            proLabore,
+            proLaboreDay,
+            businessBalance,
+            personalCards,
+            personalSubs,
+            businessCards,
+            businessSubs,
+            personalBanks,
+            businessBanks,
+            salaryBankIndex
+        };
+
+        localStorage.setItem(WIZARD_STATE_KEY, JSON.stringify(stateToSave));
+    }, [step, profileType, personalName, salary, salaryDay, initialBalance, businessName,
+        businessSubtype, businessCnpj, businessCpf, defaultProfile, dasValue, dasDueDay,
+        proLabore, proLaboreDay, businessBalance, personalCards, personalSubs, businessCards,
+        businessSubs, personalBanks, businessBanks, salaryBankIndex]);
 
     const handleCurrencyChange = (value, setter) => {
-        const masked = applyCurrencyMask(value);
-        setter(masked);
+        // Allow free typing with digits and comma/period
+        const cleaned = handleCurrencyInput(value);
+        setter(cleaned);
+    };
+
+    // Format on blur - add thousand separators
+    const handleCurrencyBlur = (value, setter) => {
+        const formatted = formatCurrencyDisplay(value);
+        setter(formatted);
     };
 
     const formatCurrency = (value) => {
@@ -921,7 +1019,7 @@ export default function ProfileWizard({ onComplete }) {
                                             <span>R$</span>
                                             <input
                                                 type="text"
-                                                inputMode="numeric"
+                                                inputMode="decimal"
                                                 value={salary}
                                                 onChange={(e) => handleCurrencyChange(e.target.value, setSalary)}
                                                 placeholder="0,00"
@@ -1183,7 +1281,7 @@ export default function ProfileWizard({ onComplete }) {
                                                 <span>R$</span>
                                                 <input
                                                     type="text"
-                                                    inputMode="numeric"
+                                                    inputMode="decimal"
                                                     value={dasValue}
                                                     onChange={(e) => handleCurrencyChange(e.target.value, setDasValue)}
                                                     placeholder={businessSubtype === 'MEI' ? '70,60' : '0,00'}
@@ -1217,7 +1315,7 @@ export default function ProfileWizard({ onComplete }) {
                                                     <span>R$</span>
                                                     <input
                                                         type="text"
-                                                        inputMode="numeric"
+                                                        inputMode="decimal"
                                                         value={proLabore}
                                                         onChange={(e) => handleCurrencyChange(e.target.value, setProLabore)}
                                                         placeholder="0,00"

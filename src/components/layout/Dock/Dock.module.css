@@ -410,7 +410,7 @@
     }
 }
 
-/* Small phones - even more compact */
+/* Small phones */
 @media (max-width: 480px) {
     .dockContainer {
         gap: 2px;
@@ -434,7 +434,7 @@
     }
 }
 
-/* Very small screens - hide dividers and maximize space */
+/* Very small screens */
 @media (max-width: 380px) {
     .dockContainer {
         width: calc(100% - 12px);

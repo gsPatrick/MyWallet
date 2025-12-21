@@ -38,21 +38,37 @@ const defaultForm = {
     holderName: '',
 };
 
-// Helper to format currency (Brazilian format: 1.000,00)
+// Helper to format currency (Brazilian format: 1.000,00) - allows typing comma
 const formatCurrencyInput = (value) => {
-    const onlyNumbers = value.replace(/\D/g, '');
-    if (!onlyNumbers) return '';
-    const cents = parseInt(onlyNumbers, 10);
-    const formatted = (cents / 100).toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-    return formatted;
+    // Remove everything except digits and comma
+    let cleaned = value.replace(/[^\d,]/g, '');
+
+    // Split by comma (take first occurrence only)
+    const parts = cleaned.split(',');
+    let integerPart = parts[0] || '';
+    let decimalPart = parts[1] || '';
+
+    // Remove leading zeros from integer part (but keep at least one digit)
+    integerPart = integerPart.replace(/^0+/, '') || '';
+
+    // Limit decimal to 2 digits
+    decimalPart = decimalPart.slice(0, 2);
+
+    // Add thousand separators to integer part
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    // If user typed comma, show decimal part (even if empty)
+    if (value.includes(',')) {
+        return `${integerPart},${decimalPart}`;
+    }
+
+    return integerPart;
 };
 
 // Parse formatted value back to number
 const parseCurrencyValue = (formatted) => {
     if (!formatted) return 0;
+    // Remove thousand separators (dots) and replace comma with dot for parsing
     const number = formatted.replace(/\./g, '').replace(',', '.');
     return parseFloat(number) || 0;
 };

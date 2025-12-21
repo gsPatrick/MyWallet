@@ -12,15 +12,33 @@ import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import styles from './OnboardingConfig.module.css';
 
-// Currency mask: 10,00 / 100,00 / 1.000,00 / 10.000,00
-const applyCurrencyMask = (value) => {
-    let digits = value.replace(/\D/g, '');
-    digits = digits.replace(/^0+/, '') || '0';
-    digits = digits.padStart(3, '0');
-    const cents = digits.slice(-2);
-    let reais = digits.slice(0, -2);
-    reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${reais},${cents}`;
+// Currency input helper - allows free typing with comma/period
+const handleCurrencyInput = (value) => {
+    // Allow digits, comma, and period
+    let cleaned = value.replace(/[^\d.,]/g, '');
+
+    // Replace period with comma (Brazilian format)
+    cleaned = cleaned.replace(/\./g, ',');
+
+    // Only allow one comma
+    const firstCommaIndex = cleaned.indexOf(',');
+    if (firstCommaIndex !== -1) {
+        const beforeComma = cleaned.slice(0, firstCommaIndex + 1);
+        const afterComma = cleaned.slice(firstCommaIndex + 1).replace(/,/g, '');
+        cleaned = beforeComma + afterComma.slice(0, 2);
+    }
+
+    return cleaned;
+};
+
+// Format currency for display
+const formatCurrencyDisplay = (value) => {
+    if (!value) return '';
+    const parts = value.split(',');
+    let integerPart = parts[0]?.replace(/^0+/, '') || '0';
+    const decimalPart = parts[1] || '';
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return value.includes(',') ? `${integerPart},${decimalPart}` : integerPart;
 };
 
 const parseCurrencyValue = (maskedValue) => {
@@ -49,8 +67,13 @@ export default function OnboardingConfig({ onComplete }) {
     const [editingSub, setEditingSub] = useState(null);
 
     const handleCurrencyChange = (value, setter) => {
-        const masked = applyCurrencyMask(value);
-        setter(masked);
+        const cleaned = handleCurrencyInput(value);
+        setter(cleaned);
+    };
+
+    const handleCurrencyBlur = (value, setter) => {
+        const formatted = formatCurrencyDisplay(value);
+        setter(formatted);
     };
 
     const handleNext = async () => {
@@ -207,7 +230,7 @@ export default function OnboardingConfig({ onComplete }) {
                                         <span>R$</span>
                                         <input
                                             type="text"
-                                            inputMode="numeric"
+                                            inputMode="decimal"
                                             value={initialBalance}
                                             onChange={(e) => handleCurrencyChange(e.target.value, setInitialBalance)}
                                             placeholder="0,00"
@@ -245,7 +268,7 @@ export default function OnboardingConfig({ onComplete }) {
                                             <span>R$</span>
                                             <input
                                                 type="text"
-                                                inputMode="numeric"
+                                                inputMode="decimal"
                                                 value={salary}
                                                 onChange={(e) => handleCurrencyChange(e.target.value, setSalary)}
                                                 placeholder="0,00"
