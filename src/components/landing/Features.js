@@ -1,42 +1,61 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import {
-    FiLink, FiTrendingUp, FiTarget, FiCreditCard,
-    FiPieChart, FiBarChart2
+    FiCreditCard, FiDollarSign, FiTarget, FiPieChart,
+    FiMessageCircle, FiBell, FiTrendingUp, FiUsers
 } from 'react-icons/fi';
 import styles from './Features.module.css';
 
 const features = [
     {
-        icon: FiLink,
-        title: 'Open Finance',
-        description: 'Conecte suas contas bancárias e cartões automaticamente. Visualize todo seu patrimônio em um só lugar.'
+        icon: FiCreditCard,
+        title: 'Cartões e Contas',
+        description: 'Cadastre todos os seus cartões de crédito e contas bancárias. Visualize saldos e faturas em um só lugar.',
+        color: '#6366f1'
     },
     {
-        icon: FiTrendingUp,
-        title: 'Investimentos',
-        description: 'Acompanhe ações, FIIs, ETFs e renda fixa. Receba alertas de dividendos e análises de performance.'
+        icon: FiDollarSign,
+        title: 'Transações Inteligentes',
+        description: 'Registre receitas e despesas com categorização automática por Inteligência Artificial.',
+        color: '#8b5cf6'
+    },
+    {
+        icon: FiPieChart,
+        title: 'Orçamentos',
+        description: 'Crie orçamentos por categoria e receba alertas quando estiver próximo do limite.',
+        color: '#ec4899'
     },
     {
         icon: FiTarget,
         title: 'Metas Financeiras',
-        description: 'Defina objetivos de curto e longo prazo. Acompanhe seu progresso com visual intuitivo.'
+        description: 'Defina metas de economia e acompanhe seu progresso com visualizações intuitivas.',
+        color: '#10b981'
     },
     {
-        icon: FiCreditCard,
-        title: 'Cartões de Crédito',
-        description: 'Gerencie faturas, acompanhe gastos por categoria e evite surpresas no fechamento.'
+        icon: FiMessageCircle,
+        title: 'Bot WhatsApp',
+        description: 'Registre transações e consulte saldos direto pelo WhatsApp, 24 horas por dia.',
+        color: '#22c55e'
     },
     {
-        icon: FiPieChart,
-        title: 'Orçamento Inteligente',
-        description: 'Distribua sua renda automaticamente. Visualize para onde vai cada centavo.'
+        icon: FiBell,
+        title: 'Notificações',
+        description: 'Receba alertas de vencimento, orçamentos e metas atingidas por push e email.',
+        color: '#f59e0b'
     },
     {
-        icon: FiBarChart2,
-        title: 'Relatórios Detalhados',
-        description: 'Análises completas de receitas, despesas e evolução patrimonial ao longo do tempo.'
+        icon: FiTrendingUp,
+        title: 'Investimentos',
+        description: 'Controle sua carteira de investimentos: ações, FIIs, renda fixa e dividendos.',
+        color: '#3b82f6'
+    },
+    {
+        icon: FiUsers,
+        title: 'Múltiplos Perfis',
+        description: 'Separe suas finanças pessoais e empresariais com perfis isolados.',
+        color: '#a855f7'
     }
 ];
 
@@ -51,10 +70,35 @@ export default function Features() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className={styles.title}>Tudo que você precisa</h2>
+                    <span className={styles.badge}>Funcionalidades</span>
+                    <h2 className={styles.title}>Tudo que você precisa para organizar suas finanças</h2>
                     <p className={styles.subtitle}>
-                        Uma plataforma completa para gerenciar suas finanças pessoais
+                        Uma plataforma completa com ferramentas poderosas para controle total do seu dinheiro
                     </p>
+                </motion.div>
+
+                {/* Screenshot Placeholder */}
+                <motion.div
+                    className={styles.screenshotWrapper}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7 }}
+                >
+                    <div className={styles.screenshotPlaceholder}>
+                        {/* Placeholder para screenshot do dashboard */}
+                        <Image
+                            src="/images/dashboard-screenshot.png"
+                            alt="Dashboard MyWallet"
+                            fill
+                            style={{ objectFit: 'cover', borderRadius: '16px' }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                        <div className={styles.placeholderText}>
+                            <FiPieChart size={48} />
+                            <span>Screenshot do Dashboard</span>
+                        </div>
+                    </div>
                 </motion.div>
 
                 <div className={styles.grid}>
@@ -66,9 +110,9 @@ export default function Features() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            whileHover={{ y: -8 }}
+                            whileHover={{ y: -8, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}
                         >
-                            <div className={styles.icon}>
+                            <div className={styles.icon} style={{ background: `${feature.color}15`, color: feature.color }}>
                                 <feature.icon />
                             </div>
                             <h3 className={styles.cardTitle}>{feature.title}</h3>

@@ -2,14 +2,24 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FiCheck, FiArrowRight } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import styles from './Pricing.module.css';
 
-const features = [
-    'Acesso completo',
-    'Open Finance ilimitado',
-    'Relatórios e análises',
-    'Metas personalizadas',
+const monthlyFeatures = [
+    'Dashboard completo',
+    'Cartões e contas ilimitados',
+    'Orçamentos inteligentes',
+    'Bot WhatsApp 24h',
+    'Metas financeiras',
+    'Notificações',
+];
+
+const annualFeatures = [
+    'Tudo do plano mensal',
+    'Controle de DAS (MEI)',
+    'Investimentos',
+    'Múltiplos perfis',
+    'Relatórios avançados',
     'Suporte prioritário',
 ];
 
@@ -24,9 +34,10 @@ export default function Pricing() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className={styles.title}>Planos</h2>
+                    <span className={styles.badge}>Planos</span>
+                    <h2 className={styles.title}>Escolha o plano ideal para você</h2>
                     <p className={styles.subtitle}>
-                        Escolha o plano ideal para você
+                        Sem surpresas. Cancele quando quiser.
                     </p>
                 </motion.div>
 
@@ -43,13 +54,13 @@ export default function Pricing() {
                             <span className={styles.planName}>Mensal</span>
                             <div className={styles.priceWrapper}>
                                 <span className={styles.currency}>R$</span>
-                                <span className={styles.price}>39,90</span>
+                                <span className={styles.price}>29,90</span>
                                 <span className={styles.period}>/mês</span>
                             </div>
                         </div>
 
                         <ul className={styles.features}>
-                            {features.map((feature) => (
+                            {monthlyFeatures.map((feature) => (
                                 <li key={feature}>
                                     <FiCheck className={styles.checkIcon} />
                                     {feature}
@@ -58,7 +69,7 @@ export default function Pricing() {
                         </ul>
 
                         <Link href="/signup" className={styles.ctaBtn}>
-                            Começar
+                            Começar agora
                         </Link>
                     </motion.div>
 
@@ -71,24 +82,24 @@ export default function Pricing() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
                         <div className={styles.popularBadge}>
-                            Mais escolhido
+                            Mais popular
                         </div>
 
                         <div className={styles.cardHeader}>
                             <span className={styles.planName}>Anual</span>
                             <div className={styles.priceWrapper}>
                                 <span className={styles.currency}>R$</span>
-                                <span className={styles.price}>29,90</span>
-                                <span className={styles.period}>/mês</span>
+                                <span className={styles.price}>297</span>
+                                <span className={styles.period}>/ano</span>
                             </div>
                             <p className={styles.annualNote}>
-                                Cobrado R$ 358,80 por ano
+                                Equivale a R$ 24,75/mês
                             </p>
-                            <div className={styles.saveBadge}>Economize 25%</div>
+                            <div className={styles.saveBadge}>2 meses grátis</div>
                         </div>
 
                         <ul className={styles.features}>
-                            {features.map((feature) => (
+                            {annualFeatures.map((feature) => (
                                 <li key={feature}>
                                     <FiCheck className={styles.checkIcon} />
                                     {feature}
@@ -97,14 +108,13 @@ export default function Pricing() {
                         </ul>
 
                         <Link href="/signup" className={styles.ctaBtnPopular}>
-                            Começar
-                            <FiArrowRight />
+                            Começar agora
                         </Link>
                     </motion.div>
                 </div>
 
                 <p className={styles.guarantee}>
-                    7 dias de garantia • Cancele quando quiser
+                    7 dias de garantia • Pagamento 100% seguro • Cancele quando quiser
                 </p>
             </div>
         </section>

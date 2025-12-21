@@ -31,7 +31,14 @@ const PLANS = [
         priceLabel: 'R$ 29,90',
         period: '/mês',
         description: 'Cancele quando quiser',
-        features: ['Acesso completo', 'Transações ilimitadas', 'Suporte por email'],
+        features: [
+            'Dashboard completo',
+            'Cartões e contas ilimitados',
+            'Orçamentos inteligentes',
+            'Bot WhatsApp 24h',
+            'Metas financeiras',
+            'Notificações',
+        ],
         popular: false,
         color: '#6366f1'
     },
@@ -45,7 +52,14 @@ const PLANS = [
         monthlyEquiv: 'R$ 24,75/mês',
         savings: '2 meses grátis',
         description: 'Melhor custo-benefício',
-        features: ['Tudo do mensal', '+2 meses grátis', 'Suporte prioritário'],
+        features: [
+            'Tudo do mensal',
+            'Controle de DAS (MEI)',
+            'Investimentos',
+            'Múltiplos perfis',
+            'Relatórios avançados',
+            'Suporte prioritário',
+        ],
         popular: true,
         color: '#8b5cf6'
     }
@@ -252,8 +266,9 @@ function CheckoutContent() {
                     <Image
                         src="/images/logoparafundopreto.png"
                         alt="MyWallet"
-                        width={200}
-                        height={60}
+                        width={180}
+                        height={65}
+                        style={{ objectFit: 'contain' }}
                         priority
                     />
                 </motion.div>
