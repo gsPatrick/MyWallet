@@ -337,7 +337,8 @@
 }
 
 /* Error */
-.errorMsg {
+.errorMsg,
+.errorMessage {
     padding: 14px 18px;
     background: rgba(239, 68, 68, 0.15);
     border: 1px solid rgba(239, 68, 68, 0.3);
@@ -345,6 +346,85 @@
     color: #f87171;
     font-size: 0.875rem;
     text-align: center;
+}
+
+/* Selected Plan Badge */
+.selectedPlanBadge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.selectedPlanBadge span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+}
+
+.selectedPlanBadge strong {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Card Form */
+.cardForm {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.formGroup label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.formGroup input,
+.formGroup select {
+    height: 52px;
+    padding: 0 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #ffffff;
+    transition: all 0.2s;
+}
+
+.formGroup select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.formGroup input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
 }
 
 /* Submit Button */
