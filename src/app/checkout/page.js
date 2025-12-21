@@ -7,7 +7,7 @@
  * ========================================
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,16 +48,15 @@ const PLANS = [
     }
 ];
 
-export default function CheckoutPage() {
+function CheckoutContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, loading: authLoading, refreshUser } = useAuth();
 
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [processing, setProcessing] = useState(false);
-    const [status, setStatus] = useState(null); // 'success' | 'failure' | 'pending'
+    const [status, setStatus] = useState(null);
 
-    // Check URL params for payment status (after MP redirect)
     useEffect(() => {
         const statusParam = searchParams.get('status');
         const planParam = searchParams.get('plan');
@@ -66,14 +65,12 @@ export default function CheckoutPage() {
             setStatus(statusParam);
             if (planParam) setSelectedPlan(planParam);
 
-            // If success, refresh user data
             if (statusParam === 'success' && refreshUser) {
                 refreshUser();
             }
         }
     }, [searchParams, refreshUser]);
 
-    // Check if user already has active subscription
     useEffect(() => {
         if (!authLoading && user) {
             if (user.subscriptionStatus === 'ACTIVE' && user.plan !== 'FREE') {
@@ -91,9 +88,7 @@ export default function CheckoutPage() {
                 planType: planId
             });
 
-            // Redirect to Mercado Pago
             if (response.sandboxInitPoint || response.initPoint) {
-                // Use sandbox in development
                 const redirectUrl = response.sandboxInitPoint || response.initPoint;
                 window.location.href = redirectUrl;
             } else {
@@ -122,7 +117,6 @@ export default function CheckoutPage() {
             <div className={styles.bgGradient} />
 
             <div className={styles.container}>
-                {/* Logo */}
                 <motion.div
                     className={styles.logoWrapper}
                     initial={{ opacity: 0, y: -20 }}
@@ -138,7 +132,6 @@ export default function CheckoutPage() {
                 </motion.div>
 
                 <AnimatePresence mode="wait">
-                    {/* Payment Status Pages */}
                     {status === 'success' && (
                         <motion.div
                             key="success"
@@ -224,7 +217,6 @@ export default function CheckoutPage() {
                         </motion.div>
                     )}
 
-                    {/* Plan Selection (when no status) */}
                     {!status && (
                         <motion.div
                             key="plans"
@@ -302,7 +294,6 @@ export default function CheckoutPage() {
                                 </div>
                             )}
 
-                            {/* Security Badge */}
                             <div className={styles.securityBadge}>
                                 <FiShield />
                                 <span>Pagamento 100% seguro via Mercado Pago</span>
@@ -312,5 +303,24 @@ export default function CheckoutPage() {
                 </AnimatePresence>
             </div>
         </div>
+    );
+}
+
+// Fallback de loading para o Suspense
+function CheckoutFallback() {
+    return (
+        <div className={styles.loadingPage}>
+            <FiLoader className={styles.spinner} />
+            <span>Carregando...</span>
+        </div>
+    );
+}
+
+// Export com Suspense boundary
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<CheckoutFallback />}>
+            <CheckoutContent />
+        </Suspense>
     );
 }
