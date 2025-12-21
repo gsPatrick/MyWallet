@@ -10,8 +10,8 @@ import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { PageTransitionProvider } from '@/components/PageTransition';
 
 export const metadata = {
-    title: 'InvestPro - Sistema de Investimentos',
-    description: 'Sistema financeiro completo com Open Finance Brasil',
+    title: 'MyWallet - Sistema de Investimentos',
+    description: 'Gerencie suas finanças com inteligência',
     manifest: '/manifest.json',
     themeColor: '#0a0a0f',
     viewport: {

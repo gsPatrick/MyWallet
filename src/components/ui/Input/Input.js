@@ -18,6 +18,7 @@ const Input = forwardRef(({
     required = false,
     fullWidth = false,
     size = 'md', // sm, md, lg
+    variant = 'default', // default, light
     className = '',
     ...props
 }, ref) => {
@@ -26,7 +27,7 @@ const Input = forwardRef(({
     const inputType = isPassword && showPassword ? 'text' : type;
 
     return (
-        <div className={`${styles.wrapper} ${fullWidth ? styles.fullWidth : ''} ${className}`}>
+        <div className={`${styles.wrapper} ${variant === 'light' ? styles.light : ''} ${fullWidth ? styles.fullWidth : ''} ${className}`}>
             {label && (
                 <label className={styles.label}>
                     {label}

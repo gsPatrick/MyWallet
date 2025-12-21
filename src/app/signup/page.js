@@ -278,6 +278,7 @@ export default function SignupPage() {
                                         error={errors.name}
                                         leftIcon={<FiUser />}
                                         fullWidth
+                                        variant="light"
                                     />
                                     <Input
                                         label="Email"
@@ -290,6 +291,7 @@ export default function SignupPage() {
                                         error={errors.email}
                                         leftIcon={<FiMail />}
                                         fullWidth
+                                        variant="light"
                                     />
                                 </motion.div>
                             )}
@@ -318,6 +320,7 @@ export default function SignupPage() {
                                         error={errors.password}
                                         leftIcon={<FiLock />}
                                         fullWidth
+                                        variant="light"
                                     />
                                     <Input
                                         label="Confirmar Senha"
@@ -330,6 +333,7 @@ export default function SignupPage() {
                                         error={errors.confirmPassword}
                                         leftIcon={<FiLock />}
                                         fullWidth
+                                        variant="light"
                                     />
                                 </motion.div>
                             )}

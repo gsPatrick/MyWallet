@@ -68,10 +68,10 @@
     position: relative;
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: linear-gradient(145deg, #1a1a2e 0%, #2d2d4a 100%);
-    border-radius: 20px;
+    /* Border removed for cleaner look */
+    /* border: 1px solid rgba(0, 0, 0, 0.08); */
+    /* box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); */
     overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
 
@@ -290,5 +290,414 @@
 
     .featureDescription {
         font-size: 1rem;
+    }
+}
+
+/* Mac Window Header */
+.macHeader {
+    background: #2d2d4a;
+    padding: 12px 16px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* border-bottom: 1px solid rgba(255, 255, 255, 0.05); */
+}
+
+.macDots {
+    display: flex;
+    gap: 8px;
+}
+
+.macDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.macDotRed {
+    background: #ff5f56;
+}
+
+.macDotYellow {
+    background: #ffbd2e;
+}
+
+.macDotGreen {
+    background: #27c93f;
+}
+
+/* Adjust Dashboard Placeholder for Header */
+.dashboardPlaceholder {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-top: none !important;
+    background: #151515;
+    /* Match dashboard dark background to hide gaps */
+}
+
+/* CSS Mockups Containers */
+.mockupContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #1a1a2e 0%, #252540 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Enhanced Credit Card */
+.creditCard {
+    width: 290px;
+    height: 180px;
+    background: linear-gradient(135deg, #2d2d4a 0%, #1a1a2e 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
+    transform: rotate(-3deg);
+    transition: transform 0.3s ease;
+}
+
+.creditCard:hover {
+    transform: rotate(0deg) scale(1.05);
+}
+
+.cardTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.cardChip {
+    width: 45px;
+    height: 34px;
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardChip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    background:
+        repeating-linear-gradient(90deg,
+            transparent 0, transparent 10px,
+            rgba(0, 0, 0, 0.1) 10px, rgba(0, 0, 0, 0.1) 11px);
+}
+
+.cardContactless {
+    opacity: 0.5;
+}
+
+.cardNumber {
+    font-family: 'Courier New', monospace;
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
+}
+
+.cardBottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.cardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cardLabel {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+}
+
+.cardHolder {
+    font-size: 0.9rem;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.cardLogo {
+    display: flex;
+    align-items: center;
+}
+
+.mastercardCircle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-left: -10px;
+}
+
+.mcRed {
+    background: #eb001b;
+    opacity: 0.9;
+}
+
+.mcOrange {
+    background: #f79e1b;
+    opacity: 0.9;
+}
+
+/* Enhanced Transaction List */
+.transactionList {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(26, 26, 46, 0.95);
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.transactionHeader {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    margin-bottom: 4px;
+    padding-left: 4px;
+}
+
+.transactionItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.transactionItem:last-child {
+    border-bottom: none;
+}
+
+.transactionIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.transactionDetails {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.transactionName {
+    font-size: 0.9rem;
+    color: white;
+    font-weight: 500;
+}
+
+.transactionDate {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.transactionAmount {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.income {
+    color: #10b981;
+}
+
+.expense {
+    color: #ef4444;
+}
+
+/* Enhanced Goals */
+.goalCard {
+    width: 280px;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.goalTop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.goalIconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    font-size: 1.5rem;
+}
+
+.goalInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.goalTitle {
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.goalTarget {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+}
+
+.goalProgress {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progressBarBg {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: #10b981;
+    border-radius: 4px;
+}
+
+.goalStats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Enhanced WhatsApp */
+.chatInterface {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.chatMessage {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.botAvatar {
+    width: 28px;
+    height: 28px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.chatBubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    max-width: 85%;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bubbleLeft {
+    background: #2d2d4a;
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+
+.bubbleRight {
+    background: #005c4b;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    margin-left: auto;
+}
+
+.messageTime {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 4px;
+    text-align: right;
+    display: block;
+}
+
+.typingIndicator {
+    display: flex;
+    gap: 4px;
+    padding: 4px 8px;
+}
+
+.typingDot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typingDot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typingDot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
     }
 }

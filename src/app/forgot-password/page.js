@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
 
                     <div className={styles.formHeader}>
                         <Link href="/" className={styles.logo}>
-                            <span className={styles.logoText}>InvestPro</span>
+                            <span className={styles.logoText}>MyWallet</span>
                         </Link>
                         <h2 className={styles.formTitle}>Recuperar senha</h2>
                         <p className={styles.formSubtitle}>

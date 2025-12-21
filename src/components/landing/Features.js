@@ -118,19 +118,21 @@ export default function Features() {
                         initial="initial"
                         animate="animate"
                     >
-                        <div className={styles.dashboardGlow} />
+                        <div className={styles.macHeader}>
+                            <div className={styles.macDots}>
+                                <div className={`${styles.macDot} ${styles.macDotRed}`} />
+                                <div className={`${styles.macDot} ${styles.macDotYellow}`} />
+                                <div className={`${styles.macDot} ${styles.macDotGreen}`} />
+                            </div>
+                        </div>
                         <div className={styles.dashboardPlaceholder}>
                             <Image
                                 src="/images/dashboard.png"
                                 alt="Dashboard MyWallet"
                                 fill
-                                style={{ objectFit: 'cover', borderRadius: '16px' }}
+                                style={{ objectFit: 'contain' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                             />
-                            <div className={styles.dashboardPlaceholderContent}>
-                                <FiPieChart size={56} />
-                                <span>Screenshot do Dashboard</span>
-                            </div>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -146,7 +148,7 @@ export default function Features() {
                             viewport={{ once: true, margin: '-100px' }}
                             transition={{ duration: 0.7, delay: 0.1 }}
                         >
-                            {/* Image Side */}
+                            {/* Image Side - CSS Mockups */}
                             <div className={styles.featureImageWrapper}>
                                 <motion.div
                                     className={styles.featureImageContainer}
@@ -156,16 +158,126 @@ export default function Features() {
                                 >
                                     <div className={styles.imageGlow} style={{ background: `${feature.color}30` }} />
                                     <div className={styles.imagePlaceholder}>
-                                        <Image
-                                            src={feature.image}
-                                            alt={feature.title}
-                                            fill
-                                            style={{ objectFit: 'cover', borderRadius: '16px' }}
-                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                        />
-                                        <div className={styles.placeholderContent}>
-                                            <feature.icon size={48} style={{ color: feature.color }} />
-                                            <span>Screenshot: {feature.title}</span>
+                                        <div className={styles.mockupContainer}>
+                                            {feature.id === 'cards' && (
+                                                <div className={styles.creditCard}>
+                                                    <div className={styles.cardTop}>
+                                                        <div className={styles.cardChip} />
+                                                        <FiCreditCard className={styles.cardContactless} size={24} color="white" />
+                                                    </div>
+                                                    <div className={styles.cardNumber}>
+                                                        •••• •••• •••• 8842
+                                                    </div>
+                                                    <div className={styles.cardBottom}>
+                                                        <div className={styles.cardInfo}>
+                                                            <span className={styles.cardLabel}>Titular</span>
+                                                            <span className={styles.cardHolder}>PATRICK S.</span>
+                                                        </div>
+                                                        <div className={styles.cardLogo}>
+                                                            <div className={`${styles.mastercardCircle} ${styles.mcRed}`} />
+                                                            <div className={`${styles.mastercardCircle} ${styles.mcOrange}`} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {feature.id === 'transactions' && (
+                                                <div className={styles.transactionList}>
+                                                    <div className={styles.transactionHeader}>HOJE</div>
+
+                                                    <div className={styles.transactionItem}>
+                                                        <div className={styles.transactionIcon} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                                                            <FiUsers />
+                                                        </div>
+                                                        <div className={styles.transactionDetails}>
+                                                            <span className={styles.transactionName}>Netflix</span>
+                                                            <span className={styles.transactionDate}>Assinatura</span>
+                                                        </div>
+                                                        <span className={`${styles.transactionAmount} ${styles.expense}`}>- R$ 55,90</span>
+                                                    </div>
+
+                                                    <div className={styles.transactionItem}>
+                                                        <div className={styles.transactionIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                                                            <FiDollarSign />
+                                                        </div>
+                                                        <div className={styles.transactionDetails}>
+                                                            <span className={styles.transactionName}>Salário</span>
+                                                            <span className={styles.transactionDate}>Mensal</span>
+                                                        </div>
+                                                        <span className={`${styles.transactionAmount} ${styles.income}`}>+ R$ 8.500</span>
+                                                    </div>
+
+                                                    <div className={styles.transactionItem}>
+                                                        <div className={styles.transactionIcon} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                                                            <FiTarget />
+                                                        </div>
+                                                        <div className={styles.transactionDetails}>
+                                                            <span className={styles.transactionName}>Uber</span>
+                                                            <span className={styles.transactionDate}>Transporte</span>
+                                                        </div>
+                                                        <span className={`${styles.transactionAmount} ${styles.expense}`}>- R$ 24,90</span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {feature.id === 'goals' && (
+                                                <div className={styles.goalCard}>
+                                                    <div className={styles.goalTop}>
+                                                        <div className={styles.goalIconWrapper}>
+                                                            <FiTarget />
+                                                        </div>
+                                                        <div className={styles.goalInfo}>
+                                                            <span className={styles.goalTitle}>Viagem Europa</span>
+                                                            <span className={styles.goalTarget}>Meta: R$ 15.000</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={styles.goalProgress}>
+                                                        <div className={styles.progressBarBg}>
+                                                            <motion.div
+                                                                className={styles.progressBarFill}
+                                                                initial={{ width: 0 }}
+                                                                whileInView={{ width: '65%' }}
+                                                                transition={{ duration: 1.5, delay: 0.5 }}
+                                                            />
+                                                        </div>
+                                                        <div className={styles.goalStats}>
+                                                            <span>R$ 9.750</span>
+                                                            <span>65%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {feature.id === 'whatsapp' && (
+                                                <div className={styles.chatInterface}>
+                                                    <div className={`${styles.chatBubble} ${styles.bubbleRight}`}>
+                                                        Qual meu saldo atual?
+                                                        <span className={styles.messageTime}>10:42</span>
+                                                    </div>
+
+                                                    <div className={styles.chatMessage}>
+                                                        <div className={styles.botAvatar}>
+                                                            <FiMessageCircle size={14} />
+                                                        </div>
+                                                        <div className={`${styles.chatBubble} ${styles.bubbleLeft}`}>
+                                                            Seu saldo total é de <b>R$ 12.450,32</b> 💰
+                                                            <span className={styles.messageTime}>10:42</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={styles.chatMessage}>
+                                                        <div className={styles.botAvatar}>
+                                                            <FiMessageCircle size={14} />
+                                                        </div>
+                                                        <div className={`${styles.chatBubble} ${styles.bubbleLeft} ${styles.typingIndicator}`}>
+                                                            <div className={styles.typingDot}></div>
+                                                            <div className={styles.typingDot}></div>
+                                                            <div className={styles.typingDot}></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>

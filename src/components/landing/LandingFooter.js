@@ -21,8 +21,8 @@ export default function LandingFooter() {
                             O sistema completo para gestão financeira pessoal.
                             Simplifique o controle dos seus investimentos e despesas.
                         </p>
-                        <a href="mailto:contato@mywallet.com.br" className={styles.emailBtn}>
-                            ✉️ contato@mywallet.com.br
+                        <a href="mailto:mywallet.codebypatrick.dev@gmail.com" className={styles.emailBtn}>
+                            ✉️ mywallet.codebypatrick.dev@gmail.com
                         </a>
                     </div>
 

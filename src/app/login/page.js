@@ -202,6 +202,7 @@ export default function LoginPage() {
                             error={errors.email}
                             leftIcon={<FiMail />}
                             fullWidth
+                            variant="light"
                         />
 
                         <div className={styles.passwordWrapper}>
@@ -215,6 +216,7 @@ export default function LoginPage() {
                                 error={errors.password}
                                 leftIcon={<FiLock />}
                                 fullWidth
+                                variant="light"
                             />
                             <Link href="/forgot-password" className={styles.forgotLink}>
                                 Esqueceu a senha?
