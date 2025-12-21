@@ -21,16 +21,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
 import styles from './page.module.css';
 
-const MP_PUBLIC_KEY = 'TEST-15044192-02a2-44c2-96dc-45d697121084';
+const MP_PUBLIC_KEY = 'APP_USR-773024d8-0716-46e7-b97c-724206a37121';
 
 const PLANS = [
     {
         id: 'MONTHLY',
         name: 'Mensal',
-        price: 29.90,
-        priceLabel: 'R$ 29,90',
+        price: 1.00,
+        priceLabel: 'R$ 1,00',
         period: '/mês',
-        description: 'Cancele quando quiser',
+        description: 'TESTE - R$ 1,00',
         features: ['Acesso completo', 'Transações ilimitadas', 'Suporte por email'],
         popular: false,
         color: '#6366f1'
