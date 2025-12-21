@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -45,7 +45,7 @@ const categoryMap = Object.entries(reverseCategoryMap).reduce((acc, [key, value]
 const categories = Object.keys(reverseCategoryMap);
 
 
-export default function GoalsPage() {
+function GoalsContent() {
     // URL params for auto-open modal
     const searchParams = useSearchParams();
 
@@ -723,3 +723,22 @@ export default function GoalsPage() {
         </div>
     );
 }
+
+// Loading fallback
+function GoalsLoading() {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+            <FiLoader style={{ animation: 'spin 1s linear infinite' }} />
+        </div>
+    );
+}
+
+// Export with Suspense boundary
+export default function GoalsPage() {
+    return (
+        <Suspense fallback={<GoalsLoading />}>
+            <GoalsContent />
+        </Suspense>
+    );
+}
+

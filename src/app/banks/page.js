@@ -7,7 +7,7 @@
  * ========================================
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -53,7 +53,7 @@ const accountTypes = [
     { value: 'CARTEIRA', label: 'Carteira / Dinheiro' }
 ];
 
-export default function BanksPage() {
+function BanksContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { profiles, activeProfile, setActiveProfileById } = useProfiles();
@@ -662,3 +662,22 @@ export default function BanksPage() {
         </AppShell >
     );
 }
+
+// Loading fallback
+function BanksLoading() {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+            <FiRefreshCw style={{ animation: 'spin 1s linear infinite' }} />
+        </div>
+    );
+}
+
+// Export with Suspense boundary
+export default function BanksPage() {
+    return (
+        <Suspense fallback={<BanksLoading />}>
+            <BanksContent />
+        </Suspense>
+    );
+}
+

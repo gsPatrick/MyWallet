@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -31,7 +31,7 @@ import cardBanks from '@/data/cardBanks.json';
 import styles from './page.module.css';
 
 
-export default function TransactionsPage() {
+function TransactionsContent() {
     // URL params for auto-open modal
     const searchParams = useSearchParams();
 
@@ -1343,3 +1343,22 @@ export default function TransactionsPage() {
         </div >
     );
 }
+
+// Loading fallback
+function TransactionsLoading() {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+            <FiTrendingUp style={{ animation: 'spin 1s linear infinite' }} />
+        </div>
+    );
+}
+
+// Export with Suspense boundary
+export default function TransactionsPage() {
+    return (
+        <Suspense fallback={<TransactionsLoading />}>
+            <TransactionsContent />
+        </Suspense>
+    );
+}
+
