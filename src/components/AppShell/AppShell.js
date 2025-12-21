@@ -40,7 +40,8 @@ export default function AppShell({ children }) {
     if (!hasProfiles || profiles.length === 0) {
         // Wait for tour to complete before showing ProfileWizard
         // Tour phases: 'idle' -> 'tour' -> 'profile_config' -> 'complete'
-        if (phase === 'profile_config' || phase === 'complete') {
+        // Only show wizard during 'profile_config' phase, NOT 'complete'
+        if (phase === 'profile_config') {
             return (
                 <>
                     {children}
@@ -48,7 +49,7 @@ export default function AppShell({ children }) {
                 </>
             );
         }
-        // Tour is still showing or about to show - just render children
+        // Tour is still showing, 'complete', or 'idle' - just render children
         return <>{children}</>;
     }
 
