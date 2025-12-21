@@ -9,17 +9,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     FiUsers, FiDollarSign, FiTrendingUp, FiUserPlus,
-    FiUserMinus, FiSearch, FiGift, FiX, FiCheck,
+    FiUserMinus, FiSearch, FiGift,
     FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
-import Header from '@/components/layout/Header';
-import Dock from '@/components/layout/Dock';
-import AppShell from '@/components/AppShell';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import api from '@/services/api';
@@ -48,8 +44,7 @@ const STATUS_LABELS = {
 };
 
 export default function AdminPage() {
-    const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const [dashboard, setDashboard] = useState(null);
     const [users, setUsers] = useState([]);
     const [usersLoading, setUsersLoading] = useState(false);
@@ -64,15 +59,6 @@ export default function AdminPage() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [grantPlan, setGrantPlan] = useState('LIFETIME');
     const [granting, setGranting] = useState(false);
-
-    // Check if user is OWNER
-    useEffect(() => {
-        if (!authLoading && user) {
-            if (user.plan !== 'OWNER') {
-                router.push('/dashboard');
-            }
-        }
-    }, [user, authLoading, router]);
 
     // Load dashboard metrics
     useEffect(() => {
@@ -150,231 +136,215 @@ export default function AdminPage() {
         }
     };
 
-    if (authLoading || !user || user.plan !== 'OWNER') {
-        return (
-            <AppShell>
-                <Header />
-                <main className={styles.main}>
-                    <div className={styles.loading}>Verificando permissões...</div>
-                </main>
-                <Dock />
-            </AppShell>
-        );
-    }
-
     return (
-        <AppShell>
-            <Header />
-            <main className={styles.main}>
-                <div className={styles.container}>
-                    {/* Page Header */}
-                    <div className={styles.pageHeader}>
-                        <h1>Painel Administrativo</h1>
-                        <p>Gestão de usuários e métricas do sistema</p>
-                    </div>
-
-                    {/* KPI Cards */}
-                    <div className={styles.kpiGrid}>
-                        <motion.div
-                            className={styles.kpiCard}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                        >
-                            <div className={styles.kpiIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
-                                <FiDollarSign />
-                            </div>
-                            <div className={styles.kpiContent}>
-                                <span className={styles.kpiLabel}>Faturamento Total</span>
-                                <span className={styles.kpiValue}>{formatCurrency(dashboard?.totalRevenue)}</span>
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            className={styles.kpiCard}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                        >
-                            <div className={styles.kpiIcon} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
-                                <FiTrendingUp />
-                            </div>
-                            <div className={styles.kpiContent}>
-                                <span className={styles.kpiLabel}>MRR</span>
-                                <span className={styles.kpiValue}>{formatCurrency(dashboard?.mrr)}</span>
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            className={styles.kpiCard}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <div className={styles.kpiIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                                <FiUsers />
-                            </div>
-                            <div className={styles.kpiContent}>
-                                <span className={styles.kpiLabel}>Usuários Ativos</span>
-                                <span className={styles.kpiValue}>{dashboard?.activeUsers || 0}</span>
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            className={styles.kpiCard}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <div className={styles.kpiIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                                <FiUserPlus />
-                            </div>
-                            <div className={styles.kpiContent}>
-                                <span className={styles.kpiLabel}>Novos (Mês)</span>
-                                <span className={styles.kpiValue}>{dashboard?.newUsersThisMonth || 0}</span>
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Users Section */}
-                    <div className={styles.usersSection}>
-                        <div className={styles.usersHeader}>
-                            <h2>Usuários</h2>
-                            <div className={styles.filters}>
-                                <div className={styles.searchBox}>
-                                    <FiSearch />
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar por nome ou email..."
-                                        value={search}
-                                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                                    />
-                                </div>
-                                <select
-                                    value={filterPlan}
-                                    onChange={(e) => { setFilterPlan(e.target.value); setPage(1); }}
-                                >
-                                    <option value="">Todos os Planos</option>
-                                    <option value="FREE">Gratuito</option>
-                                    <option value="MONTHLY">Mensal</option>
-                                    <option value="ANNUAL">Anual</option>
-                                    <option value="LIFETIME">Vitalício</option>
-                                </select>
-                                <select
-                                    value={filterStatus}
-                                    onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
-                                >
-                                    <option value="">Todos os Status</option>
-                                    <option value="ACTIVE">Ativo</option>
-                                    <option value="INACTIVE">Inativo</option>
-                                    <option value="CANCELLED">Cancelado</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Users Table */}
-                        <div className={styles.tableWrapper}>
-                            <table className={styles.usersTable}>
-                                <thead>
-                                    <tr>
-                                        <th>Usuário</th>
-                                        <th>Plano</th>
-                                        <th>Status</th>
-                                        <th>Expira em</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {usersLoading ? (
-                                        <tr>
-                                            <td colSpan={5} className={styles.loadingCell}>
-                                                Carregando...
-                                            </td>
-                                        </tr>
-                                    ) : users.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className={styles.emptyCell}>
-                                                Nenhum usuário encontrado
-                                            </td>
-                                        </tr>
-                                    ) : users.map(u => (
-                                        <tr key={u.id}>
-                                            <td>
-                                                <div className={styles.userCell}>
-                                                    <img
-                                                        src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.email}`}
-                                                        alt=""
-                                                        className={styles.userAvatar}
-                                                    />
-                                                    <div>
-                                                        <span className={styles.userName}>{u.name}</span>
-                                                        <span className={styles.userEmail}>{u.email}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`${styles.planBadge} ${styles[u.plan?.toLowerCase()]}`}>
-                                                    {PLAN_LABELS[u.plan] || u.plan}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className={`${styles.statusBadge} ${styles[u.subscriptionStatus?.toLowerCase()]}`}>
-                                                    {STATUS_LABELS[u.subscriptionStatus] || u.subscriptionStatus}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {u.subscriptionExpiresAt
-                                                    ? new Date(u.subscriptionExpiresAt).toLocaleDateString('pt-BR')
-                                                    : '-'
-                                                }
-                                            </td>
-                                            <td>
-                                                <div className={styles.actions}>
-                                                    <button
-                                                        className={styles.grantBtn}
-                                                        onClick={() => { setSelectedUser(u); setShowGrantModal(true); }}
-                                                        title="Liberar Acesso"
-                                                    >
-                                                        <FiGift />
-                                                    </button>
-                                                    {u.plan !== 'FREE' && u.plan !== 'OWNER' && (
-                                                        <button
-                                                            className={styles.revokeBtn}
-                                                            onClick={() => handleRevokeAccess(u.id)}
-                                                            title="Revogar Acesso"
-                                                        >
-                                                            <FiUserMinus />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className={styles.pagination}>
-                                <button
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                >
-                                    <FiChevronLeft />
-                                </button>
-                                <span>Página {page} de {totalPages}</span>
-                                <button
-                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={page === totalPages}
-                                >
-                                    <FiChevronRight />
-                                </button>
-                            </div>
-                        )}
-                    </div>
+        <>
+            <div className={styles.container}>
+                {/* Page Header */}
+                <div className={styles.pageHeader}>
+                    <h1>Painel Administrativo</h1>
+                    <p>Gestão de usuários e métricas do sistema</p>
                 </div>
-            </main>
-            <Dock />
+
+                {/* KPI Cards */}
+                <div className={styles.kpiGrid}>
+                    <motion.div
+                        className={styles.kpiCard}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className={styles.kpiIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+                            <FiDollarSign />
+                        </div>
+                        <div className={styles.kpiContent}>
+                            <span className={styles.kpiLabel}>Faturamento Total</span>
+                            <span className={styles.kpiValue}>{formatCurrency(dashboard?.totalRevenue)}</span>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        className={styles.kpiCard}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                    >
+                        <div className={styles.kpiIcon} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
+                            <FiTrendingUp />
+                        </div>
+                        <div className={styles.kpiContent}>
+                            <span className={styles.kpiLabel}>MRR</span>
+                            <span className={styles.kpiValue}>{formatCurrency(dashboard?.mrr)}</span>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        className={styles.kpiCard}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <div className={styles.kpiIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                            <FiUsers />
+                        </div>
+                        <div className={styles.kpiContent}>
+                            <span className={styles.kpiLabel}>Usuários Ativos</span>
+                            <span className={styles.kpiValue}>{dashboard?.activeUsers || 0}</span>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        className={styles.kpiCard}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <div className={styles.kpiIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                            <FiUserPlus />
+                        </div>
+                        <div className={styles.kpiContent}>
+                            <span className={styles.kpiLabel}>Novos (Mês)</span>
+                            <span className={styles.kpiValue}>{dashboard?.newUsersThisMonth || 0}</span>
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Users Section */}
+                <div className={styles.usersSection}>
+                    <div className={styles.usersHeader}>
+                        <h2>Usuários</h2>
+                        <div className={styles.filters}>
+                            <div className={styles.searchBox}>
+                                <FiSearch />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nome ou email..."
+                                    value={search}
+                                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                                />
+                            </div>
+                            <select
+                                value={filterPlan}
+                                onChange={(e) => { setFilterPlan(e.target.value); setPage(1); }}
+                            >
+                                <option value="">Todos os Planos</option>
+                                <option value="FREE">Gratuito</option>
+                                <option value="MONTHLY">Mensal</option>
+                                <option value="ANNUAL">Anual</option>
+                                <option value="LIFETIME">Vitalício</option>
+                            </select>
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
+                            >
+                                <option value="">Todos os Status</option>
+                                <option value="ACTIVE">Ativo</option>
+                                <option value="INACTIVE">Inativo</option>
+                                <option value="CANCELLED">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Users Table */}
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.usersTable}>
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>Plano</th>
+                                    <th>Status</th>
+                                    <th>Expira em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {usersLoading ? (
+                                    <tr>
+                                        <td colSpan={5} className={styles.loadingCell}>
+                                            Carregando...
+                                        </td>
+                                    </tr>
+                                ) : users.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className={styles.emptyCell}>
+                                            Nenhum usuário encontrado
+                                        </td>
+                                    </tr>
+                                ) : users.map(u => (
+                                    <tr key={u.id}>
+                                        <td>
+                                            <div className={styles.userCell}>
+                                                <img
+                                                    src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.email}`}
+                                                    alt=""
+                                                    className={styles.userAvatar}
+                                                />
+                                                <div>
+                                                    <span className={styles.userName}>{u.name}</span>
+                                                    <span className={styles.userEmail}>{u.email}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.planBadge} ${styles[u.plan?.toLowerCase()]}`}>
+                                                {PLAN_LABELS[u.plan] || u.plan}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${styles[u.subscriptionStatus?.toLowerCase()]}`}>
+                                                {STATUS_LABELS[u.subscriptionStatus] || u.subscriptionStatus}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {u.subscriptionExpiresAt
+                                                ? new Date(u.subscriptionExpiresAt).toLocaleDateString('pt-BR')
+                                                : '-'
+                                            }
+                                        </td>
+                                        <td>
+                                            <div className={styles.actions}>
+                                                <button
+                                                    className={styles.grantBtn}
+                                                    onClick={() => { setSelectedUser(u); setShowGrantModal(true); }}
+                                                    title="Liberar Acesso"
+                                                >
+                                                    <FiGift />
+                                                </button>
+                                                {u.plan !== 'FREE' && u.plan !== 'OWNER' && (
+                                                    <button
+                                                        className={styles.revokeBtn}
+                                                        onClick={() => handleRevokeAccess(u.id)}
+                                                        title="Revogar Acesso"
+                                                    >
+                                                        <FiUserMinus />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className={styles.pagination}>
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                            >
+                                <FiChevronLeft />
+                            </button>
+                            <span>Página {page} de {totalPages}</span>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                            >
+                                <FiChevronRight />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Grant Access Modal */}
             <Modal
@@ -405,6 +375,6 @@ export default function AdminPage() {
                     </div>
                 </div>
             </Modal>
-        </AppShell>
+        </>
     );
 }
