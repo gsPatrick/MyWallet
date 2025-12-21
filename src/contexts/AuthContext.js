@@ -61,6 +61,20 @@ export function AuthProvider({ children }) {
                 const userData = response?.data || response?.user || response;
                 if (userData?.id) {
                     setUser(userData);
+
+                    // IMMEDIATE PAYWALL CHECK after auth
+                    const currentPath = window.location.pathname;
+                    const publicPaths = ['/login', '/signup', '/checkout', '/admin', '/forgot-password', '/', '/landing'];
+                    const isPublicPath = publicPaths.some(path => currentPath === path || currentPath.startsWith(path + '?'));
+
+                    if (!isPublicPath) {
+                        // Check if needs to go to checkout
+                        if (userData.plan !== 'OWNER' && userData.subscriptionStatus !== 'ACTIVE') {
+                            console.log('PAYWALL (checkAuth): Redirecting to checkout', userData);
+                            router.push('/checkout');
+                            return;
+                        }
+                    }
                 } else {
                     localStorage.removeItem('investpro_token');
                     localStorage.removeItem('investpro_user');
