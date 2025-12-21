@@ -52,14 +52,17 @@ export default function LoginPage() {
         if (!validate()) return;
 
         const result = await login(formData.email, formData.password);
+        console.log('Login result:', result);
+
         if (result.success) {
+            const redirectPath = result.redirect || '/checkout';
+            console.log('Redirecting to:', redirectPath);
+
             setLoginPhase('animating');
-            // Full screen animation then redirect
             setTimeout(() => {
                 setLoginPhase('redirect');
                 setTimeout(() => {
-                    // Use dynamic redirect from AuthContext (paywall logic)
-                    router.push(result.redirect || '/dashboard');
+                    router.push(redirectPath);
                 }, 800);
             }, 1800);
         } else {
