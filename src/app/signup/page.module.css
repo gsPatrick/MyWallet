@@ -4,12 +4,13 @@
     width: 100vw;
     position: relative;
     overflow: hidden;
+    background: #ffffff;
 }
 
 /* Left Branding Side - Dark */
 .brandingSide {
     flex: 1;
-    background: #0a0a0f;
+    background: linear-gradient(145deg, #1a1a2e 0%, #16162a 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,8 +24,8 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+        radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
     pointer-events: none;
 }
 
@@ -51,10 +52,10 @@
     text-align: center;
 }
 
-/* Right Form Side - Light with Glass */
+/* Right Form Side - Pure White */
 .formSide {
     flex: 1;
-    background: linear-gradient(145deg, #f5f5f7 0%, #e8e8ed 100%);
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,42 +63,27 @@
     position: relative;
 }
 
-.formSide::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-        radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.03) 1px, transparent 0);
-    background-size: 24px 24px;
-    pointer-events: none;
-}
-
 .formContainer {
     width: 100%;
     max-width: 480px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: #ffffff;
     border-radius: 24px;
     padding: 2rem;
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 0 0 1px rgba(255, 255, 255, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e9ecef;
     position: relative;
     z-index: 1;
 }
 
-/* Override input styles for light theme */
+/* Input styles for light theme */
 .formContainer :global(.inputWrapper) {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
 }
 
 .formContainer :global(.inputWrapper:focus-within) {
-    border-color: #94a3b8;
-    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+    border-color: #1a1a2e;
+    box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.1);
 }
 
 .formContainer :global(.input) {
@@ -105,16 +91,16 @@
 }
 
 .formContainer :global(.input::placeholder) {
-    color: #94a3b8;
+    color: #adb5bd;
 }
 
 .formContainer :global(.leftIcon),
 .formContainer :global(.rightIcon) {
-    color: #94a3b8;
+    color: #6c757d;
 }
 
 .formContainer :global(.label) {
-    color: #334155;
+    color: #343a40;
 }
 
 /* Steps Progress */
@@ -143,14 +129,14 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #f1f5f9;
-    border: 2px solid #e2e8f0;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 0.875rem;
-    color: #94a3b8;
+    color: #adb5bd;
     transition: all 0.3s ease;
     z-index: 2;
 }
@@ -173,7 +159,7 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.6875rem;
-    color: #94a3b8;
+    color: #adb5bd;
     white-space: nowrap;
     font-weight: 500;
     transition: color 0.3s ease;
@@ -186,7 +172,7 @@
 .stepLine {
     width: 50px;
     height: 2px;
-    background: #e2e8f0;
+    background: #e9ecef;
     margin: 0 8px;
     transition: background 0.3s ease;
 }
@@ -223,90 +209,35 @@
 
 .stepSubtitle {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #6c757d;
 }
 
-/* Goals Grid */
-.goalsGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-}
-
-.goalCard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.8);
-    border: 2px solid #e2e8f0;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.goalCard:hover {
-    border-color: #1a1a2e;
-    background: rgba(26, 26, 46, 0.03);
-}
-
-.goalCard.goalSelected {
-    border-color: #1a1a2e;
-    background: rgba(26, 26, 46, 0.05);
-}
-
-.goalEmoji {
-    font-size: 1.75rem;
-}
-
-.goalLabel {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #334155;
-    text-align: center;
-}
-
-.goalCheck {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #1a1a2e;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.625rem;
-}
-
-.errorText {
-    color: #ef4444;
-    font-size: 0.8125rem;
-    text-align: center;
-}
-
-/* Actions */
-.actions {
+/* Form Actions */
+.formActions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-top: 1px solid #e9ecef;
+    gap: 1rem;
 }
 
 .loginLink {
-    font-size: 0.875rem;
-    color: #1a1a2e;
-    font-weight: 500;
-    transition: color 0.2s;
+    font-size: 0.9375rem;
+    color: #6c757d;
+    margin-top: 1.5rem;
+    text-align: center;
 }
 
-.loginLink:hover {
+.loginLink a {
+    color: #1a1a2e;
+    font-weight: 600;
+    margin-left: 0.25rem;
+    transition: all 0.2s;
+}
+
+.loginLink a:hover {
     color: #0f0f1a;
     text-decoration: underline;
 }
@@ -318,15 +249,15 @@
     padding: 0.75rem 1rem;
     font-weight: 500;
     font-size: 0.875rem;
-    color: #64748b;
+    color: #6c757d;
     background: transparent;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e9ecef;
     border-radius: 12px;
 }
 
 .backBtn:hover {
-    background: rgba(0, 0, 0, 0.02);
-    color: #334155;
+    background: #f8f9fa;
+    color: #343a40;
 }
 
 .nextBtn {
@@ -346,14 +277,14 @@
 .nextBtn:hover {
     background: #0f0f1a;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26, 26, 46, 0.3);
+    box-shadow: 0 8px 24px rgba(26, 26, 46, 0.25);
 }
 
 /* Full Screen Animation Overlay */
 .fullScreenAnimation {
     position: fixed;
     inset: 0;
-    background: #0a0a0f;
+    background: linear-gradient(145deg, #1a1a2e 0%, #16162a 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -362,48 +293,30 @@
     overflow: hidden;
 }
 
-/* Background Glow Effects */
 .glowOrb {
     position: absolute;
-    width: 600px;
-    height: 600px;
+    width: 400px;
+    height: 400px;
     background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
     border-radius: 50%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     filter: blur(60px);
-    animation: pulse 3s ease-in-out infinite;
 }
 
 .glowOrb2 {
     position: absolute;
-    width: 400px;
-    height: 400px;
+    width: 300px;
+    height: 300px;
     background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
     border-radius: 50%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     filter: blur(40px);
-    animation: pulse 2s ease-in-out infinite reverse;
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 0.5;
-        transform: translate(-50%, -50%) scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1);
-    }
-}
-
-/* Logo Container */
 .logoContainer {
     position: relative;
     display: flex;
@@ -412,206 +325,69 @@
     z-index: 2;
 }
 
-/* Pulse Ring */
 .pulseRing {
     position: absolute;
-    width: 320px;
-    height: 320px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
-    border: 2px solid rgba(99, 102, 241, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Logo Animated */
 .logoAnimated {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     z-index: 2;
 }
 
 .welcomeText {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 600;
     color: #ffffff;
     margin-top: 2rem;
-    letter-spacing: -0.02em;
     text-align: center;
     z-index: 2;
 }
 
-/* Loading Dots */
 .loadingDots {
     display: flex;
     gap: 8px;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     z-index: 2;
 }
 
 .dot {
     width: 10px;
     height: 10px;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.8);
     border-radius: 50%;
 }
 
 .redirectOverlay {
     position: absolute;
     inset: 0;
-    background: #0a0a0f;
+    background: #1a1a2e;
     z-index: 10;
 }
 
 /* Mobile Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
     .page {
         flex-direction: column;
     }
 
     .brandingSide {
-        flex: 0;
-        padding: 2rem;
-        min-height: 180px;
-    }
-
-    .logo {
-        width: 180px;
-        height: auto;
-        margin-bottom: 1.5rem;
-    }
-
-    .tagline {
-        font-size: 1.75rem;
+        display: none;
     }
 
     .formSide {
-        flex: 1;
+        min-height: 100vh;
         padding: 2rem 1.5rem;
     }
 
     .formContainer {
         max-width: 100%;
-    }
-
-    .goalsGrid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 640px) {
-    .brandingSide {
-        min-height: 140px;
-        padding: 1.5rem;
-    }
-
-    .logo {
-        width: 140px;
-        margin-bottom: 1rem;
-    }
-
-    .tagline {
-        font-size: 1.25rem;
-    }
-
-    .formContainer {
-        padding: 1.5rem;
-        border-radius: 20px;
-    }
-
-    .stepTitle {
-        font-size: 1.25rem;
-    }
-
-    .stepLine {
-        width: 30px;
-    }
-
-    .goalsGrid {
-        gap: 0.5rem;
-    }
-
-    .goalCard {
-        padding: 0.75rem;
-    }
-
-    .goalEmoji {
-        font-size: 1.5rem;
-    }
-
-    .actions {
-        flex-direction: column-reverse;
-        gap: 0.75rem;
-    }
-
-    .backBtn,
-    .nextBtn,
-    .loginLink {
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .welcomeText {
-        font-size: 1.75rem;
-    }
-
-    .successCircle {
-        width: 80px;
-        height: 80px;
-    }
-
-    .successIcon {
-        font-size: 2.5rem;
-    }
-}
-
-/* Day Selector Grid */
-.dayGrid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-}
-
-.dayButton {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.dayButton:hover {
-    background: #f1f5f9;
-    color: #1a1a2e;
-}
-
-.dayButton.daySelected {
-    background: #1a1a2e;
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(26, 26, 46, 0.2);
-}
-
-/* Update Mobile Grid */
-@media (max-width: 640px) {
-    .dayGrid {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 0.25rem;
-    }
-
-    .dayButton {
-        font-size: 0.75rem;
+        box-shadow: none;
+        border: none;
     }
 }
