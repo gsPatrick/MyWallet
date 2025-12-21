@@ -324,6 +324,10 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+
     .themeOptions {
         flex-direction: column;
     }

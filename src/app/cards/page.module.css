@@ -85,7 +85,7 @@
 /* Cards Grid */
 .cardsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--spacing-xl);
 }
 
@@ -1911,6 +1911,10 @@
         grid-template-columns: 1fr;
     }
 
+    .invoiceView {
+        grid-template-columns: 1fr;
+    }
+
     .invoicePanel {
         margin-top: var(--spacing-lg);
     }
@@ -1938,19 +1942,30 @@
 
     .tabs {
         width: 100%;
-        flex-wrap: wrap;
-        justify-content: center;
+        overflow-x: auto;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        /* Hide scrollbar for a cleaner look */
+        scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .tab {
-        flex: 1;
-        justify-content: center;
-        min-width: 100px;
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     .cardsGrid {
-        max-width: 100%;
-        justify-items: center;
+        grid-template-columns: 1fr;
+        width: 100%;
+        /* removed max-width to allow full size */
+        justify-items: stretch;
+        /* Cards fill the width */
     }
 
     .subscriptionItem {
