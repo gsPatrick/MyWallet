@@ -298,3 +298,43 @@
         background: transparent;
     }
 }
+
+/* Mobile Logo - shown only when brandingSide is hidden */
+.mobileLogo {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .mobileLogo {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .mobileLogoImage {
+        width: 120px;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .formSide {
+        justify-content: flex-start;
+        padding-top: 2rem;
+    }
+
+    .formContainer {
+        padding: 1.5rem 1rem;
+    }
+
+    .formHeader {
+        margin-bottom: 1.5rem;
+    }
+
+    .formTitle {
+        font-size: 1.5rem;
+    }
+
+    .formSubtitle {
+        font-size: 0.875rem;
+    }
+}

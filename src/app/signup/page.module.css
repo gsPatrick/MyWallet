@@ -393,11 +393,41 @@
     .formSide {
         min-height: 100vh;
         padding: 2rem 1.5rem;
+        padding-top: 1.5rem;
+        justify-content: flex-start;
     }
 
     .formContainer {
         max-width: 100%;
         box-shadow: none;
         border: none;
+        padding: 1.5rem 1rem;
+    }
+
+    .stepTitle {
+        font-size: 1.25rem;
+    }
+
+    .stepSubtitle {
+        font-size: 0.8125rem;
+    }
+}
+
+/* Mobile Logo - shown only when brandingSide is hidden */
+.mobileLogo {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .mobileLogo {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .mobileLogoImage {
+        width: 120px;
+        height: auto;
+        object-fit: contain;
     }
 }

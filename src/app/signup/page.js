@@ -233,6 +233,18 @@ export default function SignupPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                 >
+                    {/* Mobile Logo - shown when left side is hidden */}
+                    <div className={styles.mobileLogo}>
+                        <Image
+                            src="/images/logoparafundobranco.png"
+                            alt="MyWallet"
+                            width={120}
+                            height={40}
+                            className={styles.mobileLogoImage}
+                            priority
+                        />
+                    </div>
+
                     {/* Progress Steps */}
                     <div className={styles.stepsContainer}>
                         {steps.map((s, i) => (

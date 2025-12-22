@@ -186,6 +186,18 @@ export default function LoginPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                 >
+                    {/* Mobile Logo - shown when left side is hidden */}
+                    <div className={styles.mobileLogo}>
+                        <Image
+                            src="/images/logoparafundobranco.png"
+                            alt="MyWallet"
+                            width={120}
+                            height={40}
+                            className={styles.mobileLogoImage}
+                            priority
+                        />
+                    </div>
+
                     <div className={styles.formHeader}>
                         <h2 className={styles.formTitle}>Entrar</h2>
                         <p className={styles.formSubtitle}>Acesse sua conta para continuar</p>
