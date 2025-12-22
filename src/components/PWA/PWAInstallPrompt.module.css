@@ -235,3 +235,123 @@
     background: rgba(0, 0, 0, 0.1);
     color: #1a1a2e;
 }
+
+/* ==========================================
+   FLOATING BUTTON VARIANT
+   ========================================== */
+.floatingContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+    /* Hidden on desktop */
+}
+
+.floatingButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s ease;
+}
+
+.floatingButton:hover {
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+}
+
+.floatingDismiss {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a2e;
+    border: 2px solid white;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.floatingDismiss:hover {
+    background: #ff4444;
+}
+
+.floatingTooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    right: 0;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    width: 200px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+}
+
+.floatingButton:hover+.floatingDismiss+.floatingTooltip,
+.floatingContainer:hover .floatingTooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.floatingTooltip p {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.floatingTooltip ol {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.floatingTooltip li {
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.floatingTooltip svg {
+    width: 12px;
+    height: 12px;
+    color: #6366f1;
+}
+
+/* Show floating button only on mobile */
+@media (max-width: 768px) {
+    .floatingContainer {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .floatingButton {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .floatingContainer {
+        bottom: 16px;
+        right: 16px;
+    }
+}

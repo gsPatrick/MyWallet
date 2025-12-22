@@ -57,9 +57,6 @@ export default function LandingHeader() {
                 </nav>
 
                 <div className={styles.actions}>
-                    {/* PWA Install Button - Mobile Only */}
-                    {isMobile && <PWAInstallPrompt variant="button" />}
-
                     <button onClick={handleLoginClick} className={styles.loginBtn}>
                         Entrar
                     </button>

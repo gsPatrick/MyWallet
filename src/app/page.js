@@ -15,6 +15,7 @@ import {
     Pricing,
     LandingFooter
 } from '@/components/landing';
+import { PWAInstallPrompt } from '@/components/PWA';
 import styles from './page.module.css';
 
 export default function LandingPage() {
@@ -70,6 +71,9 @@ export default function LandingPage() {
             </section>
 
             <LandingFooter />
+
+            {/* Floating PWA Install Button - Bottom Right on Mobile */}
+            <PWAInstallPrompt variant="floating" />
         </div>
     );
 }

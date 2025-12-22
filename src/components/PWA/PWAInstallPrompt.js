@@ -73,7 +73,7 @@ export default function PWAInstallPrompt({ variant = 'banner' }) {
         return null;
     }
 
-    // Header button variant (for landing page)
+    // Header button variant (for landing page header)
     if (variant === 'button') {
         return (
             <motion.button
@@ -96,6 +96,43 @@ export default function PWAInstallPrompt({ variant = 'banner' }) {
                     </div>
                 )}
             </motion.button>
+        );
+    }
+
+    // Floating button variant (bottom-right on mobile)
+    if (variant === 'floating') {
+        return (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.4 }}
+                className={styles.floatingContainer}
+            >
+                <motion.button
+                    className={styles.floatingButton}
+                    onClick={isIOS ? undefined : handleInstall}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    <FiDownload size={20} />
+                    <span>Instalar App</span>
+                </motion.button>
+
+                <button className={styles.floatingDismiss} onClick={handleDismiss}>
+                    <FiX size={14} />
+                </button>
+
+                {/* iOS Instructions Tooltip */}
+                {isIOS && (
+                    <div className={styles.floatingTooltip}>
+                        <p>Para instalar:</p>
+                        <ol>
+                            <li>Toque em <FiShare /></li>
+                            <li>"Adicionar à Tela de Início"</li>
+                        </ol>
+                    </div>
+                )}
+            </motion.div>
         );
     }
 

@@ -3,7 +3,7 @@
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -13,7 +13,7 @@
 .content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -34,7 +34,7 @@
 }
 
 .navLink {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #64748b;
     transition: color 0.2s;
@@ -46,15 +46,15 @@
 
 .actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
 }
 
 .loginBtn {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #1a1a2e;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.75rem;
     transition: color 0.2s;
 }
 
@@ -63,12 +63,12 @@
 }
 
 .signupBtn {
-    padding: 0.625rem 1.25rem;
+    padding: 0.5rem 1rem;
     background: #1a1a2e;
     color: white;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 8px;
     transition: all 0.2s;
 }
 
@@ -77,17 +77,59 @@
     transform: translateY(-1px);
 }
 
+/* ==========================================
+   MOBILE RESPONSIVE
+   ========================================== */
 @media (max-width: 768px) {
+    .header {
+        padding: 0;
+    }
+
+    .content {
+        padding: 0.5rem 1rem;
+    }
+
     .nav {
         display: none;
     }
 
+    .logo {
+        width: 100px;
+        height: auto;
+    }
+
+    .loginBtn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .signupBtn {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+    }
+
+    .actions {
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
     .content {
-        padding: 0.75rem 1.5rem;
+        padding: 0.4rem 0.75rem;
     }
 
     .logo {
-        width: 120px;
-        height: auto;
+        width: 85px;
+    }
+
+    .loginBtn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.4rem;
+    }
+
+    .signupBtn {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.6rem;
     }
 }
