@@ -1,11 +1,5 @@
 // Service Worker for MyWallet PWA
-// ========================================
-// VERSIONED FOR FORCED UPDATES
-// ========================================
-
-const VERSION = '2.0.0';
-const CACHE_NAME = `mywallet-v${VERSION}`;
-
+const CACHE_NAME = 'mywallet-v1';
 const STATIC_ASSETS = [
     '/',
     '/dashboard',
@@ -15,46 +9,29 @@ const STATIC_ASSETS = [
     '/offline.html'
 ];
 
-console.log(`[SW] Version ${VERSION} loading...`);
-
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-    console.log(`[SW] Version ${VERSION} installing...`);
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             console.log('[SW] Caching static assets');
             return cache.addAll(STATIC_ASSETS);
         })
     );
-    // Force activation (don't wait for old tabs to close)
     self.skipWaiting();
 });
 
-// Activate event - clean old caches and take control
+// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-    console.log(`[SW] Version ${VERSION} activating...`);
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames
-                    .filter((name) => name.startsWith('mywallet-') && name !== CACHE_NAME)
-                    .map((name) => {
-                        console.log(`[SW] Deleting old cache: ${name}`);
-                        return caches.delete(name);
-                    })
+                    .filter((name) => name !== CACHE_NAME)
+                    .map((name) => caches.delete(name))
             );
         })
     );
-    // Take control of all clients immediately
     self.clients.claim();
-});
-
-// Message handler - for skip waiting trigger
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        console.log('[SW] Skip waiting triggered');
-        self.skipWaiting();
-    }
 });
 
 // Fetch event - Network first, fallback to cache
@@ -64,9 +41,6 @@ self.addEventListener('fetch', (event) => {
 
     // Skip API requests (let them fail normally)
     if (event.request.url.includes('/api/')) return;
-
-    // Skip chrome-extension and other non-http requests
-    if (!event.request.url.startsWith('http')) return;
 
     event.respondWith(
         fetch(event.request)

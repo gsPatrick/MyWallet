@@ -8,7 +8,7 @@ import { MedalProvider } from '@/contexts/MedalContext';
 import { PaymentNotificationProvider } from '@/contexts/PaymentNotificationContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { PageTransitionProvider } from '@/components/PageTransition';
-import { UpdateProvider } from '@/components/PWA';
+import { ServiceWorkerRegister } from '@/components/PWA';
 
 export const metadata = {
     title: 'MyWallet - Sistema de Investimentos',
@@ -77,27 +77,26 @@ export default function RootLayout({ children }) {
                 />
             </head>
             <body>
-                <UpdateProvider>
-                    <ThemeProvider>
-                        <AuthProvider>
-                            <ProfileProvider>
-                                <MedalProvider>
-                                    <OnboardingProvider>
-                                        <PaymentNotificationProvider>
-                                            <NotificationProvider>
-                                                <PrivacyProvider>
-                                                    <PageTransitionProvider>
-                                                        {children}
-                                                    </PageTransitionProvider>
-                                                </PrivacyProvider>
-                                            </NotificationProvider>
-                                        </PaymentNotificationProvider>
-                                    </OnboardingProvider>
-                                </MedalProvider>
-                            </ProfileProvider>
-                        </AuthProvider>
-                    </ThemeProvider>
-                </UpdateProvider>
+                <ServiceWorkerRegister />
+                <ThemeProvider>
+                    <AuthProvider>
+                        <ProfileProvider>
+                            <MedalProvider>
+                                <OnboardingProvider>
+                                    <PaymentNotificationProvider>
+                                        <NotificationProvider>
+                                            <PrivacyProvider>
+                                                <PageTransitionProvider>
+                                                    {children}
+                                                </PageTransitionProvider>
+                                            </PrivacyProvider>
+                                        </NotificationProvider>
+                                    </PaymentNotificationProvider>
+                                </OnboardingProvider>
+                            </MedalProvider>
+                        </ProfileProvider>
+                    </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );
