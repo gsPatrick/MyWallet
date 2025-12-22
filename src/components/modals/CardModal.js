@@ -20,6 +20,9 @@ const cardColors = [
     { name: 'Emerald', value: '#064e3b' },
     { name: 'Blue', value: '#1e40af' },
     { name: 'Red', value: '#991b1b' },
+    { name: 'Prata', value: '#e4e3e4' },
+    { name: 'Grafite', value: '#535151' },
+    { name: 'Black', value: '#020202' },
 ];
 
 const defaultForm = {

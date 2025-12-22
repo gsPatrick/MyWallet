@@ -10,6 +10,7 @@ export default function CreditCard({
     lastFourDigits = '0000',
     creditLimit = 0,
     availableLimit = 0,
+    blockedLimit = 0,
     closingDay = 1,
     dueDay = 10,
     color = '#1a1a2e',
@@ -17,10 +18,10 @@ export default function CreditCard({
     validThru = '12/28',
     onClick,
 }) {
+    const usedAmount = creditLimit - availableLimit - blockedLimit;
     const usedPercent = creditLimit > 0
-        ? ((creditLimit - availableLimit) / creditLimit) * 100
+        ? (usedAmount / creditLimit) * 100
         : 0;
-    const usedAmount = creditLimit - availableLimit;
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -29,9 +30,21 @@ export default function CreditCard({
         }).format(value);
     };
 
+    // Check if color is light (needs dark text)
+    const isLightColor = (hexColor) => {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.6;
+    };
+
+    const textColor = isLightColor(color) ? '#1a1a2e' : 'white';
+
     // Determine gradient based on color
     const getGradient = () => {
-        const hue = parseInt(color.substring(1), 16);
         return `linear-gradient(135deg, ${color} 0%, ${color}dd 50%, ${color}aa 100%)`;
     };
 
@@ -65,7 +78,7 @@ export default function CreditCard({
         >
             <div
                 className={styles.card}
-                style={{ background: getGradient() }}
+                style={{ background: getGradient(), color: textColor }}
             >
                 {/* Card Pattern Overlay */}
                 <div className={styles.pattern} />
@@ -117,6 +130,10 @@ export default function CreditCard({
                     <div className={styles.limitRow}>
                         <span className={styles.limitLabel}>Disponível</span>
                         <span className={`${styles.limitValue} ${styles.available}`}>{formatCurrency(availableLimit)}</span>
+                    </div>
+                    <div className={styles.limitRow}>
+                        <span className={styles.limitLabel}>Bloqueado</span>
+                        <span className={`${styles.limitValue} ${styles.blocked}`}>{formatCurrency(blockedLimit)}</span>
                     </div>
                     <div className={styles.limitRow}>
                         <span className={styles.limitLabel}>Utilizado</span>

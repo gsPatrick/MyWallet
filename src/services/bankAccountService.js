@@ -20,7 +20,7 @@ const bankAccountService = {
      */
     async create(data) {
         const response = await api.post('/bank-accounts', data);
-        return response.data;
+        return response;
     },
 
     /**
@@ -29,7 +29,7 @@ const bankAccountService = {
      */
     async list(options = {}) {
         const response = await api.get('/bank-accounts', { params: options });
-        return response.data;
+        return response;
     },
 
     /**
@@ -38,7 +38,7 @@ const bankAccountService = {
      */
     async get(id) {
         const response = await api.get(`/bank-accounts/${id}`);
-        return response.data;
+        return response;
     },
 
     /**
@@ -48,7 +48,7 @@ const bankAccountService = {
      */
     async update(id, data) {
         const response = await api.put(`/bank-accounts/${id}`, data);
-        return response.data;
+        return response;
     },
 
     /**
@@ -57,7 +57,7 @@ const bankAccountService = {
      */
     async delete(id) {
         const response = await api.delete(`/bank-accounts/${id}`);
-        return response.data;
+        return response;
     },
 
     /**
@@ -65,7 +65,7 @@ const bankAccountService = {
      */
     async getTotalBalance() {
         const response = await api.get('/bank-accounts/balance/total');
-        return response.data;
+        return response;
     },
 
     /**
@@ -73,7 +73,7 @@ const bankAccountService = {
      */
     async getBalanceBreakdown() {
         const response = await api.get('/bank-accounts/balance/breakdown');
-        return response.data;
+        return response;
     },
 
     /**
@@ -82,7 +82,7 @@ const bankAccountService = {
      */
     async getDefault() {
         const response = await api.get('/bank-accounts/default');
-        return response.data;
+        return response;
     },
 
     /**
@@ -91,7 +91,7 @@ const bankAccountService = {
      */
     async setDefault(id) {
         const response = await api.put(`/bank-accounts/${id}/set-default`);
-        return response.data;
+        return response;
     },
 
     /**
@@ -101,7 +101,7 @@ const bankAccountService = {
      */
     async ensureWallet(initialBalance = 0) {
         const response = await api.post('/bank-accounts/ensure-wallet', { initialBalance });
-        return response.data;
+        return response;
     },
 
     /**
@@ -115,7 +115,7 @@ const bankAccountService = {
      */
     async createInternalTransfer(data) {
         const response = await api.post('/transactions/internal-transfer', data);
-        return response.data;
+        return response;
     }
 };
 

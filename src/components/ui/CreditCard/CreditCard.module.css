@@ -224,7 +224,11 @@
 }
 
 .limitValue.used {
-    color: var(--accent-warning);
+    color: var(--text-tertiary);
+}
+
+.limitValue.blocked {
+    color: #f59e0b;
 }
 
 /* Usage Bar */

@@ -487,6 +487,7 @@ export default function CardsPage() {
                                     lastFourDigits={selectedCard.lastFourDigits}
                                     creditLimit={selectedCard.creditLimit}
                                     availableLimit={selectedCard.availableLimit}
+                                    blockedLimit={selectedCard.blockedLimit || 0}
                                     closingDay={selectedCard.closingDay}
                                     dueDay={selectedCard.dueDay}
                                     color={selectedCard.color}
