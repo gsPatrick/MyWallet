@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import styles from './UpdateModal.module.css';
 
 // Context for update state
-const UpdateContext = createContext();
+const UpdateContext = createContext(null);
 
 export const useUpdate = () => useContext(UpdateContext);
 
@@ -12,7 +12,7 @@ export const useUpdate = () => useContext(UpdateContext);
  * UpdateModal - Força atualização quando nova versão é detectada
  * NÃO permite fechar - usuário DEVE atualizar
  */
-export function UpdateModal({ show, onUpdate }) {
+export function UpdateModal({ show, onUpdate, isUpdating }) {
     if (!show) return null;
 
     return (
@@ -47,8 +47,9 @@ export function UpdateModal({ show, onUpdate }) {
                 <button
                     className={styles.updateButton}
                     onClick={onUpdate}
+                    disabled={isUpdating}
                 >
-                    Atualizar Agora
+                    {isUpdating ? 'Atualizando...' : 'Atualizar Agora'}
                 </button>
 
                 <p className={styles.note}>
@@ -61,74 +62,113 @@ export function UpdateModal({ show, onUpdate }) {
 
 /**
  * UpdateProvider - Gerencia detecção de atualizações
+ * Só renderiza modal quando há atualização real disponível
  */
 export function UpdateProvider({ children }) {
     const [updateAvailable, setUpdateAvailable] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [registration, setRegistration] = useState(null);
+    const [mounted, setMounted] = useState(false);
+
+    // Ensure we only run client-side
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
+        if (!mounted) return;
         if (typeof window === 'undefined') return;
         if (!('serviceWorker' in navigator)) return;
-        if (process.env.NODE_ENV !== 'production') return;
+        // Only run in production
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('[PWA] Skipping SW registration in development');
+            return;
+        }
+
+        let isSubscribed = true;
 
         const registerSW = async () => {
             try {
                 const reg = await navigator.serviceWorker.register('/sw.js');
+                if (!isSubscribed) return;
+
                 setRegistration(reg);
                 console.log('[PWA] Service Worker registered');
+
+                // Check if there's already a waiting worker
+                if (reg.waiting) {
+                    console.log('[PWA] Found waiting worker on load');
+                    setUpdateAvailable(true);
+                    return;
+                }
 
                 // Detect update
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
+                    if (!newWorker) return;
+
                     console.log('[PWA] New version installing...');
 
                     newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed') {
-                            if (navigator.serviceWorker.controller) {
-                                // New version available!
-                                console.log('[PWA] New version available!');
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version available!
+                            console.log('[PWA] New version available!');
+                            if (isSubscribed) {
                                 setUpdateAvailable(true);
                             }
                         }
                     });
                 });
 
-                // Check for updates immediately
-                reg.update();
+                // Check for updates every 60 seconds (not too aggressive)
+                const intervalId = setInterval(() => {
+                    reg.update().catch(console.error);
+                }, 60 * 1000);
 
-                // Check for updates every 30 seconds
-                setInterval(() => {
-                    reg.update();
-                }, 30 * 1000);
+                return () => clearInterval(intervalId);
 
             } catch (error) {
                 console.error('[PWA] SW registration failed:', error);
             }
         };
 
-        // Handle controller change (when skipWaiting is called)
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('[PWA] Controller changed, reloading...');
-            window.location.reload();
-        });
-
         registerSW();
-    }, []);
 
-    const handleUpdate = () => {
+        return () => {
+            isSubscribed = false;
+        };
+    }, [mounted]);
+
+    const handleUpdate = useCallback(() => {
+        setIsUpdating(true);
+
         if (registration && registration.waiting) {
             // Tell waiting SW to take over
             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+            // Listen for controller change to reload
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                window.location.reload();
+            }, { once: true });
         } else {
             // Fallback: just reload
             window.location.reload();
         }
-    };
+    }, [registration]);
+
+    // Don't render anything server-side
+    if (!mounted) {
+        return <>{children}</>;
+    }
 
     return (
-        <UpdateContext.Provider value={{ updateAvailable, handleUpdate }}>
+        <UpdateContext.Provider value={{ updateAvailable, handleUpdate, isUpdating }}>
             {children}
-            <UpdateModal show={updateAvailable} onUpdate={handleUpdate} />
+            <UpdateModal
+                show={updateAvailable}
+                onUpdate={handleUpdate}
+                isUpdating={isUpdating}
+            />
         </UpdateContext.Provider>
     );
 }
