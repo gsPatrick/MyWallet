@@ -65,7 +65,7 @@ export default function Hero() {
                     transition={{ duration: 0.8, delay: 0.4 }}
                 >
                     <Link href="/signup" className={styles.primaryBtn}>
-                        Começar Grátis
+                        Começar Agora
                         <FiArrowRight />
                     </Link>
                     <Link href="/login" className={styles.secondaryBtn}>

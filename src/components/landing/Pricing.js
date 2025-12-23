@@ -2,32 +2,22 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FiCheck, FiX } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import styles from './Pricing.module.css';
 
-const monthlyFeatures = [
-    { text: 'Dashboard completo', included: true },
-    { text: 'Até 3 contas bancárias', included: true },
-    { text: 'Até 2 cartões', included: true },
-    { text: 'Orçamentos (até 5)', included: true },
-    { text: 'Metas financeiras', included: true },
-    { text: 'Bot WhatsApp', included: false },
-    { text: 'Múltiplos perfis (PF/PJ)', included: false },
-    { text: 'Investimentos', included: false },
-];
-
-const annualFeatures = [
-    { text: 'Dashboard completo', included: true },
-    { text: 'Contas ilimitadas', included: true },
-    { text: 'Cartões ilimitados', included: true },
-    { text: 'Orçamentos ilimitados', included: true },
-    { text: 'Metas financeiras', included: true },
-    { text: 'Bot WhatsApp 24h', included: true },
-    { text: 'Múltiplos perfis (PF/PJ)', included: true },
-    { text: 'Investimentos e Dividendos', included: true },
-    { text: 'Controle de DAS (MEI)', included: true },
-    { text: 'Relatórios avançados', included: true },
-    { text: 'Suporte prioritário', included: true },
+const allFeatures = [
+    'Dashboard completo',
+    'Contas bancárias ilimitadas',
+    'Cartões ilimitados',
+    'Orçamentos inteligentes',
+    'Metas financeiras',
+    'Bot WhatsApp 24h',
+    'Múltiplos perfis (PF/PJ)',
+    'Investimentos e Dividendos',
+    'Controle de DAS (MEI)',
+    'Relatórios avançados',
+    'Notificações push e email',
+    'Suporte prioritário',
 ];
 
 export default function Pricing() {
@@ -41,15 +31,15 @@ export default function Pricing() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <span className={styles.badge}>Planos</span>
-                    <h2 className={styles.title}>Escolha o plano ideal para você</h2>
+                    <span className={styles.badge}>Plano Único</span>
+                    <h2 className={styles.title}>Acesso completo a tudo</h2>
                     <p className={styles.subtitle}>
-                        Sem surpresas. Cancele quando quiser.
+                        Um plano. Todas as funcionalidades. Escolha como pagar.
                     </p>
                 </motion.div>
 
                 <div className={styles.cardsGrid}>
-                    {/* Monthly Plan - Essencial */}
+                    {/* Monthly */}
                     <motion.div
                         className={styles.card}
                         initial={{ opacity: 0, y: 30 }}
@@ -58,24 +48,20 @@ export default function Pricing() {
                         transition={{ duration: 0.6, delay: 0.1 }}
                     >
                         <div className={styles.cardHeader}>
-                            <span className={styles.planName}>Essencial</span>
-                            <p className={styles.planDescription}>Para quem está começando</p>
+                            <span className={styles.planName}>Mensal</span>
+                            <p className={styles.planDescription}>Pague mês a mês</p>
                             <div className={styles.priceWrapper}>
                                 <span className={styles.currency}>R$</span>
-                                <span className={styles.price}>19,90</span>
+                                <span className={styles.price}>29,90</span>
                                 <span className={styles.period}>/mês</span>
                             </div>
                         </div>
 
                         <ul className={styles.features}>
-                            {monthlyFeatures.map((feature) => (
-                                <li key={feature.text} className={feature.included ? '' : styles.notIncluded}>
-                                    {feature.included ? (
-                                        <FiCheck className={styles.checkIcon} />
-                                    ) : (
-                                        <FiX className={styles.xIcon} />
-                                    )}
-                                    {feature.text}
+                            {allFeatures.map((feature) => (
+                                <li key={feature}>
+                                    <FiCheck className={styles.checkIcon} />
+                                    {feature}
                                 </li>
                             ))}
                         </ul>
@@ -85,7 +71,7 @@ export default function Pricing() {
                         </Link>
                     </motion.div>
 
-                    {/* Annual Plan - Completo */}
+                    {/* Annual */}
                     <motion.div
                         className={`${styles.card} ${styles.cardPopular}`}
                         initial={{ opacity: 0, y: 30 }}
@@ -94,28 +80,27 @@ export default function Pricing() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
                         <div className={styles.popularBadge}>
-                            Mais completo
+                            Mais escolhido
                         </div>
 
                         <div className={styles.cardHeader}>
-                            <span className={styles.planName}>Completo</span>
-                            <p className={styles.planDescription}>Tudo liberado, sem limites</p>
+                            <span className={styles.planName}>Anual</span>
+                            <p className={styles.planDescription}>Pague uma vez por ano</p>
                             <div className={styles.priceWrapper}>
                                 <span className={styles.currency}>R$</span>
-                                <span className={styles.price}>29,90</span>
-                                <span className={styles.period}>/mês</span>
+                                <span className={styles.price}>358,80</span>
+                                <span className={styles.period}>/ano</span>
                             </div>
                             <p className={styles.annualNote}>
-                                ou R$ 297/ano (2 meses grátis)
+                                R$ 29,90/mês
                             </p>
-                            <div className={styles.saveBadge}>Economia de R$ 62</div>
                         </div>
 
                         <ul className={styles.features}>
-                            {annualFeatures.map((feature) => (
-                                <li key={feature.text}>
+                            {allFeatures.map((feature) => (
+                                <li key={feature}>
                                     <FiCheck className={styles.checkIcon} />
-                                    {feature.text}
+                                    {feature}
                                 </li>
                             ))}
                         </ul>
