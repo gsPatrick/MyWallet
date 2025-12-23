@@ -137,6 +137,22 @@ export default function Features() {
                     </motion.div>
                 </motion.div>
 
+                {/* Transition Phrase */}
+                <motion.div
+                    className={styles.transitionPhrase}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                    <h3 className={styles.transitionTitle}>
+                        Conheça cada funcionalidade em detalhes
+                    </h3>
+                    <p className={styles.transitionSubtitle}>
+                        Descubra como cada recurso pode transformar a forma como você lida com seu dinheiro
+                    </p>
+                </motion.div>
+
                 {/* Alternating Feature Sections */}
                 <div className={styles.featuresAlternating}>
                     {mainFeatures.map((feature, index) => (
