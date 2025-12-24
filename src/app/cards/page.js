@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiPlus, FiCreditCard, FiCalendar, FiRepeat, FiEdit2, FiTrash2,
     FiX, FiDollarSign, FiTag, FiClock, FiLink, FiChevronLeft, FiChevronRight,
-    FiBarChart2, FiSliders, FiShoppingBag, FiCoffee, FiHome, FiTruck, FiMusic, FiFilm
+    FiBarChart2, FiSliders, FiShoppingBag, FiCoffee, FiHome, FiTruck, FiMusic, FiFilm,
+    FiFileText
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -20,9 +21,11 @@ import GhostCard from '@/components/ui/GhostCard';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
+import InvoicePaymentModal from '@/components/modals/InvoicePaymentModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
 import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI, bankAccountsAPI } from '@/services/api';
+import invoiceService, { getStatusInfo, formatInvoicePeriod } from '@/services/invoiceService';
 import styles from './page.module.css';
 
 // Open Finance cards mock
@@ -109,6 +112,13 @@ export default function CardsPage() {
     const [subscriptionCardFilter, setSubscriptionCardFilter] = useState('ALL'); // ALL or cardId
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+
+    // Invoice states
+    const [invoiceHistory, setInvoiceHistory] = useState([]);
+    const [currentInvoiceData, setCurrentInvoiceData] = useState(null);
+    const [loadingInvoices, setLoadingInvoices] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -241,22 +251,30 @@ export default function CardsPage() {
 
         // Load real transactions for this card
         setLoadingTransactions(true);
+        setLoadingInvoices(true);
         try {
-            const txRes = await transactionsAPI.list({
-                cardId: card.id,
-                limit: 100
-            });
+            const [txRes, invoiceRes, historyRes] = await Promise.all([
+                transactionsAPI.list({ cardId: card.id, limit: 100 }),
+                invoiceService.getCurrentInvoice(card.id).catch(() => null),
+                invoiceService.listInvoices(card.id, { limit: 12 }).catch(() => ({ invoices: [] }))
+            ]);
+
             setCardTransactions(txRes?.data?.transactions || []);
+            setCurrentInvoiceData(invoiceRes);
+            setInvoiceHistory(historyRes?.invoices || []);
 
             // Filter subscriptions for this card
             const cardSubs = subscriptions.filter(s => s.cardId === card.id);
             setCardSubscriptions(cardSubs);
         } catch (error) {
-            console.error("Error loading card transactions:", error);
+            console.error("Error loading card data:", error);
             setCardTransactions([]);
             setCardSubscriptions([]);
+            setCurrentInvoiceData(null);
+            setInvoiceHistory([]);
         } finally {
             setLoadingTransactions(false);
+            setLoadingInvoices(false);
         }
     };
 
@@ -265,6 +283,31 @@ export default function CardsPage() {
         setInvoiceViewMode('list');
         setCardTransactions([]);
         setCardSubscriptions([]);
+        setCurrentInvoiceData(null);
+        setInvoiceHistory([]);
+    };
+
+    // Open payment modal
+    const openPaymentModal = (invoice = null) => {
+        setSelectedInvoiceForPayment(invoice || currentInvoiceData);
+        setShowPaymentModal(true);
+    };
+
+    // Handle payment complete
+    const handlePaymentComplete = async (result) => {
+        // Reload invoice data
+        if (selectedCard) {
+            try {
+                const [invoiceRes, historyRes] = await Promise.all([
+                    invoiceService.getCurrentInvoice(selectedCard.id),
+                    invoiceService.listInvoices(selectedCard.id)
+                ]);
+                setCurrentInvoiceData(invoiceRes);
+                setInvoiceHistory(historyRes?.invoices || []);
+            } catch (err) {
+                console.error('Error reloading invoices:', err);
+            }
+        }
     };
 
     // Handle edit card from invoice view
@@ -516,6 +559,15 @@ export default function CardsPage() {
                                         <span>Assinaturas</span>
                                     </button>
                                     <button
+                                        className={`${styles.actionBtn} ${invoiceViewMode === 'history' ? styles.active : ''}`}
+                                        onClick={() => setInvoiceViewMode('history')}
+                                    >
+                                        <div className={styles.actionIcon}>
+                                            <FiFileText />
+                                        </div>
+                                        <span>Histórico</span>
+                                    </button>
+                                    <button
                                         className={`${styles.actionBtn} ${invoiceViewMode === 'limits' ? styles.active : ''}`}
                                         onClick={openLimitsView}
                                     >
@@ -738,6 +790,114 @@ export default function CardsPage() {
                                     </div>
                                 )}
 
+                                {/* Invoice History View */}
+                                {invoiceViewMode === 'history' && (
+                                    <div className={styles.historyView}>
+                                        <div className={styles.historyHeader}>
+                                            <button
+                                                className={styles.backBtn}
+                                                onClick={() => setInvoiceViewMode('list')}
+                                            >
+                                                <FiChevronLeft /> Voltar
+                                            </button>
+                                            <h3>Histórico de Faturas</h3>
+                                        </div>
+
+                                        {/* Current Invoice Summary */}
+                                        {currentInvoiceData && (
+                                            <div className={styles.currentInvoiceCard}>
+                                                <div className={styles.invoiceCardHeader}>
+                                                    <span className={styles.invoiceLabel}>Fatura Atual</span>
+                                                    <span
+                                                        className={styles.invoiceStatusBadge}
+                                                        style={{ backgroundColor: getStatusInfo(currentInvoiceData.status).color }}
+                                                    >
+                                                        {getStatusInfo(currentInvoiceData.status).emoji} {getStatusInfo(currentInvoiceData.status).label}
+                                                    </span>
+                                                </div>
+                                                <div className={styles.invoiceAmounts}>
+                                                    <div className={styles.invoiceAmountRow}>
+                                                        <span>Total</span>
+                                                        <strong>{formatCurrency(currentInvoiceData.totalAmount)}</strong>
+                                                    </div>
+                                                    {currentInvoiceData.paidAmount > 0 && (
+                                                        <div className={styles.invoiceAmountRow}>
+                                                            <span>Pago</span>
+                                                            <strong style={{ color: '#10b981' }}>{formatCurrency(currentInvoiceData.paidAmount)}</strong>
+                                                        </div>
+                                                    )}
+                                                    <div className={styles.invoiceAmountRow}>
+                                                        <span>Restante</span>
+                                                        <strong style={{ color: '#6366f1' }}>{formatCurrency(currentInvoiceData.remainingAmount)}</strong>
+                                                    </div>
+                                                </div>
+                                                {currentInvoiceData.dueDate && (
+                                                    <div className={styles.invoiceDueInfo}>
+                                                        📅 Vence em: <strong>{new Date(currentInvoiceData.dueDate).toLocaleDateString('pt-BR')}</strong>
+                                                    </div>
+                                                )}
+                                                {currentInvoiceData.remainingAmount > 0 && (
+                                                    <Button
+                                                        variant="primary"
+                                                        size="lg"
+                                                        onClick={() => openPaymentModal(currentInvoiceData)}
+                                                        style={{ marginTop: '1rem', width: '100%' }}
+                                                    >
+                                                        <FiDollarSign /> Pagar Fatura
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Invoice History List */}
+                                        <div className={styles.historyList}>
+                                            <h4>Faturas Anteriores</h4>
+                                            {loadingInvoices ? (
+                                                <div className={styles.loadingTx}>Carregando histórico...</div>
+                                            ) : invoiceHistory.length > 0 ? (
+                                                <div className={styles.invoiceHistoryItems}>
+                                                    {invoiceHistory.map(inv => {
+                                                        const statusInfo = getStatusInfo(inv.status);
+                                                        return (
+                                                            <div key={inv.id} className={styles.invoiceHistoryItem}>
+                                                                <div className={styles.invoiceHistoryLeft}>
+                                                                    <span className={styles.invoiceHistoryPeriod}>
+                                                                        {formatInvoicePeriod(inv.referenceMonth, inv.referenceYear)}
+                                                                    </span>
+                                                                    <span
+                                                                        className={styles.invoiceHistoryStatus}
+                                                                        style={{ color: statusInfo.color }}
+                                                                    >
+                                                                        {statusInfo.emoji} {statusInfo.label}
+                                                                    </span>
+                                                                </div>
+                                                                <div className={styles.invoiceHistoryRight}>
+                                                                    <span className={styles.invoiceHistoryAmount}>
+                                                                        {formatCurrency(inv.totalAmount)}
+                                                                    </span>
+                                                                    {inv.remainingAmount > 0 && inv.status !== 'PAID' && (
+                                                                        <button
+                                                                            className={styles.paySmallBtn}
+                                                                            onClick={() => openPaymentModal(inv)}
+                                                                        >
+                                                                            Pagar
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div className={styles.emptyTx}>
+                                                    <FiFileText />
+                                                    <p>Nenhuma fatura encontrada</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Limits View - Inline */}
                                 {invoiceViewMode === 'limits' && (
                                     <div className={styles.limitsView}>
@@ -870,6 +1030,18 @@ export default function CardsPage() {
                             </div>
                         </div>
                     </Modal>
+
+                    {/* Invoice Payment Modal */}
+                    {showPaymentModal && selectedInvoiceForPayment && (
+                        <InvoicePaymentModal
+                            invoice={selectedInvoiceForPayment}
+                            onClose={() => {
+                                setShowPaymentModal(false);
+                                setSelectedInvoiceForPayment(null);
+                            }}
+                            onPaymentComplete={handlePaymentComplete}
+                        />
+                    )}
 
 
                     {/* My Cards Tab */}

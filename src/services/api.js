@@ -82,8 +82,8 @@ export const investmentsAPI = {
     getPosition: (ticker) => api.get(`/investments/position/${ticker}`),
     getHistory: (ticker) => api.get(`/investments/history/${ticker}`),
     registerOperation: (data) => api.post('/investments', data),
-    getAssets: (search = '', page = 1) => api.get('/investments/assets', {
-        params: { search, page, limit: 50 }
+    getAssets: (search = '', page = 1, type = '') => api.get('/investments/assets', {
+        params: { search, page, limit: 50, type }
     }),
     getDividends: () => api.get('/investments/dividends'),
     getEvolution: (months = 12) => api.get('/investments/evolution', { params: { months } }),

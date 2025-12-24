@@ -99,8 +99,13 @@ export default function InvestmentsPage() {
     const loadMarketData = async (page, reset = false) => {
         setIsLoadingMarket(true);
         try {
-            const response = await investmentsAPI.getAssets(searchQuery, page);
-            const newAssets = response.data || [];
+            // Passa o tipo selecionado (marketCategory) para filtrar na API
+            const response = await investmentsAPI.getAssets(searchQuery, page, marketCategory || '');
+
+            // Nova estrutura de resposta: { assets: [...], pagination: {...} }
+            const data = response.data || response;
+            const newAssets = data.assets || data || [];
+            const pagination = data.pagination || { totalPages: 1 };
 
             if (reset) {
                 setMarketAssets(newAssets);
@@ -110,8 +115,8 @@ export default function InvestmentsPage() {
                 setMarketPage(page);
             }
 
-            // Se vier menos que 50 itens, chegamos ao fim
-            setHasMoreAssets(newAssets.length >= 50);
+            // Usa paginação real da API
+            setHasMoreAssets(page < pagination.totalPages);
         } catch (error) {
             console.error("Erro ao carregar mercado:", error);
         } finally {
@@ -144,15 +149,19 @@ export default function InvestmentsPage() {
 
     const handleTradeSubmit = async () => {
         try {
+            // Mapeia 'type' do form para 'operationType' esperado pela API
             await investmentsAPI.registerOperation({
-                ...tradeForm,
-                ticker: tradeForm.ticker.toUpperCase()
+                ticker: tradeForm.ticker.toUpperCase(),
+                operationType: tradeForm.type, // BUY ou SELL
+                quantity: parseFloat(tradeForm.quantity),
+                price: parseFloat(tradeForm.price),
+                date: tradeForm.date
             });
             setShowTradeModal(false);
             loadPortfolioData(); // Atualiza a carteira
             alert('Operação registrada com sucesso!');
         } catch (error) {
-            alert('Erro ao registrar operação: ' + (error.response?.data?.error || error.message));
+            alert('Erro ao registrar operação: ' + (error?.error || error?.message || 'Erro desconhecido'));
         }
     };
 
@@ -460,7 +469,7 @@ export default function InvestmentsPage() {
 
                                             {/* Market Grid */}
                                             <div className={styles.marketGrid}>
-                                                {marketAssets.filter(asset => asset.type === marketCategory).map(asset => (
+                                                {marketAssets.map(asset => (
                                                     <div key={asset.id} className={styles.marketCard}>
                                                         <div className={styles.marketCardHeader}>
                                                             <div className={styles.assetIcon}>
@@ -536,7 +545,7 @@ export default function InvestmentsPage() {
                                                 )}
                                             </div>
 
-                                            {!isLoadingMarket && marketAssets.filter(a => a.type === marketCategory).length === 0 && (
+                                            {!isLoadingMarket && marketAssets.length === 0 && (
                                                 <div className={styles.emptySearch}>
                                                     <p>Nenhum ativo encontrado</p>
                                                 </div>
@@ -640,24 +649,22 @@ export default function InvestmentsPage() {
                         onChange={(e) => setTradeForm(prev => ({ ...prev, ticker: e.target.value.toUpperCase() }))}
                     />
 
-                    <div className={styles.row}>
-                        <Input
-                            label="Quantidade"
-                            type="number"
-                            placeholder="0"
-                            value={tradeForm.quantity}
-                            onChange={(e) => setTradeForm(prev => ({ ...prev, quantity: e.target.value }))}
-                        />
-                        <Input
-                            label="Preço Unitário"
-                            type="number"
-                            step="0.01"
-                            placeholder="0,00"
-                            leftIcon={<FiDollarSign />}
-                            value={tradeForm.price}
-                            onChange={(e) => setTradeForm(prev => ({ ...prev, price: e.target.value }))}
-                        />
-                    </div>
+                    <Input
+                        label="Quantidade"
+                        type="number"
+                        placeholder="0"
+                        value={tradeForm.quantity}
+                        onChange={(e) => setTradeForm(prev => ({ ...prev, quantity: e.target.value }))}
+                    />
+                    <Input
+                        label="Preço Unitário"
+                        type="number"
+                        step="0.01"
+                        placeholder="0,00"
+                        leftIcon={<FiDollarSign />}
+                        value={tradeForm.price}
+                        onChange={(e) => setTradeForm(prev => ({ ...prev, price: e.target.value }))}
+                    />
 
                     <Input
                         label="Data da Operação"
