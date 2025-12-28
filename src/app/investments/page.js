@@ -42,7 +42,7 @@ const TAB_VARIANTS = {
     exit: { opacity: 0, y: -10, transition: { duration: 0.2 } }
 };
 
-export default function InvestmentsPage() {
+function InvestmentsContent() {
     const router = useRouter();
     const { formatCurrency } = usePrivateCurrency();
     const [activeTab, setActiveTab] = useState('portfolio');
@@ -1142,5 +1142,13 @@ export default function InvestmentsPage() {
                 </div>
             </Modal>
         </div>
+    );
+}
+
+export default function InvestmentsPage() {
+    return (
+        <Suspense fallback={<div className={styles.loadingState}>Carregando...</div>}>
+            <InvestmentsContent />
+        </Suspense>
     );
 }

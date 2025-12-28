@@ -18,7 +18,8 @@ import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { investmentsAPI } from '@/services/api';
 import styles from './page.module.css';
 
-export default function SimulatorPage() {
+
+function SimulatorContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { formatCurrency } = usePrivateCurrency();
@@ -415,5 +416,13 @@ export default function SimulatorPage() {
 
             <Dock />
         </div>
+    );
+}
+
+export default function SimulatorPage() {
+    return (
+        <Suspense fallback={<div className={styles.loadingState}>Carregando simulador...</div>}>
+            <SimulatorContent />
+        </Suspense>
     );
 }
