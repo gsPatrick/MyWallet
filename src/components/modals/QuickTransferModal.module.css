@@ -122,28 +122,63 @@
     border: none;
 }
 
+
 .cancelBtn {
     background: var(--bg-tertiary);
     color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    /* Added defaults */
 }
 
 .cancelBtn:hover {
     background: var(--bg-primary);
 }
 
+/* Light theme overrides for Cancel (Secondary) */
+[data-theme="light"] .cancelBtn {
+    background: #f8fafc;
+    color: #1a1a2e;
+    border: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .cancelBtn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* Dark theme overrides for Cancel (Secondary) */
+[data-theme="dark"] .cancelBtn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .cancelBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
 .submitBtn {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: linear-gradient(135deg, var(--accent-primary, #6366f1), var(--accent-secondary, #8b5cf6));
     color: white;
 }
 
 .submitBtn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Light theme overrides for Submit (Primary) */
+[data-theme="light"] .submitBtn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
 }
 
 .submitBtn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .spinner {
