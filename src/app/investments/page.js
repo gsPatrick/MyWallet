@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiTrendingUp, FiPlus, FiSearch, FiPieChart,
     FiDollarSign, FiActivity, FiList, FiRefreshCw, FiExternalLink,
-    FiBriefcase, FiLoader
+    FiBriefcase, FiLoader, FiTrash2, FiClock, FiArrowDown, FiArrowUp, FiTarget, FiTrendingDown
 } from 'react-icons/fi';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip
@@ -20,10 +21,14 @@ import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { investmentsAPI } from '@/services/api';
+import { investmentsAPI, brokersAPI, bankAccountsAPI, transactionsAPI } from '@/services/api';
 import DividendsTab from '@/components/investments/DividendsTab';
 import ProductCategoryGrid from '@/components/investments/ProductCategoryGrid';
 import RentabilityChart from '@/components/investments/RentabilityChart';
+import EconomicTicker from '@/components/investments/EconomicTicker';
+import PortfolioTable from '@/components/investments/PortfolioTable';
+import InvestorSummary from '@/components/investments/InvestorSummary';
+import BROKERS_LIST from '@/data/brokers.json';
 import styles from './page.module.css';
 
 const ASSET_COLORS = {
@@ -38,6 +43,7 @@ const TAB_VARIANTS = {
 };
 
 export default function InvestmentsPage() {
+    const router = useRouter();
     const { formatCurrency } = usePrivateCurrency();
     const [activeTab, setActiveTab] = useState('portfolio');
 
@@ -49,6 +55,7 @@ export default function InvestmentsPage() {
     // Data State
     const [portfolio, setPortfolio] = useState({ summary: {}, positions: [], allocation: {} });
     const [operations, setOperations] = useState([]);
+    const [dividends, setDividends] = useState([]);
 
     // Market Data State (Paginação e Busca)
     const [marketAssets, setMarketAssets] = useState([]);
@@ -60,9 +67,88 @@ export default function InvestmentsPage() {
 
     // Modal State
     const [showTradeModal, setShowTradeModal] = useState(false);
+
+    // Brokers State
+    const [brokers, setBrokers] = useState([]);
+    const availableBrokers = BROKERS_LIST; // Static data from JSON (like cardBanks)
+    const [selectedBrokerId, setSelectedBrokerId] = useState(null); // null = todas as corretoras
+    const [isLoadingBrokers, setIsLoadingBrokers] = useState(false);
+
+    // Broker Accounts (Contas com saldo)
+    const [brokerAccounts, setBrokerAccounts] = useState([]);
+    const [allBankAccounts, setAllBankAccounts] = useState([]); // Todas as contas para transferencia
+
+    // Transfer State
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [transferType, setTransferType] = useState('DEPOSIT'); // DEPOSIT | WITHDRAW
+    const [transferForm, setTransferForm] = useState({ amount: '', targetAccountId: '', date: new Date().toISOString().split('T')[0] });
+
+    // Form update: Add bankAccountId
     const [tradeForm, setTradeForm] = useState({
-        ticker: '', type: 'BUY', quantity: '', price: '', date: new Date().toISOString().split('T')[0]
+        ticker: '', type: 'BUY', quantity: '', price: '', date: new Date().toISOString().split('T')[0], brokerId: '', bankAccountId: ''
     });
+
+    // Expanded Position State (for spreadsheet-like details)
+    const [expandedPositionId, setExpandedPositionId] = useState(null);
+
+    // Pie Chart Filter State (filter positions by clicking legend)
+    const [selectedAssetType, setSelectedAssetType] = useState(null); // null = all types
+
+    // Netflix-style broker selector (show on entry if no broker selected)
+    const [showBrokerSelector, setShowBrokerSelector] = useState(true);
+
+    // URL Params (to skip Netflix selector when coming from /brokers)
+    const searchParams = useSearchParams();
+
+    // Economic Indicators (SELIC, CDI, IPCA)
+    const [economicIndicators, setEconomicIndicators] = useState({
+        selic: null,
+        cdi: null,
+        ipca: null
+    });
+
+    // Check URL params - redirect if no broker selected
+    useEffect(() => {
+        // Check if coming from /brokers page with ?broker= param
+        const brokerParam = searchParams.get('broker');
+        if (brokerParam) {
+            setSelectedBrokerId(brokerParam);
+            setShowBrokerSelector(false); // Skip Netflix selector
+        } else {
+            // Redirect to brokers page to select a broker first
+            router.push('/brokers');
+            return;
+        }
+
+        // Fetch economic indicators from BCB
+        const fetchIndicators = async () => {
+            try {
+                // Calculate date range (last 30 days) for CDI which requires date params
+                const today = new Date();
+                const thirtyDaysAgo = new Date(today);
+                thirtyDaysAgo.setDate(today.getDate() - 30);
+
+                const formatDate = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+                const dataInicial = formatDate(thirtyDaysAgo);
+                const dataFinal = formatDate(today);
+
+                const [selicRes, cdiRes, ipcaRes] = await Promise.all([
+                    fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.4189/dados?formato=json&dataInicial=${dataInicial}&dataFinal=${dataFinal}`).then(r => r.json()),
+                    fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${dataInicial}&dataFinal=${dataFinal}`).then(r => r.json()),
+                    fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json&dataInicial=${dataInicial}&dataFinal=${dataFinal}`).then(r => r.json())
+                ]);
+
+                setEconomicIndicators({
+                    selic: Array.isArray(selicRes) ? selicRes[selicRes.length - 1]?.valor : null,
+                    cdi: Array.isArray(cdiRes) ? cdiRes[cdiRes.length - 1]?.valor : null,
+                    ipca: Array.isArray(ipcaRes) ? ipcaRes[ipcaRes.length - 1]?.valor : null
+                });
+            } catch (err) {
+                console.error('Erro ao carregar indicadores:', err);
+            }
+        };
+        fetchIndicators();
+    }, [searchParams]);
 
     // Carga Inicial do Portfólio e Histórico
     useEffect(() => {
@@ -83,16 +169,71 @@ export default function InvestmentsPage() {
     const loadPortfolioData = async () => {
         setIsLoadingPortfolio(true);
         try {
-            const [pfData, opsData] = await Promise.all([
+            const [pfData, opsData, brokersData, dividendsData, bankAccountsData] = await Promise.all([
                 investmentsAPI.getPortfolio(),
-                investmentsAPI.list()
+                investmentsAPI.list(),
+                brokersAPI.list().catch(() => ({ data: [] })),
+                investmentsAPI.getDividends().catch(() => ({ data: [] })),
+                bankAccountsAPI.list().catch(() => ({ data: [] })),
             ]);
             setPortfolio(pfData.data || { summary: {}, positions: [], allocation: {} });
             setOperations(opsData.data || []);
+            setBrokers(brokersData.data || []);
+            setDividends(Array.isArray(dividendsData.data) ? dividendsData.data : dividendsData || []);
+
+            // Filter only Broker accounts for trading
+            const accounts = Array.isArray(bankAccountsData) ? bankAccountsData : (bankAccountsData.data || []);
+            setAllBankAccounts(accounts);
+            setBrokerAccounts(accounts.filter(acc => acc.type === 'CORRETORA' || acc.type === 'CARTEIRA'));
         } catch (error) {
             console.error("Erro ao carregar portfolio:", error);
         } finally {
             setIsLoadingPortfolio(false);
+        }
+    };
+
+    // Broker management handlers
+    const handleAddBroker = async (code) => {
+        try {
+            // Use frontend dictionary as source of truth
+            const template = BROKERS_LIST.find(b => b.code === code);
+            if (!template) {
+                alert('Corretora não encontrada no dicionário local');
+                return;
+            }
+
+            const response = await brokersAPI.create({
+                name: template.name,
+                code: template.code,
+                logoUrl: template.logoUrl,
+                color: template.color,
+                icon: template.icon,
+                type: template.type
+            });
+
+            if (response.data) {
+                setBrokers(prev => [...prev, response.data]);
+                // Refresh bank accounts to show the new auto-created account immediately
+                const bankResponse = await bankAccountsAPI.list();
+                if (bankResponse.data) {
+                    setAllBankAccounts(bankResponse.data);
+                    setBrokerAccounts(bankResponse.data.filter(acc => acc.type === 'CORRETORA' || acc.type === 'CARTEIRA'));
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao adicionar corretora:', error);
+            alert(error.response?.data?.error || 'Erro ao adicionar corretora');
+        }
+    };
+
+    const handleRemoveBroker = async (brokerId) => {
+        if (!confirm('Remover esta corretora?')) return;
+        try {
+            await brokersAPI.delete(brokerId);
+            setBrokers(prev => prev.filter(b => b.id !== brokerId));
+            if (selectedBrokerId === brokerId) setSelectedBrokerId(null);
+        } catch (error) {
+            console.error('Erro ao remover corretora:', error);
         }
     };
 
@@ -142,26 +283,44 @@ export default function InvestmentsPage() {
             type: 'BUY',
             quantity: '',
             price: asset?.price ? asset.price.toString() : '',
-            date: new Date().toISOString().split('T')[0]
+            date: new Date().toISOString().split('T')[0],
+            brokerId: selectedBrokerId || '',
+            bankAccountId: currentBrokerAccount?.id || ''
         });
         setShowTradeModal(true);
     };
 
     const handleTradeSubmit = async () => {
         try {
+            // Validate that bankAccountId is present for balance check
+            if (!tradeForm.bankAccountId) {
+                alert('É necessário ter uma conta de corretora vinculada para operar.');
+                return;
+            }
+
             // Mapeia 'type' do form para 'operationType' esperado pela API
             await investmentsAPI.registerOperation({
                 ticker: tradeForm.ticker.toUpperCase(),
                 operationType: tradeForm.type, // BUY ou SELL
                 quantity: parseFloat(tradeForm.quantity),
                 price: parseFloat(tradeForm.price),
-                date: tradeForm.date
+                date: tradeForm.date,
+                brokerId: tradeForm.brokerId || null,
+                bankAccountId: tradeForm.bankAccountId // For balance validation
             });
             setShowTradeModal(false);
             loadPortfolioData(); // Atualiza a carteira
             alert('Operação registrada com sucesso!');
         } catch (error) {
-            alert('Erro ao registrar operação: ' + (error?.error || error?.message || 'Erro desconhecido'));
+            // Handle specific error codes
+            const errorCode = error?.code || error?.response?.data?.code;
+            const errorMsg = error?.error || error?.response?.data?.message || error?.message || 'Erro desconhecido';
+
+            if (errorCode === 'INSUFFICIENT_FUNDS') {
+                alert('Saldo insuficiente na conta da corretora. ' + errorMsg);
+            } else {
+                alert('Erro ao registrar operação: ' + errorMsg);
+            }
         }
     };
 
@@ -186,6 +345,137 @@ export default function InvestmentsPage() {
         }));
     }, [portfolio.allocation]);
 
+    // Filter groups by selected asset type (from pie chart click)
+    const filteredGroupedPortfolio = useMemo(() => {
+        if (!selectedAssetType) return groupedPortfolio;
+        return { [selectedAssetType]: groupedPortfolio[selectedAssetType] || [] };
+    }, [groupedPortfolio, selectedAssetType]);
+
+    // Derived State: Current Broker Account (linked)
+    const currentBrokerAccount = useMemo(() => {
+        if (!selectedBrokerId || !brokerAccounts.length) return null;
+        const broker = brokers.find(b => b.id === selectedBrokerId);
+        if (!broker) return null;
+
+        const normalize = (str) => str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
+        const stopWords = ['banco', 'corretora', 'conta', 'investimentos', 's.a.', 'do', 'de', 'da', 'financeira', 'cvm', 'distribuidora'];
+
+        const getTokens = (str) => {
+            return normalize(str)
+                .split(/[\s-]+/)
+                .filter(t => t.length > 2 && !stopWords.includes(t));
+        };
+
+        const brokerTokens = getTokens(broker.name);
+
+        // Match by token overlap or if manual link (future)
+        return brokerAccounts.find(acc => {
+            const accTokens = getTokens(acc.name || acc.bankName);
+            // Check if any significant token is shared
+            return accTokens.some(at => brokerTokens.some(bt => bt === at || bt.includes(at) || at.includes(bt)));
+        });
+    }, [selectedBrokerId, brokers, brokerAccounts]);
+
+    // Calculate Broker Total Assets
+    const brokerTotalAssets = useMemo(() => {
+        if (!selectedBrokerId) return 0;
+        return portfolio.positions
+            ? portfolio.positions
+                .filter(pos => pos.brokerId === selectedBrokerId)
+                .reduce((sum, pos) => sum + (pos.currentBalance || 0), 0)
+            : 0;
+    }, [selectedBrokerId, portfolio]);
+
+    const handleTransfer = async () => {
+        try {
+            if (!currentBrokerAccount) return alert('Nenhuma conta vinculada a esta corretora.');
+            if (!transferForm.targetAccountId) return alert('Selecione a conta de origem/destino.');
+
+            const payload = {
+                amount: parseFloat(transferForm.amount),
+                date: transferForm.date,
+                description: transferType === 'DEPOSIT' ? `Aporte para ${currentBrokerAccount.name}` : `Resgate de ${currentBrokerAccount.name}`,
+                fromBankAccountId: transferType === 'DEPOSIT' ? transferForm.targetAccountId : currentBrokerAccount.id,
+                toBankAccountId: transferType === 'DEPOSIT' ? currentBrokerAccount.id : transferForm.targetAccountId
+            };
+
+            await transactionsAPI.internalTransfer(payload);
+            setShowTransferModal(false);
+            loadPortfolioData(); // Refresh balances
+            alert('Transferência realizada com sucesso!');
+        } catch (error) {
+            console.error(error);
+            alert('Erro na transferência: ' + (error?.message || 'Erro desconhecido'));
+        }
+    };
+
+    const renderBrokerHeader = () => {
+        const broker = brokers.find(b => b.id === selectedBrokerId);
+        if (!broker) return null;
+
+        // Merge with static data to ensure latest logo/colors from JSON
+        const staticBroker = BROKERS_LIST.find(b => b.code === broker.code) || {};
+        const displayLogo = staticBroker.logoUrl || broker.logoUrl;
+        const displayColor = staticBroker.color || broker.color;
+
+        return (
+            <div className={styles.brokerDashboardHeader}>
+                <div className={styles.brokerHeaderTop}>
+                    <div className={styles.brokerInfo}>
+                        {displayLogo ? <img src={displayLogo} className={styles.brokerLogoLarge} /> : <div className={styles.brokerIconLarge} style={{ background: displayColor }}>{broker.name[0]}</div>}
+                        <div>
+                            <h1>{broker.name}</h1>
+                            <span className={styles.brokerStatus}><span className={styles.dot}></span> Conectado</span>
+                        </div>
+                    </div>
+                    <button onClick={() => setSelectedBrokerId(null)} className={styles.ghostButton}>
+                        Trocar Corretora
+                    </button>
+                </div>
+
+                <div className={styles.brokerStats}>
+                    <div className={styles.statCard}>
+                        <span>Saldo em Conta</span>
+                        <strong className={styles.highlightMoney}>
+                            {formatCurrency(currentBrokerAccount?.balance || 0)}
+                        </strong>
+                        {!currentBrokerAccount && <small style={{ color: '#ef4444' }}>(Conta não vinculada)</small>}
+                    </div>
+                    <div className={styles.statCard}>
+                        <span>Total Investido</span>
+                        <strong>{formatCurrency(brokerTotalAssets)}</strong>
+                    </div>
+                    <div className={styles.statCard}>
+                        <span>Patrimônio Total</span>
+                        <strong>{formatCurrency((currentBrokerAccount?.balance || 0) + brokerTotalAssets)}</strong>
+                    </div>
+                </div>
+
+                <div className={styles.brokerActionsRow}>
+                    <Button
+                        onClick={() => { setTransferType('DEPOSIT'); setShowTransferModal(true); }}
+                        disabled={!currentBrokerAccount}
+                        leftIcon={<FiArrowDown />}
+                        variant="secondary"
+                    >
+                        Depositar
+                    </Button>
+                    <Button
+                        onClick={() => { setTransferType('WITHDRAW'); setShowTransferModal(true); }}
+                        disabled={!currentBrokerAccount}
+                        leftIcon={<FiArrowUp />}
+                        variant="secondary"
+                    >
+                        Sacar
+                    </Button>
+                    <Button onClick={() => openTradeModal()} leftIcon={<FiTrendingUp />}>
+                        Investir
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className={styles.page}>
             <Header />
@@ -193,25 +483,35 @@ export default function InvestmentsPage() {
             <main className={styles.main}>
                 <div className={styles.container}>
 
-                    {/* --- HEADER --- */}
-                    <div className={styles.header}>
-                        <div>
-                            <h1 className={styles.title}>Home Broker</h1>
-                            <p className={styles.subtitle}>Gestão de Patrimônio & Trading</p>
+                    {/* --- HEADER OR DASHBOARD --- */}
+                    {selectedBrokerId ? renderBrokerHeader() : (
+                        <div className={styles.header}>
+                            <div>
+                                <h1 className={styles.title}>Home Broker</h1>
+                                <p className={styles.subtitle}>Todas as Corretoras</p>
+                            </div>
+                            <div className={styles.headerActions}>
+                                <Link href="/brokers">
+                                    <Button variant="ghost" leftIcon={<FiBriefcase />}>
+                                        Corretoras
+                                    </Button>
+                                </Link>
+                                <Button
+                                    variant="secondary"
+                                    leftIcon={<FiRefreshCw className={isSyncing ? styles.spin : ''} />}
+                                    onClick={handleSync}
+                                >
+                                    Atualizar
+                                </Button>
+                                <Button leftIcon={<FiPlus />} onClick={() => openTradeModal()}>
+                                    Nova Ordem
+                                </Button>
+                            </div>
                         </div>
-                        <div className={styles.headerActions}>
-                            <Button
-                                variant="secondary"
-                                leftIcon={<FiRefreshCw className={isSyncing ? styles.spin : ''} />}
-                                onClick={handleSync}
-                            >
-                                Atualizar
-                            </Button>
-                            <Button leftIcon={<FiPlus />} onClick={() => openTradeModal()}>
-                                Nova Ordem
-                            </Button>
-                        </div>
-                    </div>
+                    )}
+
+                    {/* --- ECONOMIC TICKER (HERO SECTION) --- */}
+                    <EconomicTicker />
 
                     {/* --- RENTABILITY CHART --- */}
                     <RentabilityChart />
@@ -253,32 +553,56 @@ export default function InvestmentsPage() {
                         </Card>
                     </div>
 
-                    {/* --- TABS --- */}
-                    <div className={styles.tabsContainer}>
+                    {/* === INVESTOR SUMMARY - MÉTRICAS DO INVESTIDOR === */}
+                    {/* Dados vêm da API - nenhum cálculo no frontend */}
+                    {/* Renderiza quando há posições, mesmo sem dados completos */}
+                    {portfolio.positions?.length > 0 && (
+                        <InvestorSummary
+                            summary={portfolio.summary}
+                            dividends={portfolio.dividends}
+                            concentration={portfolio.concentration}
+                            rankings={portfolio.rankings}
+                            indicators={portfolio.indicators}
+                            portfolioMetrics={portfolio.portfolioMetrics}
+                            formatCurrency={formatCurrency}
+                        />
+                    )}
+
+
+                    {/* --- MODERN TABS --- */}
+                    <div className={styles.modernTabsContainer}>
                         <button
-                            className={`${styles.tab} ${activeTab === 'portfolio' ? styles.activeTab : ''}`}
+                            className={`${styles.modernTab} ${activeTab === 'portfolio' ? styles.modernTabActive : ''}`}
                             onClick={() => setActiveTab('portfolio')}
                         >
-                            <FiPieChart /> Carteira
+                            <FiPieChart />
+                            <span>Carteira</span>
                         </button>
                         <button
-                            className={`${styles.tab} ${activeTab === 'market' ? styles.activeTab : ''}`}
+                            className={`${styles.modernTab} ${activeTab === 'market' ? styles.modernTabActive : ''}`}
                             onClick={() => setActiveTab('market')}
                         >
-                            <FiTrendingUp /> Mercado
+                            <FiTrendingUp />
+                            <span>Mercado</span>
                         </button>
                         <button
-                            className={`${styles.tab} ${activeTab === 'operations' ? styles.activeTab : ''}`}
+                            className={`${styles.modernTab} ${activeTab === 'operations' ? styles.modernTabActive : ''}`}
                             onClick={() => setActiveTab('operations')}
                         >
-                            <FiList /> Histórico
+                            <FiClock />
+                            <span>Histórico</span>
                         </button>
                         <button
-                            className={`${styles.tab} ${activeTab === 'dividends' ? styles.activeTab : ''}`}
+                            className={`${styles.modernTab} ${activeTab === 'dividends' ? styles.modernTabActive : ''}`}
                             onClick={() => setActiveTab('dividends')}
                         >
-                            <FiDollarSign /> Proventos
+                            <FiDollarSign />
+                            <span>Proventos</span>
                         </button>
+                        <Link href="/brokers" className={styles.modernTab}>
+                            <FiBriefcase />
+                            <span>Corretoras</span>
+                        </Link>
                     </div>
 
                     {/* --- CONTENT AREA --- */}
@@ -314,7 +638,7 @@ export default function InvestmentsPage() {
                                                             </Pie>
                                                             <RechartsTooltip
                                                                 formatter={(value) => `${value.toFixed(1)}%`}
-                                                                contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: '8px' }}
+                                                                contentStyle={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '8px', color: 'var(--text-primary)' }}
                                                             />
                                                         </PieChart>
                                                     </ResponsiveContainer>
@@ -330,97 +654,46 @@ export default function InvestmentsPage() {
                                                 </div>
                                             </div>
                                             <div className={styles.chartLegend}>
+                                                {selectedAssetType && (
+                                                    <button
+                                                        className={styles.clearFilterBtn}
+                                                        onClick={() => setSelectedAssetType(null)}
+                                                    >
+                                                        Limpar filtro
+                                                    </button>
+                                                )}
                                                 {allocationChartData.map(d => (
-                                                    <div key={d.name} className={styles.legendItem}>
+                                                    <div
+                                                        key={d.name}
+                                                        className={`${styles.legendItem} ${selectedAssetType === d.name ? styles.legendActive : ''}`}
+                                                        onClick={() => setSelectedAssetType(selectedAssetType === d.name ? null : d.name)}
+                                                    >
                                                         <span className={styles.legendDot} style={{ background: d.color }} />
                                                         <span>{d.name}</span>
-                                                        <strong>{d.value}%</strong>
+                                                        <strong>{d.value.toFixed(1)}%</strong>
                                                     </div>
                                                 ))}
                                             </div>
                                         </Card>
                                     </div>
 
-                                    {/* Right: Asset List Grouped */}
+                                    {/* Right: Professional Portfolio Table with Accordion */}
                                     <div className={styles.positionsSection}>
-                                        {/* Portfolio Filter Tabs */}
-                                        <div className={styles.portfolioFilterTabs}>
-                                            <button
-                                                className={`${styles.filterTab} ${portfolioFilter === 'classe' ? styles.filterTabActive : ''}`}
-                                                onClick={() => setPortfolioFilter('classe')}
-                                            >
-                                                Classe
-                                            </button>
-                                            <button
-                                                className={`${styles.filterTab} ${portfolioFilter === 'produto' ? styles.filterTabActive : ''}`}
-                                                onClick={() => setPortfolioFilter('produto')}
-                                            >
-                                                Produto
-                                            </button>
-                                            <button
-                                                className={`${styles.filterTab} ${portfolioFilter === 'ativos' ? styles.filterTabActive : ''}`}
-                                                onClick={() => setPortfolioFilter('ativos')}
-                                            >
-                                                Ativos
-                                            </button>
-                                        </div>
-                                        {Object.entries(groupedPortfolio).length > 0 ? Object.entries(groupedPortfolio).map(([type, assets]) => (
-                                            <div key={type} className={styles.assetGroup}>
-                                                <div className={styles.groupHeader}>
-                                                    <h3 style={{ color: ASSET_COLORS[type] }}>{type}</h3>
-                                                    <span className={styles.groupTotal}>
-                                                        {formatCurrency(assets.reduce((sum, a) => sum + a.currentBalance, 0))}
-                                                    </span>
-                                                </div>
-                                                <div className={styles.tableWrapper}>
-                                                    <table className={styles.table}>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Ativo</th>
-                                                                <th>Qtd</th>
-                                                                <th>Preço Médio</th>
-                                                                <th>Preço Atual</th>
-                                                                <th>Saldo</th>
-                                                                <th>Res.</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {assets.map(asset => (
-                                                                <tr key={asset.ticker || asset.id}>
-                                                                    <td>
-                                                                        <div className={styles.assetCell}>
-                                                                            {asset.logoUrl ? (
-                                                                                <img src={asset.logoUrl} alt="" className={styles.assetLogo} />
-                                                                            ) : (
-                                                                                <div className={styles.assetLogoPlaceholder}>{asset.ticker?.[0]}</div>
-                                                                            )}
-                                                                            <div>
-                                                                                <strong>{asset.ticker}</strong>
-                                                                                <span>{asset.name?.substring(0, 20)}...</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>{asset.quantity}</td>
-                                                                    <td>{formatCurrency(asset.averagePrice)}</td>
-                                                                    <td>{formatCurrency(asset.currentPrice)}</td>
-                                                                    <td>{formatCurrency(asset.currentBalance)}</td>
-                                                                    <td>
-                                                                        <span className={`${styles.badge} ${asset.profit >= 0 ? styles.profit : styles.loss}`}>
-                                                                            {asset.profitPercent.toFixed(2)}%
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                        {isLoadingPortfolio ? (
+                                            <div className={styles.loadingState}>
+                                                <FiLoader className={styles.spin} />
+                                                <span>Carregando carteira...</span>
                                             </div>
-                                        )) : (
-                                            <div className={styles.emptyState}>
-                                                <FiBriefcase />
-                                                <p>Sua carteira está vazia.</p>
-                                                <Button size="sm" onClick={() => setActiveTab('market')}>Ir ao Mercado</Button>
-                                            </div>
+                                        ) : (
+                                            <PortfolioTable
+                                                positions={selectedAssetType
+                                                    ? portfolio.positions?.filter(p => p.type === selectedAssetType)
+                                                    : portfolio.positions || []
+                                                }
+                                                dividends={dividends}
+                                                formatCurrency={formatCurrency}
+                                                onTradeClick={(asset) => openTradeModal(asset)}
+                                            />
                                         )}
                                     </div>
                                 </motion.div>
@@ -612,6 +885,85 @@ export default function InvestmentsPage() {
                                     <DividendsTab />
                                 </motion.div>
                             )}
+
+                            {/* --- TAB: BROKERS (CORRETORAS) --- */}
+                            {activeTab === 'brokers' && (
+                                <motion.div
+                                    key="brokers"
+                                    variants={TAB_VARIANTS}
+                                    initial="hidden" animate="visible" exit="exit"
+                                    className={styles.brokersSection}
+                                >
+                                    <h3 className={styles.sectionTitle}>Minhas Corretoras</h3>
+
+                                    {/* Lista de Corretoras do Usuário */}
+                                    <div className={styles.brokersList}>
+                                        {brokers.length === 0 ? (
+                                            <div className={styles.emptyState}>
+                                                <FiBriefcase />
+                                                <p>Nenhuma corretora cadastrada.</p>
+                                            </div>
+                                        ) : (
+                                            brokers.map(broker => (
+                                                <div
+                                                    key={broker.id}
+                                                    className={`${styles.brokerCard} ${selectedBrokerId === broker.id ? styles.brokerCardSelected : ''}`}
+                                                    onClick={() => setSelectedBrokerId(selectedBrokerId === broker.id ? null : broker.id)}
+                                                >
+                                                    <div className={styles.brokerCardInfo}>
+                                                        {broker.logoUrl ? (
+                                                            <img src={broker.logoUrl} alt={broker.name} className={styles.brokerCardLogo} />
+                                                        ) : (
+                                                            <div className={styles.brokerCardIconWrapper} style={{ background: broker.color }}>
+                                                                <FiTrendingUp />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <strong>{broker.name}</strong>
+                                                            {broker.investmentFocus && <span>{broker.investmentFocus}</span>}
+                                                            {broker.isSystemDefault && <span className={styles.defaultBadge}>Padrão</span>}
+                                                        </div>
+                                                    </div>
+                                                    {!broker.isSystemDefault && (
+                                                        <button
+                                                            className={styles.brokerRemoveBtn}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveBroker(broker.id);
+                                                            }}
+                                                        >
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    {/* Adicionar Nova Corretora */}
+                                    <h4 className={styles.subSectionTitle}>Adicionar Corretora</h4>
+                                    <div className={styles.addBrokerGrid}>
+                                        {availableBrokers
+                                            .filter(ab => !brokers.find(b => b.code === ab.code))
+                                            .map(broker => (
+                                                <button
+                                                    key={broker.code}
+                                                    className={styles.addBrokerOption}
+                                                    onClick={() => handleAddBroker(broker.code)}
+                                                >
+                                                    {broker.logoUrl ? (
+                                                        <img src={broker.logoUrl} alt={broker.name} />
+                                                    ) : (
+                                                        <FiTrendingUp style={{ color: broker.color }} />
+                                                    )}
+                                                    <span>{broker.name}</span>
+                                                    <FiPlus className={styles.addIcon} />
+                                                </button>
+                                            ))
+                                        }
+                                    </div>
+                                </motion.div>
+                            )}
                         </AnimatePresence>
                     </div>
                 </div>
@@ -673,6 +1025,51 @@ export default function InvestmentsPage() {
                         onChange={(e) => setTradeForm(prev => ({ ...prev, date: e.target.value }))}
                     />
 
+                    {/* Seleção de Corretora */}
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Corretora</label>
+                        <select
+                            className={styles.formSelect}
+                            value={tradeForm.brokerId}
+                            onChange={(e) => setTradeForm(prev => ({ ...prev, brokerId: e.target.value }))}
+                        >
+                            <option value="">Corretora padrão</option>
+                            {brokers.map(broker => (
+                                <option key={broker.id} value={broker.id}>
+                                    {broker.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Seleção de Conta de Liquidação (Saldo) */}
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Conta de Liquidação (Saldo)</label>
+                        <select
+                            className={styles.formSelect}
+                            value={tradeForm.bankAccountId}
+                            onChange={(e) => setTradeForm(prev => ({ ...prev, bankAccountId: e.target.value }))}
+                            required
+                        >
+                            <option value="">Selecione a conta...</option>
+                            {brokerAccounts.map(acc => (
+                                <option key={acc.id} value={acc.id}>
+                                    {acc.name} - Saldo: {formatCurrency(acc.balance)}
+                                </option>
+                            ))}
+                        </select>
+                        {tradeForm.bankAccountId && brokerAccounts.find(a => a.id === tradeForm.bankAccountId) && (
+                            <div className={styles.inputHint} style={{ marginTop: '4px', color: '#10b981' }}>
+                                Disponível: {formatCurrency(brokerAccounts.find(a => a.id === tradeForm.bankAccountId).balance)}
+                            </div>
+                        )}
+                        {tradeForm.type === 'BUY' && tradeForm.bankAccountId && brokerAccounts.find(a => a.id === tradeForm.bankAccountId) && (parseFloat(brokerAccounts.find(a => a.id === tradeForm.bankAccountId).balance) < (parseFloat(tradeForm.quantity || 0) * parseFloat(tradeForm.price || 0))) && (
+                            <div className={styles.inputHint} style={{ marginTop: '4px', color: '#ef4444' }}>
+                                Saldo Insuficiente!
+                            </div>
+                        )}
+                    </div>
+
                     <div className={styles.tradeTotal}>
                         <span>Total Estimado</span>
                         <strong>{formatCurrency((parseFloat(tradeForm.quantity) || 0) * (parseFloat(tradeForm.price) || 0))}</strong>
@@ -685,6 +1082,61 @@ export default function InvestmentsPage() {
                             variant={tradeForm.type === 'BUY' ? 'primary' : 'danger'}
                         >
                             Confirmar {tradeForm.type === 'BUY' ? 'Compra' : 'Venda'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Transfer Modal */}
+            <Modal
+                isOpen={showTransferModal}
+                onClose={() => setShowTransferModal(false)}
+                title={transferType === 'DEPOSIT' ? "Depositar na Corretora" : "Sacar da Corretora"}
+                size="sm"
+            >
+                <div className={styles.tradeForm}>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+                        {transferType === 'DEPOSIT' ? `Transferir da sua conta bancária para ${currentBrokerAccount?.name}` : `Transferir de ${currentBrokerAccount?.name} para sua conta bancária`}
+                    </p>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>{transferType === 'DEPOSIT' ? 'Conta de Origem' : 'Conta de Destino'}</label>
+                        <select
+                            className={styles.formSelect}
+                            value={transferForm.targetAccountId}
+                            onChange={(e) => setTransferForm(prev => ({ ...prev, targetAccountId: e.target.value }))}
+                        >
+                            <option value="">Selecione a conta...</option>
+                            {allBankAccounts
+                                .filter(a => a.id !== currentBrokerAccount?.id)
+                                .map(acc => (
+                                    <option key={acc.id} value={acc.id}>
+                                        {acc.name} ({acc.bankName}) - Saldo: {formatCurrency(acc.balance)}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+
+                    <Input
+                        label="Valor"
+                        type="number"
+                        placeholder="0,00"
+                        leftIcon={<FiDollarSign />}
+                        value={transferForm.amount}
+                        onChange={(e) => setTransferForm(prev => ({ ...prev, amount: e.target.value }))}
+                    />
+
+                    <Input
+                        label="Data"
+                        type="date"
+                        value={transferForm.date}
+                        onChange={(e) => setTransferForm(prev => ({ ...prev, date: e.target.value }))}
+                    />
+
+                    <div className={styles.modalActions}>
+                        <Button variant="secondary" onClick={() => setShowTransferModal(false)}>Cancelar</Button>
+                        <Button onClick={handleTransfer} variant="primary">
+                            Confirmar {transferType === 'DEPOSIT' ? 'Depósito' : 'Saque'}
                         </Button>
                     </div>
                 </div>

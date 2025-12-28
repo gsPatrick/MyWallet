@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import CategoryModal from '@/components/modals/CategoryModal';
 import categoriesService from '@/services/categoriesService';
 import subscriptionData from '@/data/subscriptionIcons.json';
+import { detectBrand } from '@/utils/brandDetection';
 import styles from './SubscriptionModal.module.css';
 
 const defaultForm = {
@@ -19,6 +20,7 @@ const defaultForm = {
     icon: '',
     color: '#6366F1',
     cardId: '',
+    manuallySelected: false, // Flag to track if user manually selected icon from gallery
 };
 
 export default function SubscriptionModal({
@@ -60,6 +62,27 @@ export default function SubscriptionModal({
         };
         loadCategories();
     }, []);
+
+    // 🎯 Real-time Brand Detection - Detects brand as user types
+    useEffect(() => {
+        if (!form.name || form.name.length < 3) return;
+
+        // Only auto-detect if user didn't manually select from gallery
+        if (!form.manuallySelected) {
+            const detected = detectBrand(form.name);
+            if (detected && detected.icon) {
+                // Find in subscriptions library for additional data
+                const subData = subscriptionsLibrary.find(s => s.key === detected.brandKey);
+                setForm(prev => ({
+                    ...prev,
+                    icon: detected.icon,
+                    color: subData?.color || detected.color || prev.color,
+                    category: subData?.category || prev.category,
+                    amount: subData?.defaultAmount?.toString() || prev.amount,
+                }));
+            }
+        }
+    }, [form.name, form.manuallySelected, subscriptionsLibrary]);
 
     const defaultCategories = subscriptionData.categories || [];
 
@@ -103,6 +126,7 @@ export default function SubscriptionModal({
             color: sub.color,
             category: sub.category,
             amount: sub.defaultAmount?.toString() || prev.amount,
+            manuallySelected: true, // Prevent auto-detection from overriding
         }));
         setShowIconGallery(false);
     };

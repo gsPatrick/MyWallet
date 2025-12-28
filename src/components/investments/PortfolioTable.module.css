@@ -1,0 +1,278 @@
+/* ============================================
+   PORTFOLIO TABLE - USES CSS VARIABLES
+   ============================================ */
+
+.tableContainer {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.table th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.table th.sortable {
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.table th.sortable:hover {
+    color: var(--accent-primary);
+}
+
+.sortIndicator {
+    margin-left: 4px;
+    color: var(--accent-primary);
+}
+
+.expandCol {
+    width: 40px;
+}
+
+/* Row Styles */
+.row {
+    border-bottom: 1px solid var(--border-light);
+    transition: background var(--transition-fast);
+}
+
+.rowWrapper {
+    padding: 0;
+}
+
+.mainRow {
+    display: grid;
+    grid-template-columns: 40px 2fr 1fr 1fr 1fr 1.2fr 1.5fr 0.8fr;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.mainRow:hover {
+    background: var(--accent-primary-light);
+}
+
+.rowExpanded .mainRow {
+    background: var(--accent-primary-light);
+    border-bottom: 1px solid var(--accent-primary);
+}
+
+.expandIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.rowExpanded .expandIcon {
+    color: var(--accent-primary);
+}
+
+/* Asset Cell */
+.assetCell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.assetLogo {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    background: var(--bg-tertiary);
+}
+
+.assetLogoPlaceholder {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--text-inverse);
+}
+
+.assetInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.assetInfo strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.assetInfo span {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+/* Cell Styles */
+.cell {
+    display: flex;
+    align-items: center;
+}
+
+.monoValue {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    letter-spacing: -0.01em;
+}
+
+.monoValue.bold {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Profit Cell */
+.profitCell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.profitValue {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.profitPercent {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.positive {
+    color: var(--accent-success);
+}
+
+.negative {
+    color: var(--accent-danger);
+}
+
+/* DY Badge */
+.dyBadge {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    padding: 4px 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-xs);
+}
+
+.dyBadge.hasDY {
+    color: var(--accent-success);
+    background: var(--accent-success-light);
+}
+
+/* Expanded Content */
+.expandedContent {
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-light);
+}
+
+/* Empty State */
+.emptyState {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.95rem;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+    .tableContainer {
+        border-radius: var(--radius-md);
+    }
+
+    .table {
+        display: block;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody {
+        display: block;
+    }
+
+    .row {
+        display: block;
+        margin-bottom: 12px;
+        border-radius: var(--radius-md);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-light);
+    }
+
+    .rowWrapper {
+        display: block;
+    }
+
+    .mainRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .expandIcon {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+    }
+
+    .assetCell {
+        flex-basis: 100%;
+        position: relative;
+        padding-right: 30px;
+    }
+
+    .cell {
+        flex-basis: calc(33.33% - 8px);
+    }
+
+    .cell::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.65rem;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 4px;
+    }
+
+    .profitCell {
+        flex-direction: row;
+        gap: 6px;
+        align-items: center;
+    }
+}

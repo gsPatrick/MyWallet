@@ -16,6 +16,7 @@ export default function CreditCard({
     color = '#1a1a2e',
     holderName = 'NOME DO TITULAR',
     validThru = '12/28',
+    icon = null, // New prop for bank logo
     onClick,
 }) {
     const usedAmount = creditLimit - availableLimit - blockedLimit;
@@ -85,7 +86,20 @@ export default function CreditCard({
 
                 {/* Header */}
                 <div className={styles.header}>
-                    <span className={styles.bankName}>{name}</span>
+                    {icon && (icon.startsWith('http') || icon.startsWith('/')) ? (
+                        <img
+                            src={icon}
+                            alt={name}
+                            className={styles.bankLogoImg}
+                            style={{
+                                height: '24px',
+                                objectFit: 'contain',
+                                filter: textColor === 'white' ? 'brightness(0) invert(1)' : 'none'
+                            }}
+                        />
+                    ) : (
+                        <span className={styles.bankName}>{name}</span>
+                    )}
                     <FiWifi className={styles.contactlessIcon} />
                 </div>
 

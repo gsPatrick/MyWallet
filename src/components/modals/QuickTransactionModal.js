@@ -5,13 +5,16 @@ import {
     FiTrendingUp, FiTrendingDown, FiDollarSign, FiRepeat, FiLayers,
     FiPlus, FiX, FiClock, FiCheck, FiCreditCard
 } from 'react-icons/fi';
-import Modal from '@/components/ui/Modal';
+import Modal, { AlertModal } from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import CategoryModal from '@/components/modals/CategoryModal';
+import BankAccountModal from '@/components/modals/BankAccountModal';
 import { transactionsAPI, cardsAPI, budgetsAPI } from '@/services/api';
 import categoriesService from '@/services/categoriesService';
 import bankAccountService from '@/services/bankAccountService';
 import subscriptionIcons from '@/data/subscriptionIcons.json';
+import { detectBrand } from '@/utils/brandDetection';
 import styles from './QuickTransactionModal.module.css';
 
 const formatCurrency = (value) => {
@@ -25,8 +28,9 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
     // ---- States copied from transactions/page.js ----
     const [transactionMode, setTransactionMode] = useState('single'); // single, recurring, installment
     const [showIconPicker, setShowIconPicker] = useState(false);
-    // Note: CategoryModal and BankAccountModal states could be added here if we want to allow creation inside quick modal.
-    // For now, let's stick to selection to keep it manageable, or add simple redirects/alerts.
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [showBankModal, setShowBankModal] = useState(false);
+    const [feedback, setFeedback] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
 
     // Data Lists
     const [categoryList, setCategoryList] = useState([]);
@@ -43,14 +47,17 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
         date: new Date().toISOString().split('T')[0],
         status: 'COMPLETED',
         paymentMethod: 'MONEY',
-        source: 'MANUAL', // MANUAL, IMPORT, CARD
+        source: 'OTHER', // MANUAL, IMPORT, CARD
         sourceType: 'Débito/Dinheiro', // Débito, Crédito, Dinheiro
         bankAccountId: '',
         cardId: '',
         installments: '',
         frequency: 'MONTHLY',
         recurringDay: '',
-        imageUrl: ''
+        imageUrl: '',
+        brandKey: '',
+        autoDetectedBrand: false, // Flag to track if icon was auto-detected
+        manuallySelected: false // Flag to track if user manually selected icon from picker
     });
 
     // Load Data on Open
@@ -60,6 +67,48 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             resetForm();
         }
     }, [isOpen]);
+
+    // 🎯 Real-time Brand Detection
+    // Detecta marca enquanto usuário digita e auto-preenche ícone
+    // Atualiza em tempo real conforme o texto muda (Star → Starbucks)
+    useEffect(() => {
+        if (!newTransaction.description || newTransaction.description.length < 3) {
+            // Se texto muito curto, limpa se foi auto-detectado
+            if (newTransaction.autoDetectedBrand && !newTransaction.manuallySelected) {
+                setNewTransaction(prev => ({
+                    ...prev,
+                    imageUrl: '',
+                    brandKey: '',
+                    autoDetectedBrand: false
+                }));
+            }
+            return;
+        }
+
+        // Só auto-detecta se o usuário NÃO escolheu manualmente no picker
+        if (!newTransaction.manuallySelected) {
+            const detected = detectBrand(newTransaction.description);
+            if (detected && detected.icon) {
+                // Só atualiza se a marca mudou
+                if (detected.brandKey !== newTransaction.brandKey) {
+                    setNewTransaction(prev => ({
+                        ...prev,
+                        imageUrl: detected.icon,
+                        brandKey: detected.brandKey,
+                        autoDetectedBrand: true
+                    }));
+                }
+            } else if (newTransaction.autoDetectedBrand) {
+                // Nenhuma marca detectada, limpa se estava com auto-detect
+                setNewTransaction(prev => ({
+                    ...prev,
+                    imageUrl: '',
+                    brandKey: '',
+                    autoDetectedBrand: false
+                }));
+            }
+        }
+    }, [newTransaction.description]);
 
     const loadData = async () => {
         try {
@@ -97,14 +146,16 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             date: new Date().toISOString().split('T')[0],
             status: 'COMPLETED',
             paymentMethod: 'MONEY',
-            source: 'MANUAL', // MANUAL, IMPORT, CARD
+            source: 'OTHER', // MANUAL, IMPORT, CARD
             sourceType: 'Débito/Dinheiro',
             bankAccountId: bankAccounts.find(a => a.isDefault)?.id || bankAccounts[0]?.id || '',
             cardId: '',
             installments: '',
             frequency: 'MONTHLY',
             recurringDay: '',
-            imageUrl: ''
+            imageUrl: '',
+            brandKey: '',
+            autoDetectedBrand: false
         });
         setTransactionMode('single');
     };
@@ -119,7 +170,13 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
         try {
             // Basic Validation
             if (!newTransaction.description || !newTransaction.amount || !newTransaction.categoryId) {
-                alert('Preencha os campos obrigatórios: Descrição, Valor e Categoria');
+                setFeedback({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Campos Obrigatórios',
+                    message: 'Preencha os campos obrigatórios: Descrição, Valor e Categoria',
+                    onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+                });
                 return;
             }
 
@@ -137,7 +194,13 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             } else if (transactionMode === 'installment') {
                 payload.isInstallment = true;
                 if (!payload.installments) {
-                    alert('Informe o número de parcelas');
+                    setFeedback({
+                        isOpen: true,
+                        type: 'error',
+                        title: 'Parcelamento',
+                        message: 'Informe o número de parcelas',
+                        onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+                    });
                     return;
                 }
             }
@@ -151,13 +214,28 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             // Call API
             await transactionsAPI.create(payload, bypassBudget); // Pass bypassBudget if supported
 
-            onSuccess?.();
-            onClose();
-            alert('Transação criada com sucesso!');
+            // Show Success Modal
+            setFeedback({
+                isOpen: true,
+                type: 'success',
+                title: 'Transação Criada',
+                message: 'Sua transação foi registrada com sucesso!',
+                variant: 'success',
+                onConfirm: () => {
+                    setFeedback(prev => ({ ...prev, isOpen: false }));
+                    onSuccess?.();
+                    onClose();
+                }
+            });
+
         } catch (error) {
             console.error('Erro ao salvar transação:', error);
             if (error.response?.data?.code === 'BUDGET_EXCEEDED') {
                 // Simplified Budget Exceeded Handling for Quick Modal
+                // We keep using window.confirm here for quick blocking logic OR we could upgrade this too
+                // For now, let's keep the user request focused on Success/Error feedback
+                // But user said "modal de erro especifico"
+
                 const confirm = window.confirm(
                     `⚠️ Orçamento Excedido!\n\n` +
                     `Esta transação ultrapassa seu orçamento para ${error.response.data.budgetData?.categoryName || 'esta categoria'}.\n` +
@@ -167,9 +245,45 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                     handleAddTransaction(true); // Retry with bypass
                 }
             } else {
-                alert(error.response?.data?.message || 'Erro ao salvar transação');
+                // Parse specific errors
+                const errData = error.response?.data;
+                let msg = 'Erro ao salvar transação.';
+
+                if (errData?.errors) {
+                    // Validation errors (e.g. from Sequelize)
+                    msg = Object.values(errData.errors).join('\n');
+                } else if (errData?.message) {
+                    // Specific API message
+                    msg = errData.message;
+
+                    // Specific hints
+                    if (msg.includes('amount')) msg = 'Verifique o valor da transação.';
+                    if (msg.includes('date')) msg = 'A data informada é inválida.';
+                    if (msg.includes('category')) msg = 'Selecione uma categoria válida.';
+                }
+
+                setFeedback({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Erro ao Criar',
+                    message: msg,
+                    variant: 'error',
+                    onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+                });
             }
         }
+    };
+
+    // Callback when new category is created
+    const handleCategoryCreated = (newCategory) => {
+        setCategoryList(prev => [...prev, newCategory]);
+        setNewTransaction(prev => ({ ...prev, categoryId: newCategory.id, category: newCategory.name }));
+    };
+
+    // Callback when new bank is created
+    const handleBankCreated = (newBank) => {
+        setBankAccounts(prev => [...prev, newBank]);
+        setNewTransaction(prev => ({ ...prev, bankAccountId: newBank.id }));
     };
 
     return (
@@ -250,7 +364,13 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                             <button
                                 type="button"
                                 className={styles.clearIconBtn}
-                                onClick={() => setNewTransaction(prev => ({ ...prev, imageUrl: '' }))}
+                                onClick={() => setNewTransaction(prev => ({
+                                    ...prev,
+                                    imageUrl: '',
+                                    brandKey: '',
+                                    manuallySelected: false,
+                                    autoDetectedBrand: false
+                                }))}
                             >
                                 <FiX /> Remover
                             </button>
@@ -269,7 +389,9 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                         <div className={styles.inputGroup}>
                             <div className={styles.labelWithAction}>
                                 <label className={styles.inputLabel}>Categoria</label>
-                                {/* Add Category Button disabled in Quick Modal to simplify, or could redirect */}
+                                <button type="button" className={styles.addCategoryBtn} onClick={() => setShowCategoryModal(true)}>
+                                    <FiPlus /> Nova
+                                </button>
                             </div>
                             <select
                                 className={styles.selectInput}
@@ -296,6 +418,9 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                             <div className={styles.inputGroup} style={{ width: '100%' }}>
                                 <div className={styles.labelWithAction}>
                                     <label className={styles.inputLabel}>Conta/Banco</label>
+                                    <button type="button" className={styles.addCategoryBtn} onClick={() => setShowBankModal(true)}>
+                                        <FiPlus /> Nova
+                                    </button>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     {/* Bank Logo Indicator */}
@@ -516,7 +641,13 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                                 key={key}
                                 className={styles.iconGridItem}
                                 onClick={() => {
-                                    setNewTransaction(prev => ({ ...prev, imageUrl: service.icon }));
+                                    setNewTransaction(prev => ({
+                                        ...prev,
+                                        imageUrl: service.icon,
+                                        brandKey: key,
+                                        manuallySelected: true,
+                                        autoDetectedBrand: false
+                                    }));
                                     setShowIconPicker(false);
                                 }}
                             >
@@ -530,6 +661,30 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                     </div>
                 </div>
             </Modal>
+
+            {/* Category Creation Modal */}
+            <CategoryModal
+                isOpen={showCategoryModal}
+                onClose={() => setShowCategoryModal(false)}
+                onSuccess={handleCategoryCreated}
+                type={newTransaction.type}
+            />
+
+            {/* Bank Account Creation Modal */}
+            <BankAccountModal
+                isOpen={showBankModal}
+                onClose={() => setShowBankModal(false)}
+                onSuccess={handleBankCreated}
+            />
+            {/* Feedback Modal (Success/Error) */}
+            <AlertModal
+                isOpen={feedback.isOpen}
+                onClose={() => feedback.onConfirm ? feedback.onConfirm() : setFeedback(prev => ({ ...prev, isOpen: false }))}
+                title={feedback.title}
+                message={feedback.message}
+                variant={feedback.variant || (feedback.type === 'error' ? 'error' : 'success')}
+                confirmText="OK"
+            />
         </>
     );
 }

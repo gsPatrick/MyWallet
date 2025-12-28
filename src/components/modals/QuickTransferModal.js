@@ -179,7 +179,7 @@ export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
                                         <option value="">Selecione a conta...</option>
                                         {accounts.map(acc => (
                                             <option key={acc.id} value={acc.id}>
-                                                {acc.nickname || acc.bankName} - {formatCurrency(acc.balance)}
+                                                {acc.nickname || acc.bankName} {acc.type === 'CORRETORA' ? '(Corretora)' : ''} - {formatCurrency(acc.balance)}
                                             </option>
                                         ))}
                                     </select>
@@ -203,7 +203,7 @@ export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
                                             .filter(acc => acc.id !== transferData.fromAccountId)
                                             .map(acc => (
                                                 <option key={acc.id} value={acc.id}>
-                                                    {acc.nickname || acc.bankName} - {formatCurrency(acc.balance)}
+                                                    {acc.nickname || acc.bankName} {acc.type === 'CORRETORA' ? '(Corretora)' : ''} - {formatCurrency(acc.balance)}
                                                 </option>
                                             ))}
                                     </select>

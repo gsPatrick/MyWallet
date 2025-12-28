@@ -13,6 +13,7 @@ import {
     OpenFinance,
     Benefits,
     Pricing,
+    CommunityUpdates,
     LandingFooter
 } from '@/components/landing';
 import { PWAInstallPrompt } from '@/components/PWA';
@@ -48,6 +49,7 @@ export default function LandingPage() {
             <OpenFinance />
             <Benefits />
             <Pricing />
+            <CommunityUpdates />
 
             {/* CTA Section */}
             <section id="cta" className={styles.ctaSection}>

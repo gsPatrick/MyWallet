@@ -1,0 +1,237 @@
+.page {
+    min-height: 100vh;
+    background-color: #0a0a0b;
+    /* Very dark background */
+    color: #f0f0f0;
+    padding-top: 80px;
+    /* Space for fixed header */
+    font-family: 'Inter', sans-serif;
+}
+
+.header {
+    position: relative;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0b 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.headerTitle {
+    font-size: 4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(to right, #ffffff, #a0a0a0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    font-style: italic;
+    /* LoL style */
+}
+
+.headerSubtitle {
+    font-size: 1.2rem;
+    color: #888;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+}
+
+/* Patch Card Styles */
+.patchCard {
+    background: #121214;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.patchCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.patchHeader {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+}
+
+.patchImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.patchCard:hover .patchImage {
+    transform: scale(1.05);
+}
+
+.patchOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, #121214 0%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+}
+
+.versionBadge {
+    background: #d4af37;
+    /* Gold/Premium color */
+    color: #000;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+.patchTitle {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+    text-transform: uppercase;
+    font-style: italic;
+}
+
+.patchDate {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-top: 0.5rem;
+}
+
+.patchBody {
+    padding: 2rem;
+}
+
+.updateSection {
+    margin-bottom: 2rem;
+}
+
+.updateTypeTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.updateList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.updateItem {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #ccc;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    line-height: 1.6;
+}
+
+.updateItem:last-child {
+    border-bottom: none;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 9px;
+    background-color: #444;
+}
+
+/* Update Types Colors */
+.typeNew .dot {
+    background-color: #fff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.typeFix .dot {
+    background-color: #ff4d4d;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+}
+
+.typeChange .dot {
+    background-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .headerTitle {
+        font-size: 2.5rem;
+    }
+
+    .patchHeader {
+        height: 200px;
+    }
+
+    .patchTitle {
+        font-size: 1.8rem;
+    }
+}
+
+.clickable {
+    cursor: pointer;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.clickable:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+    /* No shadow color, keep it simple/dark */
+}
+
+.description {
+    color: #ccc;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.readMore {
+    color: #fff;
+    font-weight: 600;
+    margin-top: 1rem;
+    display: inline-block;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.clickable:hover .readMore {
+    transform: translateX(5px);
+    border-color: #fff;
+}

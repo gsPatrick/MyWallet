@@ -371,6 +371,72 @@
     color: #22c55e;
 }
 
+/* Brokers Grid (Corretoras Selection) */
+.brokersGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.brokerOption {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    position: relative;
+}
+
+.brokerOption:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.brokerOption.selected {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.brokerOptionLogo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: white;
+    padding: 2px;
+}
+
+.brokerOptionIcon {
+    width: 28px;
+    height: 28px;
+    color: var(--broker-color, #8b5cf6);
+}
+
+.brokerOption span {
+    flex: 1;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.checkIcon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    color: #22c55e;
+}
+
 /* Summary */
 .summary {
     text-align: left;

@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiArrowRight, FiArrowLeft, FiCheck, FiDollarSign,
-    FiCreditCard, FiRepeat, FiCheckCircle, FiPlus, FiTrash2, FiEdit2
+    FiCreditCard, FiRepeat, FiCheckCircle, FiPlus, FiTrash2, FiEdit2, FiTrendingUp
 } from 'react-icons/fi';
-import api from '@/services/api';
+import api, { brokersAPI } from '@/services/api';
 import { cardsAPI, subscriptionsAPI } from '@/services/api';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
+import BROKERS_LIST from '@/data/brokers.json';
 import styles from './OnboardingConfig.module.css';
 
 // Currency input helper - allows free typing with comma/period
@@ -66,6 +67,11 @@ export default function OnboardingConfig({ onComplete }) {
     const [editingCard, setEditingCard] = useState(null);
     const [editingSub, setEditingSub] = useState(null);
 
+    // Brokers State
+    const [brokers, setBrokers] = useState([]);
+    // Use static data from JSON (like cardBanks)
+    const availableBrokers = BROKERS_LIST;
+
     const handleCurrencyChange = (value, setter) => {
         const cleaned = handleCurrencyInput(value);
         setter(cleaned);
@@ -117,15 +123,24 @@ export default function OnboardingConfig({ onComplete }) {
             setLoading(true);
             try {
                 console.log('📦 [ONBOARDING] Creating subscriptions...', subscriptions);
-                console.log('📦 [ONBOARDING] Available cards state:', cards);
                 for (const sub of subscriptions) {
-                    console.log('📦 [ONBOARDING] Sending subscription to API:', sub);
-                    console.log('📦 [ONBOARDING] Subscription cardId:', sub.cardId, '| Type:', typeof sub.cardId);
-                    const result = await subscriptionsAPI.create(sub);
-                    console.log('📦 [ONBOARDING] Subscription API response:', result);
+                    await subscriptionsAPI.create(sub);
                 }
             } catch (e) {
                 console.error('❌ [ONBOARDING] Error saving subscriptions:', e);
+            }
+            setLoading(false);
+            console.log('📈 [ONBOARDING] Going to brokers step, availableBrokers:', availableBrokers);
+            setStep('brokers'); // Go to brokers step
+        } else if (step === 'brokers') {
+            setLoading(true);
+            try {
+                console.log('📈 [ONBOARDING] Creating brokers...', brokers);
+                for (const broker of brokers) {
+                    await brokersAPI.createFromDictionary(broker.code);
+                }
+            } catch (e) {
+                console.error('❌ [ONBOARDING] Error saving brokers:', e);
             }
             setLoading(false);
             setStep('complete');
@@ -138,6 +153,17 @@ export default function OnboardingConfig({ onComplete }) {
         if (step === 'salary') setStep('balance');
         else if (step === 'cards') setStep('salary');
         else if (step === 'subscriptions') setStep('cards');
+        else if (step === 'brokers') setStep('subscriptions');
+    };
+
+    // Broker handlers
+    const toggleBroker = (broker) => {
+        const exists = brokers.find(b => b.code === broker.code);
+        if (exists) {
+            setBrokers(brokers.filter(b => b.code !== broker.code));
+        } else {
+            setBrokers([...brokers, broker]);
+        }
     };
 
     // Card Modal handlers
@@ -198,10 +224,11 @@ export default function OnboardingConfig({ onComplete }) {
                         <div
                             className={styles.progressFill}
                             style={{
-                                width: step === 'balance' ? '20%' :
-                                    step === 'salary' ? '40%' :
-                                        step === 'cards' ? '60%' :
-                                            step === 'subscriptions' ? '80%' : '100%'
+                                width: step === 'balance' ? '16%' :
+                                    step === 'salary' ? '33%' :
+                                        step === 'cards' ? '50%' :
+                                            step === 'subscriptions' ? '66%' :
+                                                step === 'brokers' ? '83%' : '100%'
                             }}
                         />
                     </div>
@@ -398,6 +425,52 @@ export default function OnboardingConfig({ onComplete }) {
                             </motion.div>
                         )}
 
+                        {/* STEP: Brokers (Corretoras) */}
+                        {step === 'brokers' && (
+                            <motion.div
+                                key="brokers"
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className={styles.stepContent}
+                            >
+                                <div className={styles.iconWrapper}>
+                                    <FiTrendingUp />
+                                </div>
+                                <h2>Suas corretoras de investimentos</h2>
+                                <p className={styles.description}>
+                                    Selecione as corretoras que você usa para investir (opcional)
+                                </p>
+
+                                {/* Available Brokers Grid */}
+                                <div className={styles.brokersGrid}>
+                                    {availableBrokers.map(broker => {
+                                        const isSelected = brokers.find(b => b.code === broker.code);
+                                        return (
+                                            <button
+                                                key={broker.code}
+                                                className={`${styles.brokerOption} ${isSelected ? styles.selected : ''}`}
+                                                onClick={() => toggleBroker(broker)}
+                                                style={{ '--broker-color': broker.color }}
+                                            >
+                                                {broker.logoUrl ? (
+                                                    <img src={broker.logoUrl} alt={broker.name} className={styles.brokerOptionLogo} />
+                                                ) : (
+                                                    <FiTrendingUp className={styles.brokerOptionIcon} />
+                                                )}
+                                                <span>{broker.name}</span>
+                                                {isSelected && <FiCheck className={styles.checkIcon} />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <p className={styles.hint}>
+                                    💼 Uma corretora padrão "MyWallet Investimentos" será criada automaticamente
+                                </p>
+                            </motion.div>
+                        )}
+
                         {/* STEP: Complete */}
                         {step === 'complete' && (
                             <motion.div
@@ -427,6 +500,10 @@ export default function OnboardingConfig({ onComplete }) {
                                     {subscriptions.length > 0 && (
                                         <div>✅ {subscriptions.length} assinatura(s) cadastrada(s)</div>
                                     )}
+                                    {brokers.length > 0 && (
+                                        <div>📈 {brokers.length} corretora(s) adicionada(s)</div>
+                                    )}
+                                    <div>📈 Corretora padrão criada automaticamente</div>
                                 </div>
                             </motion.div>
                         )}

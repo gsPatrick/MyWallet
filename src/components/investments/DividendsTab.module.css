@@ -12,7 +12,7 @@
 }
 
 .summaryCard {
-    background: var(--bg-card);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-light);
     border-radius: 16px;
     padding: 20px;
@@ -58,7 +58,7 @@
 }
 
 .monthGroup {
-    background: var(--bg-card);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-light);
     border-radius: 16px;
     overflow: hidden;
@@ -105,7 +105,7 @@
 }
 
 .dividendItem:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-tertiary);
 }
 
 .assetInfo {

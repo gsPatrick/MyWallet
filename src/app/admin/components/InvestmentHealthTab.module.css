@@ -1,0 +1,298 @@
+.container {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin: 0;
+}
+
+.header p {
+    font-size: 13px;
+    color: var(--admin-text-muted);
+    margin: 4px 0 0;
+}
+
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refreshBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.refreshBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.errorBanner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    color: #ef4444;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+/* Summary Cards */
+.summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.summaryCard {
+    background: var(--admin-input-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.summaryCard.healthy {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.summaryCard.degraded {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.summaryCard.critical {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.summaryLabel {
+    display: block;
+    font-size: 11px;
+    color: var(--admin-text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summaryValue {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+/* Diagnostic Cards */
+.diagnosticsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.diagnosticCard {
+    background: var(--admin-input-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+}
+
+.serviceInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.statusIndicator {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.serviceIcon {
+    font-size: 20px;
+    color: var(--admin-text-muted);
+}
+
+.serviceName h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin: 0;
+}
+
+.serviceName span {
+    font-size: 12px;
+    color: var(--admin-text-muted);
+}
+
+.cardMeta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.latency {
+    font-size: 12px;
+    color: var(--admin-text-muted);
+    font-family: monospace;
+    background: var(--admin-card-bg);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.expandBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-card-bg);
+    color: var(--admin-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.expandBtn:hover {
+    background: var(--admin-hover);
+}
+
+/* Diagnostic Details */
+.diagnosticDetails {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--admin-border);
+    overflow: hidden;
+}
+
+.detailRow {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.detailRow:last-child {
+    border-bottom: none;
+}
+
+.detailLabel {
+    display: block;
+    font-size: 11px;
+    color: var(--admin-text-muted);
+    margin-bottom: 4px;
+}
+
+.detailValue {
+    font-size: 13px;
+    color: var(--admin-text);
+}
+
+.technicalDetail {
+    display: block;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    color: var(--admin-text);
+    font-family: monospace;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.actionValue {
+    font-size: 13px;
+    color: #22c55e;
+    font-weight: 500;
+}
+
+/* Loading State */
+.loadingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: var(--admin-text-muted);
+}
+
+.loadingState svg {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cardHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .cardMeta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

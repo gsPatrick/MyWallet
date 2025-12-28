@@ -5,3 +5,4 @@ export { default as OpenFinance } from './OpenFinance';
 export { default as Benefits } from './Benefits';
 export { default as Pricing } from './Pricing';
 export { default as LandingFooter } from './LandingFooter';
+export { default as CommunityUpdates } from './CommunityUpdates';

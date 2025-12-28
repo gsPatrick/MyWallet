@@ -1,0 +1,602 @@
+{
+    "brands": {
+        "uber": {
+            "name": "Uber",
+            "keywords": [
+                "uber",
+                "uber*trip",
+                "uber trip",
+                "uber*brazil",
+                "ubereats",
+                "uber eats"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/WTGDz8M2gRie-UPC1eFZ321-RavuXFhKlcvxHp0uVEDN0UrWfCMwU9uMvuEE98H3VtZG",
+            "color": "#000000",
+            "category": "Transporte"
+        },
+        "99": {
+            "name": "99",
+            "keywords": [
+                "99app",
+                "99 pop",
+                "99 taxi",
+                "99*",
+                "99pay"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/J9KidDzcxQnXeIEijBiWHnRLfsiobflzsVslyhlBfEYFK2nrSO9RyoNkP971WzRFFQ",
+            "color": "#FFCB05",
+            "category": "Transporte"
+        },
+        "cabify": {
+            "name": "Cabify",
+            "keywords": [
+                "cabify"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/cD-_QuzaXqANt_tmczxXccqUlHJ1fJnPA0KAwJLdq8F8rsonSB-c1HxuURtNFNIHQd0",
+            "color": "#7C4DFF",
+            "category": "Transporte"
+        },
+        "ifood": {
+            "name": "iFood",
+            "keywords": [
+                "ifood",
+                "pag*ifood",
+                "ifood*",
+                "i food"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/hojEqHjv0-sn3Lx8-k_bMSozPiPYq-MQqbLQNz9i2L0r_qPdYG-2kVjVNIQaOBNyRQ",
+            "color": "#EA1D2C",
+            "category": "Alimentação"
+        },
+        "rappi": {
+            "name": "Rappi",
+            "keywords": [
+                "rappi",
+                "rappipay"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/hl2hOG2TZ7HStMo9RB-8k1WmAL_VGYJ2Jmc1Nm9kkqIm6p29a3AqN9Xb0BxW38xfYcU",
+            "color": "#FF5A00",
+            "category": "Alimentação"
+        },
+        "ze_delivery": {
+            "name": "Zé Delivery",
+            "keywords": [
+                "ze delivery",
+                "zé delivery",
+                "zedelivery"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/5OP_kVL-XWF7MV4PZm1DRdD5KstOJqAqYsXHwGz3KZqDPgCQCpEO8o4j_gGKsR1oqg",
+            "color": "#FFC300",
+            "category": "Alimentação"
+        },
+        "mcdonalds": {
+            "name": "McDonald's",
+            "keywords": [
+                "mcdonalds",
+                "mequi",
+                "mc donalds",
+                "mc donald",
+                "mcd",
+                "big mac"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/512px-McDonald%27s_Golden_Arches.svg.png",
+            "color": "#FFC72C",
+            "category": "Alimentação"
+        },
+        "burger_king": {
+            "name": "Burger King",
+            "keywords": [
+                "burger king",
+                "bk",
+                "bk brasil",
+                "whopper"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Burger_King_logo_%281999%29.svg/512px-Burger_King_logo_%281999%29.svg.png",
+            "color": "#D62300",
+            "category": "Alimentação"
+        },
+        "starbucks": {
+            "name": "Starbucks",
+            "keywords": [
+                "starbucks",
+                "sbux"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Starbucks_Corporation_Logo_2011.svg/512px-Starbucks_Corporation_Logo_2011.svg.png",
+            "color": "#00704A",
+            "category": "Alimentação"
+        },
+        "bobs": {
+            "name": "Bob's",
+            "keywords": [
+                "bobs",
+                "bob's",
+                "big bob"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Bob%27s_logo.svg/512px-Bob%27s_logo.svg.png",
+            "color": "#FF0000",
+            "category": "Alimentação"
+        },
+        "subway": {
+            "name": "Subway",
+            "keywords": [
+                "subway"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Subway_2016_logo.svg/512px-Subway_2016_logo.svg.png",
+            "color": "#008C15",
+            "category": "Alimentação"
+        },
+        "pizza_hut": {
+            "name": "Pizza Hut",
+            "keywords": [
+                "pizza hut",
+                "pizzahut"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/sco/thumb/d/d2/Pizza_Hut_logo.svg/512px-Pizza_Hut_logo.svg.png",
+            "color": "#EE3A24",
+            "category": "Alimentação"
+        },
+        "dominos": {
+            "name": "Domino's",
+            "keywords": [
+                "dominos",
+                "domino's",
+                "dominos pizza"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Dominos_pizza_logo.svg/512px-Dominos_pizza_logo.svg.png",
+            "color": "#006491",
+            "category": "Alimentação"
+        },
+        "mercado_livre": {
+            "name": "Mercado Livre",
+            "keywords": [
+                "mercado livre",
+                "mercadolivre",
+                "mercadopago",
+                "meli",
+                "ml*"
+            ],
+            "icon": "https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.23.4/mercadolibre/logo__large_plus.png",
+            "color": "#FFE600",
+            "category": "Compras"
+        },
+        "amazon": {
+            "name": "Amazon",
+            "keywords": [
+                "amazon",
+                "amzn mktp",
+                "amazon.com.br",
+                "amazon prime",
+                "amz*"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/512px-Amazon_logo.svg.png",
+            "color": "#FF9900",
+            "category": "Compras"
+        },
+        "shopee": {
+            "name": "Shopee",
+            "keywords": [
+                "shopee",
+                "shopee brasil"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/0dMR_Z1v8oVXZLv4dJu6L0yPZKHzMrcLn3H3E3_0Uyt2AZS6e-lFfdDLfik9zVbnnKo",
+            "color": "#EE4D2D",
+            "category": "Compras"
+        },
+        "shein": {
+            "name": "Shein",
+            "keywords": [
+                "shein"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/N-27pZq-ynZ7EBxL2rDGd3DX5I-cH6PALw2fGHDz1YMqKGHU03BbGYw5NZl_yJPyLw",
+            "color": "#000000",
+            "category": "Compras"
+        },
+        "magalu": {
+            "name": "Magalu",
+            "keywords": [
+                "magalu",
+                "magazine luiza",
+                "magazineluiza",
+                "mglu"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/VZkP0o-lj5KKwxwq0e2Kb_C5eD4O7g4jm36m4J0ZaJAp8XCMEv7P3lJn7_AxMXLr4Q",
+            "color": "#0086FF",
+            "category": "Compras"
+        },
+        "casas_bahia": {
+            "name": "Casas Bahia",
+            "keywords": [
+                "casas bahia",
+                "casasbahia",
+                "cb*"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/aFzWTkGDBXYHJQvmQJXRzqwUxpYJiNNSzr1zYvJI8iLk5xnGkbWF4FJ4NJK1UxKhvxzE",
+            "color": "#00447C",
+            "category": "Compras"
+        },
+        "americanas": {
+            "name": "Americanas",
+            "keywords": [
+                "americanas",
+                "lojas americanas",
+                "ame digital"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/AQtSc83lDsw4G6efxHEvSoFzIFYVYoKrX3rO_-nTl8qnYcbwU7RbO7Wm5gQP3M-NXZY",
+            "color": "#ED2E38",
+            "category": "Compras"
+        },
+        "aliexpress": {
+            "name": "AliExpress",
+            "keywords": [
+                "aliexpress",
+                "ali express"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/X3SX3zfmlGqV8Z7sPMPfJ2q1HDpFYGNlVlQe3R7bHCPJf8XHnxF1z2vXb6H7t5S3Yg",
+            "color": "#FF4747",
+            "category": "Compras"
+        },
+        "carrefour": {
+            "name": "Carrefour",
+            "keywords": [
+                "carrefour",
+                "atacadao",
+                "atacadão"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/F3jI8xG-e6aK5Xo_EzKl5mHqU2L2mLLNq2qvJ4f9R3z4r5s6T7u8V9wX0yZ1A2B3",
+            "color": "#004E9A",
+            "category": "Mercado"
+        },
+        "pao_de_acucar": {
+            "name": "Pão de Açúcar",
+            "keywords": [
+                "pao de acucar",
+                "pão de açúcar",
+                "gpa",
+                "grupo pao de acucar"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/ue1LeDmBJz9kVHqU6F_aK5PYzkc9X97X9x1W2F6M0vlCbEpZ5xL8u9YWN5BvML3wTA",
+            "color": "#EE1C25",
+            "category": "Mercado"
+        },
+        "assai": {
+            "name": "Assaí",
+            "keywords": [
+                "assai",
+                "assaí atacadista",
+                "atacado assai"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/W_7X5T9cF2b3M9KVlnVxXYZA2B6C0D8E7G9H0I1K2L4M5N7O8P9R0S1T2U3V4W5X",
+            "color": "#009739",
+            "category": "Mercado"
+        },
+        "extra": {
+            "name": "Extra",
+            "keywords": [
+                "extra",
+                "extra hipermercado",
+                "hiper extra"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Extra.svg/512px-Extra.svg.png",
+            "color": "#EE3124",
+            "category": "Mercado"
+        },
+        "shell": {
+            "name": "Shell",
+            "keywords": [
+                "shell",
+                "posto shell",
+                "shell box"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/Shell_logo.svg/512px-Shell_logo.svg.png",
+            "color": "#FFD500",
+            "category": "Combustível"
+        },
+        "ipiranga": {
+            "name": "Ipiranga",
+            "keywords": [
+                "ipiranga",
+                "posto ipiranga",
+                "abastece ai",
+                "km de vantagens"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/4V9G2M4V5QxW7l8K9vB3jC5eD2fH1gI3kL4mN6oP7R8sT0uV1wX2Y3Z5A6B7C8D9",
+            "color": "#004C9B",
+            "category": "Combustível"
+        },
+        "petrobras": {
+            "name": "Petrobras",
+            "keywords": [
+                "petrobras",
+                "br mania",
+                "premmia",
+                "posto br",
+                "posto petrobras"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Petrobras_horizontal_logo_%28international%29.svg/512px-Petrobras_horizontal_logo_%28international%29.svg.png",
+            "color": "#007932",
+            "category": "Combustível"
+        },
+        "drogasil": {
+            "name": "Drogasil",
+            "keywords": [
+                "drogasil",
+                "droga sil"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/J9K_4Z8X7W6Y5V4T3S2R1Q0P-O9N8M7L6K5J4I3H2G1F0E-D",
+            "color": "#00A551",
+            "category": "Saúde"
+        },
+        "droga_raia": {
+            "name": "Droga Raia",
+            "keywords": [
+                "droga raia",
+                "raia",
+                "drogaraia"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6",
+            "color": "#004990",
+            "category": "Saúde"
+        },
+        "netflix": {
+            "name": "Netflix",
+            "keywords": [
+                "netflix",
+                "netfix"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/75/Netflix_icon.svg",
+            "color": "#E50914",
+            "category": "Streaming"
+        },
+        "spotify": {
+            "name": "Spotify",
+            "keywords": [
+                "spotify"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg",
+            "color": "#1DB954",
+            "category": "Streaming"
+        },
+        "disney_plus": {
+            "name": "Disney+",
+            "keywords": [
+                "disney+",
+                "disney plus",
+                "disneyplus"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
+            "color": "#113CCF",
+            "category": "Streaming"
+        },
+        "hbo_max": {
+            "name": "HBO Max",
+            "keywords": [
+                "hbo max",
+                "hbomax",
+                "hbo"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg",
+            "color": "#5822B4",
+            "category": "Streaming"
+        },
+        "prime_video": {
+            "name": "Prime Video",
+            "keywords": [
+                "prime video",
+                "amazon prime video",
+                "primevideo"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png",
+            "color": "#00A8E1",
+            "category": "Streaming"
+        },
+        "youtube": {
+            "name": "YouTube Premium",
+            "keywords": [
+                "youtube premium",
+                "youtube music",
+                "yt premium",
+                "youtube"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",
+            "color": "#FF0000",
+            "category": "Streaming"
+        },
+        "globoplay": {
+            "name": "Globoplay",
+            "keywords": [
+                "globoplay",
+                "globo play"
+            ],
+            "icon": "https://i.imgur.com/Q884Fva.png",
+            "color": "#FF5722",
+            "category": "Streaming"
+        },
+        "apple": {
+            "name": "Apple",
+            "keywords": [
+                "apple",
+                "apple.com",
+                "itunes",
+                "app store",
+                "icloud",
+                "apple one",
+                "apple music",
+                "apple tv+"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/512px-Apple_logo_black.svg.png",
+            "color": "#000000",
+            "category": "Tecnologia"
+        },
+        "google": {
+            "name": "Google",
+            "keywords": [
+                "google",
+                "google play",
+                "google one",
+                "google storage",
+                "google cloud",
+                "goog*"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/512px-Google_2015_logo.svg.png",
+            "color": "#4285F4",
+            "category": "Tecnologia"
+        },
+        "microsoft": {
+            "name": "Microsoft",
+            "keywords": [
+                "microsoft",
+                "xbox",
+                "office 365",
+                "microsoft 365",
+                "onedrive",
+                "msft*"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+            "color": "#00A4EF",
+            "category": "Tecnologia"
+        },
+        "nubank": {
+            "name": "Nubank",
+            "keywords": [
+                "nubank",
+                "nu",
+                "nuconta"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Nubank_logo_2021.svg/512px-Nubank_logo_2021.svg.png",
+            "color": "#820AD1",
+            "category": "Banco"
+        },
+        "picpay": {
+            "name": "PicPay",
+            "keywords": [
+                "picpay",
+                "pic pay"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/wgCZj0doqFvwp8k7mfq9D_pLr6m6x4GfWVNZK4pYEQo7b8VNl8ntE5vM_vN3TLKYhg",
+            "color": "#21C25E",
+            "category": "Banco"
+        },
+        "pagbank": {
+            "name": "PagBank",
+            "keywords": [
+                "pagbank",
+                "pagseguro"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/F7Q3xR5M0T7M9vLZsC_GxW4Y1Z2A3B4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0",
+            "color": "#78BE20",
+            "category": "Banco"
+        },
+        "vivo": {
+            "name": "Vivo",
+            "keywords": [
+                "vivo",
+                "telefonica",
+                "vivo fibra"
+            ],
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDj0ldVmeFkcRIjxUAJkSTRCzDY2c3DIGGOw&s",
+            "color": "#660099",
+            "category": "Telecom"
+        },
+        "claro": {
+            "name": "Claro",
+            "keywords": [
+                "claro",
+                "claro net",
+                "net claro"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/pkPyvNUYcDwFdocveWqGJvuaY7OOfR4Gma7rKWkcln53grJgcgs8V_1zcbWbVoCyUw",
+            "color": "#DA291C",
+            "category": "Telecom"
+        },
+        "tim": {
+            "name": "Tim",
+            "keywords": [
+                "tim",
+                "tim celular"
+            ],
+            "icon": "https://timfibra.com.br/OPENGRAPH-TIM.png",
+            "color": "#004B93",
+            "category": "Telecom"
+        },
+        "udemy": {
+            "name": "Udemy",
+            "keywords": [
+                "udemy"
+            ],
+            "icon": "https://play-lh.googleusercontent.com/N3BMBU4U3e8fD0gH1i2J3k4L5m6N7o8P9Q0R1S2T3U4V5W6X7Y8Z9A0B1C2D3E4",
+            "color": "#A435F0",
+            "category": "Educação"
+        },
+        "chatgpt": {
+            "name": "ChatGPT Plus",
+            "keywords": [
+                "chatgpt",
+                "openai",
+                "gpt"
+            ],
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
+            "color": "#10A37F",
+            "category": "Software"
+        },
+        "claude": {
+            "name": "Claude",
+            "keywords": [
+                "claude",
+                "anthropic"
+            ],
+            "icon": "https://cdn.worldvectorlogo.com/logos/anthropic-1.svg",
+            "color": "#000000",
+            "category": "Software"
+        }
+    },
+    "categories": {
+        "Transporte": {
+            "color": "#000000",
+            "icon": "🚗"
+        },
+        "Alimentação": {
+            "color": "#EA1D2C",
+            "icon": "🍔"
+        },
+        "Compras": {
+            "color": "#FF9900",
+            "icon": "🛒"
+        },
+        "Mercado": {
+            "color": "#009739",
+            "icon": "🏪"
+        },
+        "Combustível": {
+            "color": "#FFD500",
+            "icon": "⛽"
+        },
+        "Saúde": {
+            "color": "#00A551",
+            "icon": "💊"
+        },
+        "Streaming": {
+            "color": "#E50914",
+            "icon": "📺"
+        },
+        "Tecnologia": {
+            "color": "#4285F4",
+            "icon": "💻"
+        },
+        "Banco": {
+            "color": "#820AD1",
+            "icon": "🏦"
+        },
+        "Telecom": {
+            "color": "#660099",
+            "icon": "📱"
+        },
+        "Educação": {
+            "color": "#A435F0",
+            "icon": "📚"
+        },
+        "Software": {
+            "color": "#10A37F",
+            "icon": "⚙️"
+        }
+    }
+}

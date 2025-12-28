@@ -50,7 +50,8 @@ const accountTypes = [
     { value: 'CONTA_POUPANCA', label: 'Poupança' },
     { value: 'CONTA_PAGAMENTO', label: 'Conta de Pagamento' },
     { value: 'CONTA_SALARIO', label: 'Conta Salário' },
-    { value: 'CARTEIRA', label: 'Carteira / Dinheiro' }
+    { value: 'CARTEIRA', label: 'Carteira / Dinheiro' },
+    { value: 'CORRETORA', label: 'Corretora de Investimentos' }
 ];
 
 function BanksContent() {
@@ -62,10 +63,12 @@ function BanksContent() {
     const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedAccountId, setSelectedAccountId] = useState(null);
 
     // Modal states
     const [showAddModal, setShowAddModal] = useState(false);
     const [showTransferModal, setShowTransferModal] = useState(false);
+    const [showBankGallery, setShowBankGallery] = useState(false);
     const [editingAccount, setEditingAccount] = useState(null);
 
     // Form states
@@ -122,11 +125,14 @@ function BanksContent() {
         }
     }, [loadAccounts, searchParams]);
 
-    // Bank options from cardBanks.json
-    const bankOptions = Object.entries(cardBanksData.banks).map(([key, value]) => ({
-        key,
-        ...value
-    }));
+    // Bank options from cardBanks.json - Filter out brokers/corretoras
+    const brokerKeys = ['xp', 'btg', 'modalmais', 'rico', 'nuinvest', 'clear', 'avenue', 'binance', 'mercadobitcoin', 'ativa', 'genial'];
+    const bankOptions = Object.entries(cardBanksData.banks)
+        .filter(([key]) => !brokerKeys.includes(key))
+        .map(([key, value]) => ({
+            key,
+            ...value
+        }));
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -280,14 +286,19 @@ function BanksContent() {
     // Get all accounts across all profiles for transfer
     const allAccountsForTransfer = accounts;
 
+    // Filter logic
+    const filteredAccounts = selectedAccountId
+        ? accounts.filter(a => a.id === selectedAccountId)
+        : accounts;
+
     // Pagination Logic
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 5; // 5 cards + 1 ghost card = 6 total items per page
 
-    const totalItems = accounts.length;
+    const totalItems = filteredAccounts.length;
     const totalPages = Math.ceil((totalItems + 1) / ITEMS_PER_PAGE);
 
-    const paginatedAccounts = accounts.slice(
+    const paginatedAccounts = filteredAccounts.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
@@ -372,6 +383,36 @@ function BanksContent() {
                         </div>
                     )}
 
+                    {/* Quick Account Tabs */}
+                    {!loading && !error && accounts.length > 1 && (
+                        <div className={styles.accountTabs}>
+                            <button
+                                className={`${styles.accountTab} ${!selectedAccountId ? styles.activeTab : ''}`}
+                                onClick={() => setSelectedAccountId(null)}
+                            >
+                                <FiActivity />
+                                <span>Todas</span>
+                            </button>
+                            {accounts.map(account => (
+                                <button
+                                    key={account.id}
+                                    className={`${styles.accountTab} ${selectedAccountId === account.id ? styles.activeTab : ''}`}
+                                    style={{ '--tab-color': account.color || '#6366f1' }}
+                                    onClick={() => setSelectedAccountId(account.id)}
+                                >
+                                    <div
+                                        className={styles.tabIcon}
+                                        style={{ background: account.color || '#6366f1' }}
+                                    >
+                                        {(account.nickname || account.bankName).charAt(0)}
+                                    </div>
+                                    <span>{account.nickname || account.bankName}</span>
+                                    <span className={styles.tabBalance}>{formatCurrency(account.balance)}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Account List */}
                     {!loading && !error && (
                         <>
@@ -381,6 +422,14 @@ function BanksContent() {
                                         .filter(g => g.bankAccountId === account.id && g.status === 'ACTIVE')
                                         .reduce((sum, g) => sum + parseFloat(g.currentAmount || 0), 0);
 
+                                    // Resolve dynamic icon from dictionary if available
+                                    const dictionaryEntry = cardBanksData.banks[account.bankCode?.toLowerCase()] ||
+                                        Object.values(cardBanksData.banks).find(b => b.name === account.bankName) ||
+                                        Object.values(cardBanksData.banks).find(b => b.name === account.nickname);
+
+                                    const displayIcon = dictionaryEntry?.icon || account.icon;
+                                    const displayColor = dictionaryEntry?.color || account.color || '#6366f1';
+
                                     return (
                                         <div key={account.id} className={styles.accountWrapper}>
                                             <BankAccountCard
@@ -389,9 +438,9 @@ function BanksContent() {
                                                 agency={account.agency || '0000'}
                                                 balance={account.balance}
                                                 reservedAmount={accountReserved}
-                                                color={account.color || '#6366f1'}
+                                                color={displayColor}
                                                 holderName={profiles.find(p => p.id === account.profileId)?.name || 'TITULAR'}
-                                                icon={account.icon}
+                                                icon={displayIcon}
                                                 onClick={() => router.push(`/banks/${account.id}`)}
                                                 onEdit={() => handleEdit(account)}
                                                 onDelete={() => handleDelete(account.id)}
@@ -469,26 +518,47 @@ function BanksContent() {
                             </div>
 
                             <form onSubmit={handleSubmit} className={styles.form}>
-                                {/* Bank Selection */}
+                                {/* Bank Selection - Icon Picker Style */}
                                 <div className={styles.formGroup}>
                                     <label>Banco</label>
-                                    <div className={styles.bankGrid}>
-                                        {bankOptions.slice(0, 12).map((bank) => (
+                                    <div className={styles.iconPickerSection}>
+                                        <div
+                                            className={styles.iconPreview}
+                                            onClick={() => setShowBankGallery(true)}
+                                            style={{ '--bank-color': formData.bankKey ? (bankOptions.find(b => b.key === formData.bankKey)?.color || '#6366F1') : '#6366F1' }}
+                                        >
+                                            {formData.bankKey ? (
+                                                <>
+                                                    {bankOptions.find(b => b.key === formData.bankKey)?.icon ? (
+                                                        <img
+                                                            src={bankOptions.find(b => b.key === formData.bankKey)?.icon}
+                                                            alt={bankOptions.find(b => b.key === formData.bankKey)?.name}
+                                                            className={styles.selectedBankIcon}
+                                                        />
+                                                    ) : (
+                                                        <span className={styles.bankInitialLarge}>
+                                                            {bankOptions.find(b => b.key === formData.bankKey)?.name?.charAt(0)}
+                                                        </span>
+                                                    )}
+                                                    <span className={styles.selectedBankName}>
+                                                        {bankOptions.find(b => b.key === formData.bankKey)?.name}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className={styles.iconPlaceholder}>
+                                                    <FiPlus /> Escolher Banco
+                                                </span>
+                                            )}
+                                        </div>
+                                        {formData.bankKey && (
                                             <button
-                                                key={bank.key}
                                                 type="button"
-                                                className={`${styles.bankOption} ${formData.bankKey === bank.key ? styles.selected : ''}`}
-                                                style={{ '--bank-color': bank.color }}
-                                                onClick={() => handleBankSelect(bank.key)}
+                                                className={styles.changeBankBtn}
+                                                onClick={() => setShowBankGallery(true)}
                                             >
-                                                {bank.icon ? (
-                                                    <img src={bank.icon} alt={bank.name} />
-                                                ) : (
-                                                    <span className={styles.bankInitial}>{bank.name.charAt(0)}</span>
-                                                )}
-                                                <span>{bank.name}</span>
+                                                Trocar
                                             </button>
-                                        ))}
+                                        )}
                                     </div>
                                 </div>
 
@@ -547,6 +617,57 @@ function BanksContent() {
                 )}
             </AnimatePresence>
 
+            {/* Bank Gallery Modal */}
+            <AnimatePresence>
+                {showBankGallery && (
+                    <motion.div
+                        className={styles.modalOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowBankGallery(false)}
+                    >
+                        <motion.div
+                            className={styles.galleryModal}
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className={styles.modalHeader}>
+                                <h2>Escolher Banco</h2>
+                                <button className={styles.closeBtn} onClick={() => setShowBankGallery(false)}>
+                                    <FiX />
+                                </button>
+                            </div>
+                            <div className={styles.galleryContent}>
+                                <div className={styles.bankGrid}>
+                                    {bankOptions.map((bank) => (
+                                        <button
+                                            key={bank.key}
+                                            type="button"
+                                            className={`${styles.bankOption} ${formData.bankKey === bank.key ? styles.selected : ''}`}
+                                            style={{ '--bank-color': bank.color }}
+                                            onClick={() => {
+                                                handleBankSelect(bank.key);
+                                                setShowBankGallery(false);
+                                            }}
+                                        >
+                                            {bank.icon ? (
+                                                <img src={bank.icon} alt={bank.name} />
+                                            ) : (
+                                                <span className={styles.bankInitial}>{bank.name.charAt(0)}</span>
+                                            )}
+                                            <span>{bank.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Transfer Modal */}
             <AnimatePresence>
                 {showTransferModal && (
@@ -583,7 +704,7 @@ function BanksContent() {
                                         <option value="">Selecione a conta...</option>
                                         {accounts.map(acc => (
                                             <option key={acc.id} value={acc.id}>
-                                                {acc.nickname || acc.bankName} - {formatCurrency(acc.balance)}
+                                                {acc.nickname || acc.bankName} {acc.type === 'CORRETORA' ? '(Corretora)' : ''} - {formatCurrency(acc.balance)}
                                             </option>
                                         ))}
                                     </select>
@@ -607,7 +728,7 @@ function BanksContent() {
                                             .filter(acc => acc.id !== transferData.fromAccountId)
                                             .map(acc => (
                                                 <option key={acc.id} value={acc.id}>
-                                                    {acc.nickname || acc.bankName} - {formatCurrency(acc.balance)}
+                                                    {acc.nickname || acc.bankName} {acc.type === 'CORRETORA' ? '(Corretora)' : ''} - {formatCurrency(acc.balance)}
                                                 </option>
                                             ))}
                                     </select>

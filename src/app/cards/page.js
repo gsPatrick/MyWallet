@@ -26,6 +26,8 @@ import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
 import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI, bankAccountsAPI } from '@/services/api';
 import invoiceService, { getStatusInfo, formatInvoicePeriod } from '@/services/invoiceService';
+import cardBanks from '@/data/cardBanks.json';
+import subscriptionData from '@/data/subscriptionIcons.json';
 import styles from './page.module.css';
 
 // Open Finance cards mock
@@ -751,32 +753,42 @@ export default function CardsPage() {
 
                                         {cardSubscriptions.length > 0 ? (
                                             <div className={styles.subsViewList}>
-                                                {cardSubscriptions.map(sub => (
-                                                    <div key={sub.id} className={styles.subsViewItem}>
-                                                        <div className={styles.subsViewIcon}>
-                                                            {sub.icon ? (
-                                                                sub.icon.startsWith('http') ? (
-                                                                    <img src={sub.icon} alt={sub.name} />
+                                                {cardSubscriptions.map(sub => {
+                                                    // Dynamic lookup for subscription icon
+                                                    const subKey = Object.keys(subscriptionData.subscriptions || {}).find(key =>
+                                                        subscriptionData.subscriptions[key].name === sub.name
+                                                    );
+                                                    const dictionarySub = subKey ? subscriptionData.subscriptions[subKey] : null;
+                                                    const displayIcon = dictionarySub?.icon || sub.icon;
+                                                    const displayColor = dictionarySub?.color || sub.color;
+
+                                                    return (
+                                                        <div key={sub.id} className={styles.subsViewItem} style={{ borderLeft: `3px solid ${displayColor || 'transparent'}` }}>
+                                                            <div className={styles.subsViewIcon}>
+                                                                {displayIcon ? (
+                                                                    displayIcon.startsWith('http') || displayIcon.startsWith('/') ? (
+                                                                        <img src={displayIcon} alt={sub.name} />
+                                                                    ) : (
+                                                                        <span>{displayIcon}</span>
+                                                                    )
                                                                 ) : (
-                                                                    <span>{sub.icon}</span>
-                                                                )
-                                                            ) : (
-                                                                <FiRepeat />
-                                                            )}
-                                                        </div>
-                                                        <div className={styles.subsViewInfo}>
-                                                            <span className={styles.subsViewName}>{sub.name}</span>
-                                                            <span className={styles.subsViewFreq}>
-                                                                {sub.billingCycle === 'MONTHLY' ? 'Mensal' :
-                                                                    sub.billingCycle === 'YEARLY' ? 'Anual' :
-                                                                        sub.billingCycle === 'WEEKLY' ? 'Semanal' : sub.billingCycle}
+                                                                    <FiRepeat />
+                                                                )}
+                                                            </div>
+                                                            <div className={styles.subsViewInfo}>
+                                                                <span className={styles.subsViewName}>{sub.name}</span>
+                                                                <span className={styles.subsViewFreq}>
+                                                                    {sub.billingCycle === 'MONTHLY' ? 'Mensal' :
+                                                                        sub.billingCycle === 'YEARLY' ? 'Anual' :
+                                                                            sub.billingCycle === 'WEEKLY' ? 'Semanal' : sub.billingCycle}
+                                                                </span>
+                                                            </div>
+                                                            <span className={styles.subsViewAmount}>
+                                                                {formatCurrency(sub.amount)}<small>/mês</small>
                                                             </span>
                                                         </div>
-                                                        <span className={styles.subsViewAmount}>
-                                                            {formatCurrency(sub.amount)}<small>/mês</small>
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         ) : (
                                             <div className={styles.emptyTx}>
@@ -1048,23 +1060,50 @@ export default function CardsPage() {
                     {activeTab === 'cards' && !selectedCard && (
                         <motion.div className={styles.cardsGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                             {cards.length > 0 ? (
-                                cards.map((card) => (
-                                    <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>
-                                        <CreditCard
-                                            name={card.name}
-                                            brand={card.brand}
-                                            lastFourDigits={card.lastFourDigits}
-                                            creditLimit={card.creditLimit}
-                                            availableLimit={card.availableLimit}
-                                            closingDay={card.closingDay}
-                                            dueDay={card.dueDay}
-                                            color={card.color}
-                                            holderName={card.holderName || "NOME DO TITULAR"}
-                                            validThru="12/28"
-                                        />
-                                        <span className={styles.cardHint}>Clique para ver a fatura</span>
-                                    </div>
-                                ))
+                                cards.map((card) => {
+                                    // Resolve dynamic icon/color from dictionary
+                                    let dictionaryEntry = null;
+
+                                    // 1. Try via linked bank account
+                                    if (card.bankAccountId) {
+                                        const successBank = bankAccounts.find(b => b.id === card.bankAccountId);
+                                        if (successBank) {
+                                            dictionaryEntry = cardBanks.banks[successBank.bankCode?.toLowerCase()] ||
+                                                Object.values(cardBanks.banks).find(b => b.name === successBank.bankName);
+                                        }
+                                    }
+
+                                    // 2. Try matching card name/bankName
+                                    if (!dictionaryEntry) {
+                                        const searchName = (card.bankName || card.name || '').toLowerCase();
+                                        dictionaryEntry = Object.values(cardBanks.banks).find(b =>
+                                            searchName.includes(b.name.toLowerCase()) ||
+                                            (b.keywords && b.keywords.some(k => searchName.includes(k)))
+                                        );
+                                    }
+
+                                    const displayIcon = dictionaryEntry?.icon;
+                                    const displayColor = dictionaryEntry?.color || card.color || '#1a1a2e';
+
+                                    return (
+                                        <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>
+                                            <CreditCard
+                                                name={card.name}
+                                                brand={card.brand}
+                                                lastFourDigits={card.lastFourDigits}
+                                                creditLimit={card.creditLimit}
+                                                availableLimit={card.availableLimit}
+                                                closingDay={card.closingDay}
+                                                dueDay={card.dueDay}
+                                                color={displayColor}
+                                                holderName={card.holderName || "NOME DO TITULAR"}
+                                                validThru="12/28"
+                                                icon={displayIcon}
+                                            />
+                                            <span className={styles.cardHint}>Clique para ver a fatura</span>
+                                        </div>
+                                    );
+                                })
                             ) : (
                                 <GhostCard onClick={() => openCardModal()} />
                             )}
@@ -1154,66 +1193,82 @@ export default function CardsPage() {
                                     return filteredSubs.length > 0 ? (
                                         <>
                                             <div className={styles.subscriptionsList}>
-                                                {paginatedSubs.map((sub) => (
-                                                    <div key={sub.id} className={styles.subscriptionItem}>
-                                                        <div
-                                                            className={styles.subscriptionIcon}
-                                                            style={{ background: sub.icon ? 'transparent' : undefined }}
-                                                        >
-                                                            {sub.icon ? (
-                                                                <img
-                                                                    src={sub.icon}
-                                                                    alt={sub.name}
-                                                                    style={{ width: 32, height: 32, objectFit: 'contain' }}
-                                                                />
-                                                            ) : (
-                                                                <FiRepeat />
-                                                            )}
-                                                        </div>
-                                                        <div className={styles.subscriptionInfo}>
-                                                            <span className={styles.subscriptionName}>{sub.name}</span>
-                                                            <span className={styles.subscriptionCategory}>
-                                                                {sub.category}
-                                                                {sub.cardId && cards.find(c => c.id === sub.cardId) && (
-                                                                    <> • <FiCreditCard style={{ fontSize: '0.7rem', verticalAlign: 'middle' }} /> {cards.find(c => c.id === sub.cardId)?.name}</>
+                                                {paginatedSubs.map((sub) => {
+                                                    // Dynamic lookup for subscription icon
+                                                    const subKey = Object.keys(subscriptionData.subscriptions || {}).find(key =>
+                                                        subscriptionData.subscriptions[key].name === sub.name
+                                                    );
+                                                    const dictionarySub = subKey ? subscriptionData.subscriptions[subKey] : null;
+                                                    const displayIcon = dictionarySub?.icon || sub.icon;
+                                                    const displayColor = dictionarySub?.color || sub.color;
+
+                                                    return (
+                                                        <div key={sub.id} className={styles.subscriptionItem}>
+                                                            <div
+                                                                className={styles.subscriptionIcon}
+                                                                style={{ background: displayIcon ? 'transparent' : (displayColor || '#eee') }}
+                                                            >
+                                                                {displayIcon ? (
+                                                                    displayIcon.startsWith('http') || displayIcon.startsWith('/') ? (
+                                                                        <img
+                                                                            src={displayIcon}
+                                                                            alt={sub.name}
+                                                                            style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: '50%' }}
+                                                                        />
+                                                                    ) : (
+                                                                        <span style={{ fontSize: '1.2rem' }}>{displayIcon}</span>
+                                                                    )
+                                                                ) : (
+                                                                    <span style={{ fontSize: '1.2rem', color: '#fff' }}>{sub.name.charAt(0)}</span>
                                                                 )}
-                                                            </span>
+                                                            </div>
+                                                            <div className={styles.subscriptionInfo}>
+                                                                <span className={styles.subscriptionName}>{sub.name}</span>
+                                                                <span className={styles.subscriptionCategory}>
+                                                                    {sub.category}
+                                                                    {sub.cardId && cards.find(c => c.id === sub.cardId) && (
+                                                                        <> • <FiCreditCard style={{ fontSize: '0.7rem', verticalAlign: 'middle' }} /> {cards.find(c => c.id === sub.cardId)?.name}</>
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                            <div className={styles.subscriptionAmount}>
+                                                                <span className={styles.amount}>{formatCurrency(sub.amount)}</span>
+                                                                <span className={styles.frequency}>/{sub.frequency === 'MONTHLY' ? 'mês' : sub.frequency}</span>
+                                                            </div>
+                                                            <div className={styles.subscriptionNext}>
+                                                                <FiCalendar /><span>{formatDate(sub.nextBillingDate, 'short')}</span>
+                                                            </div>
+                                                            <div className={styles.subscriptionActions}>
+                                                                <button className={styles.actionBtn} onClick={() => openSubModal(sub)}><FiEdit2 /></button>
+                                                                <button className={`${styles.actionBtn} ${styles.danger}`}><FiTrash2 /></button>
+                                                            </div>
                                                         </div>
-                                                        <div className={styles.subscriptionAmount}>
-                                                            <span className={styles.amount}>{formatCurrency(sub.amount)}</span>
-                                                            <span className={styles.frequency}>/{sub.frequency === 'MONTHLY' ? 'mês' : sub.frequency}</span>
-                                                        </div>
-                                                        <div className={styles.subscriptionNext}>
-                                                            <FiCalendar /><span>{formatDate(sub.nextBillingDate, 'short')}</span>
-                                                        </div>
-                                                        <div className={styles.subscriptionActions}>
-                                                            <button className={styles.actionBtn} onClick={() => openSubModal(sub)}><FiEdit2 /></button>
-                                                            <button className={`${styles.actionBtn} ${styles.danger}`}><FiTrash2 /></button>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
-                                            {totalPages > 1 && (
-                                                <div className={styles.pagination}>
-                                                    <button
-                                                        className={styles.pageBtn}
-                                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                                        disabled={currentPage === 1}
-                                                    >
-                                                        <FiChevronLeft />
-                                                    </button>
-                                                    <span className={styles.pageInfo}>
-                                                        Página {currentPage} de {totalPages}
-                                                    </span>
-                                                    <button
-                                                        className={styles.pageBtn}
-                                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                                        disabled={currentPage === totalPages}
-                                                    >
-                                                        <FiChevronRight />
-                                                    </button>
-                                                </div>
-                                            )}
+                                            {
+                                                totalPages > 1 && (
+                                                    <div className={styles.pagination}>
+                                                        <button
+                                                            className={styles.pageBtn}
+                                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                            disabled={currentPage === 1}
+                                                        >
+                                                            <FiChevronLeft />
+                                                        </button>
+                                                        <span className={styles.pageInfo}>
+                                                            Página {currentPage} de {totalPages}
+                                                        </span>
+                                                        <button
+                                                            className={styles.pageBtn}
+                                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                            disabled={currentPage === totalPages}
+                                                        >
+                                                            <FiChevronRight />
+                                                        </button>
+                                                    </div>
+                                                )
+                                            }
                                         </>
                                     ) : (
                                         // Empty State for Subscriptions
@@ -1226,7 +1281,7 @@ export default function CardsPage() {
                                         </div>
                                     );
                                 })()}
-                            </Card>
+                            </Card >
 
                             <div className={styles.summaryCards}>
                                 <Card variant="glass" className={styles.summaryCard}>

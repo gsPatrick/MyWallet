@@ -97,6 +97,7 @@ export default function CardModal({
             ...value,
         }));
     }, []);
+    // Brands loaded from JSON
 
     useEffect(() => {
         if (editingCard) {

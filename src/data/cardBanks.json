@@ -12,52 +12,52 @@
         },
         "bradesco": {
             "name": "Bradesco",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Bradesco_logo.svg",
+            "icon": "https://pbs.twimg.com/profile_images/1737158472225927168/zyASghk-.jpg",
             "color": "#CC092F"
         },
         "santander": {
             "name": "Santander",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Santander_Logo.svg",
+            "icon": "https://yt3.googleusercontent.com/2zcKPq4-lOXeh8_moIMZjHu_ntKBoLuPAwaXs7VhUWFU_o1HBJNQm83QsRGGyEcn48NoTbRzQ_c=s900-c-k-c0x00ffffff-no-rj",
             "color": "#EC0000"
         },
         "bb": {
             "name": "Banco do Brasil",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Banco_do_Brasil_logo.svg",
+            "icon": "https://yt3.googleusercontent.com/YoY6PQUzk6UXJEW8sTYs8zf_TfPLHNLSim65mswp_w5CX0jYgtl_le41QPRwoI1Hyj4OM2q_=s900-c-k-c0x00ffffff-no-rj",
             "color": "#FFCC00"
         },
         "caixa": {
             "name": "Caixa",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/31/Caixa_Econ%C3%B4mica_Federal_logo.svg",
+            "icon": "https://yt3.googleusercontent.com/YoY6PQUzk6UXJEW8sTYs8zf_TfPLHNLSim65mswp_w5CX0jYgtl_le41QPRwoI1Hyj4OM2q_=s900-c-k-c0x00ffffff-no-rj",
             "color": "#005CA9"
         },
         "inter": {
             "name": "Banco Inter",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/54/Banco_Inter_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIgsBVZLc-3vFUjstseoM0Cg9j3jP_OCsIzg&s",
             "color": "#FF7A00"
         },
         "c6": {
             "name": "C6 Bank",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6a/C6_Bank_logo.svg",
+            "icon": "https://yt3.googleusercontent.com/DCP_24vUEA5Hgci9YDsLDHEkzEuZp1TnXh5LDrUhFZFIj-F-80PM8UsCidZw6l-wYQlH-FAw1w=s900-c-k-c0x00ffffff-no-rj",
             "color": "#242424"
         },
         "xp": {
             "name": "XP",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/96/XP_Investimentos_logo.svg",
+            "icon": "https://www.xpinc.com/wp-content/uploads/sites/6/2023/08/XP.png",
             "color": "#FECB00"
         },
         "picpay": {
             "name": "PicPay",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/61/PicPay_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/pTvc9kCumx_24eJDwGUpvcBwljcIBkrsL3qHwhBW2NalMQ-XxTtHRV9YAJanBxkV0Rw",
             "color": "#21C25E"
         },
         "mercadopago": {
             "name": "Mercado Pago",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/36/Mercado_Pago_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/4Znye9QMuQvEx8n9KS-g_KtT_mSUdUOWuaAj96359de5eJnDDnYR0x6AYXxA_6vrsh8",
             "color": "#009EE3"
         },
         "will": {
             "name": "Will Bank",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/47/Will_bank_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/fazUU0h6BiMpjSxgq1son0-VRhBhkimr6kzCLw6T1Y3ZGZj1Nrnvi-ETM2je3-miRQ",
             "color": "#FFDE59"
         },
         "next": {
@@ -67,17 +67,17 @@
         },
         "original": {
             "name": "Banco Original",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Banco_Original_logo.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Logo_Oficial_Banco_Original_-_Verde.png",
             "color": "#00A859"
         },
         "neon": {
             "name": "Neon",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Neon_logo.svg",
+            "icon": "https://margens.com.br/wp-content/uploads/2025/04/telefone-neon-800x416.webp",
             "color": "#00D4AA"
         },
         "pan": {
             "name": "Banco Pan",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Banco_Pan_logo.svg",
+            "icon": "https://yt3.googleusercontent.com/mGZ4gt6MHCDkp3rn2ZRYb8glF2yX4QphOpZtcuoAF0KaAEyNa9tFqffAQQqyKQBsrJYxmQrQKg=s900-c-k-c0x00ffffff-no-rj",
             "color": "#00529B"
         },
         "safra": {
@@ -104,6 +104,45 @@
             "name": "Outro",
             "icon": null,
             "color": "#708090"
+        },
+        "rico": {
+            "name": "Rico",
+            "icon": "https://i.imgur.com/uSxEe0t.jpeg",
+            "color": "#FF6600"
+        },
+        "nuinvest": {
+            "name": "NuInvest",
+            "icon": "https://logo.clearbit.com/nuinvest.com.br",
+            "color": "#820AD1"
+        },
+        "clear": {
+            "name": "Clear",
+            "icon": "https://logo.clearbit.com/clear.com.br",
+            "color": "#00A3E0"
+        },
+        "avenue": {
+            "name": "Avenue",
+            "icon": "https://logo.clearbit.com/avenue.us",
+            "color": "#5B21B6"
+        },
+        "binance": {
+            "name": "Binance",
+            "icon": "https://logo.clearbit.com/binance.com",
+            "color": "#F0B90B"
+        },
+        "mercadobitcoin": {
+            "name": "Mercado Bitcoin",
+            "icon": "https://logo.clearbit.com/mercadobitcoin.com.br",
+            "color": "#00D4A1"
+        },
+        "ativa": {
+            "name": "Ativa Investimentos",
+            "icon": "https://logo.clearbit.com/ativainvestimentos.com.br",
+            "color": "#003366"
+        },
+        "genial": {
+            "name": "Genial Investimentos",
+            "icon": "https://logo.clearbit.com/genialinvestimentos.com.br"
         }
     },
     "brands": {
@@ -119,22 +158,22 @@
         },
         "elo": {
             "name": "Elo",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Cartao_Elo_logo.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Elo_card_association_logo_-_black_text.svg/1200px-Elo_card_association_logo_-_black_text.svg.png",
             "color": "#000000"
         },
         "amex": {
             "name": "American Express",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg",
+            "icon": "https://anadef.org.br/wp-content/uploads/2022/04/277580440007211_baaefe070804f03ea4d8f4d1a809a2a1-1.png",
             "color": "#006FCF"
         },
         "hipercard": {
             "name": "Hipercard",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/37/Hipercard_logo.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/89/Hipercard_logo.svg",
             "color": "#822124"
         },
         "diners": {
             "name": "Diners Club",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Diners_Club_Logo.svg",
+            "icon": "https://www.maquinadecartao.com/img/1/diners-club-logo-bandeira-de-maquininha-de-cartao-david-tech.webp",
             "color": "#004A97"
         }
     }

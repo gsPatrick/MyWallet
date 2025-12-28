@@ -1,0 +1,627 @@
+/* ============================================
+   SIMULATOR PAGE - USES CSS VARIABLES
+   ============================================ */
+
+.page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding-bottom: calc(var(--dock-height) + 24px);
+}
+
+.main {
+    padding-top: calc(var(--header-height) + 24px);
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.backButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.backButton:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.titleArea {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.titleArea h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.tickerBadge {
+    padding: 6px 14px;
+    background: var(--accent-primary-light);
+    border: 1px solid var(--accent-primary);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+/* Grid Layout */
+.grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+}
+
+.leftColumn,
+.rightColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Card Styles */
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.cardIcon {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-success);
+}
+
+.cardHeader h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Magic Number Card */
+.magicCard {
+    background: var(--accent-success-light);
+    border: 1px solid var(--accent-success);
+}
+
+.magicCard .cardIcon {
+    color: var(--accent-success);
+}
+
+.magicDisplay {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.magicValue {
+    font-size: 3rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--accent-success);
+    letter-spacing: -0.02em;
+}
+
+.magicLabel {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.progressBar {
+    height: 10px;
+    background: var(--border-medium);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--accent-success);
+    border-radius: var(--radius-full);
+}
+
+.progressText {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    margin-bottom: 16px;
+}
+
+.magicExplanation {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+.magicExplanation strong {
+    color: var(--accent-success);
+}
+
+/* Input Card */
+.inputCard {
+    background: var(--bg-secondary);
+}
+
+.inputGroup {
+    margin-bottom: 20px;
+}
+
+.inputGroup:last-child {
+    margin-bottom: 0;
+}
+
+.inputGroup label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.inputGroup label svg {
+    width: 14px;
+    height: 14px;
+}
+
+.inputWrapper {
+    display: flex;
+    align-items: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
+}
+
+.inputWrapper:focus-within {
+    border-color: var(--accent-primary);
+}
+
+.inputPrefix,
+.inputSuffix {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    background: var(--bg-secondary);
+}
+
+.inputPrefix {
+    border-right: 1px solid var(--border-light);
+}
+
+.inputSuffix {
+    border-left: 1px solid var(--border-light);
+}
+
+.inputWrapper input {
+    flex: 1;
+    padding: 12px 14px;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    outline: none;
+}
+
+.inputWrapper input::-webkit-inner-spin-button,
+.inputWrapper input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+.inputHint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.rateBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.rateBadge {
+    padding: 6px 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rateBadge:hover {
+    background: var(--accent-primary-light);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* Summary Cards */
+.summaryCards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summaryCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--bg-secondary);
+}
+
+.summaryCard.highlight {
+    background: var(--accent-success-light);
+    border: 1px solid var(--accent-success);
+}
+
+.summaryLabel {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.summaryValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+
+.summaryValue.profit {
+    color: var(--accent-success);
+}
+
+.summaryValueLarge {
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--accent-success);
+}
+
+/* Chart Card */
+.chartCard {
+    background: var(--bg-secondary);
+}
+
+.chartWrapper {
+    height: 220px;
+}
+
+/* Table Card */
+.tableCard {
+    background: var(--bg-secondary);
+    flex: 1;
+}
+
+.tableWrapper {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-tertiary);
+    padding: 14px 16px;
+    text-align: right;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 1;
+}
+
+.table th:first-child {
+    text-align: center;
+}
+
+.table td {
+    padding: 12px 16px;
+    text-align: right;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.table td:first-child {
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+.table .yearRow {
+    background: var(--accent-primary-light);
+}
+
+.table .yearRow td {
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.table .profit {
+    color: var(--accent-success);
+}
+
+.table .bold {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.table .moreRow td {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-family: var(--font-primary);
+}
+
+/* Tooltip */
+.tooltip {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: var(--shadow-lg);
+}
+
+.tooltip span {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+/* Responsive */
+
+/* Tablets */
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .leftColumn {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .rightColumn {
+        order: -1;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .main {
+        padding-top: calc(var(--header-height) + 12px);
+    }
+
+    .container {
+        padding: 0 12px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .backButton {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .titleArea {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .titleArea h1 {
+        font-size: 1.35rem;
+    }
+
+    .tickerBadge {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+
+    /* Grid stacks vertically */
+    .grid {
+        gap: 16px;
+    }
+
+    .leftColumn {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Cards */
+    .magicCard,
+    .inputCard,
+    .chartCard,
+    .tableCard {
+        padding: 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .cardHeader {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+
+    .cardHeader h3 {
+        font-size: 0.9rem;
+    }
+
+    /* Magic Number */
+    .magicValue {
+        font-size: 2.25rem;
+    }
+
+    .magicLabel {
+        font-size: 0.875rem;
+    }
+
+    .magicExplanation {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+
+    /* Inputs */
+    .inputGroup {
+        margin-bottom: 16px;
+    }
+
+    .inputGroup label {
+        font-size: 0.7rem;
+    }
+
+    .inputWrapper {
+        border-radius: var(--radius-sm);
+    }
+
+    .inputWrapper input {
+        padding: 10px 12px;
+        font-size: 1rem;
+    }
+
+    .inputPrefix,
+    .inputSuffix {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    /* Summary Cards */
+    .summaryCards {
+        gap: 10px;
+    }
+
+    .summaryCard {
+        padding: 12px 16px;
+    }
+
+    .summaryLabel {
+        font-size: 0.8rem;
+    }
+
+    .summaryValue {
+        font-size: 1rem;
+    }
+
+    .summaryValueLarge {
+        font-size: 1.25rem;
+    }
+
+    /* Chart */
+    .chartWrapper {
+        height: 160px;
+    }
+
+    /* Table */
+    .tableWrapper {
+        max-height: 400px;
+    }
+
+    .table {
+        font-size: 0.75rem;
+    }
+
+    .table th {
+        padding: 10px 8px;
+        font-size: 0.65rem;
+    }
+
+    .table td {
+        padding: 8px;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 8px;
+    }
+
+    .titleArea h1 {
+        font-size: 1.15rem;
+    }
+
+    .magicValue {
+        font-size: 2rem;
+    }
+
+    .chartWrapper {
+        height: 140px;
+    }
+
+    .summaryValueLarge {
+        font-size: 1.1rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 6px 4px;
+        font-size: 0.7rem;
+    }
+
+    /* Hide some table columns on very small screens */
+    .table th:nth-child(3),
+    .table td:nth-child(3) {
+        display: none;
+    }
+}

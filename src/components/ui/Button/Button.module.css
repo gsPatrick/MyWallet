@@ -39,24 +39,56 @@
 
 /* Variants */
 .primary {
-    background: var(--gradient-primary);
+    background: var(--gradient-primary, linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%));
     color: white;
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    border: none;
 }
 
 .primary:hover:not(:disabled) {
     box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Light theme: ensure primary button is visible */
+[data-theme="light"] .primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
 }
 
 .secondary {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-medium);
+    background: var(--bg-secondary, #f1f5f9);
+    color: var(--text-primary, #1a1a2e);
+    border: 1px solid var(--border-medium, #e2e8f0);
 }
 
 .secondary:hover:not(:disabled) {
-    background: var(--bg-tertiary);
-    border-color: var(--border-strong);
+    background: var(--bg-tertiary, #e2e8f0);
+    border-color: var(--border-strong, #cbd5e1);
+}
+
+/* Light theme: ensure secondary button has proper border */
+[data-theme="light"] .secondary {
+    background: #f8fafc;
+    color: #1a1a2e;
+    border: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .secondary:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* Dark theme: ensure secondary button border is visible */
+[data-theme="dark"] .secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
 .ghost {

@@ -19,6 +19,7 @@ import Input from '@/components/ui/Input';
 import BudgetExceededModal from '@/components/modals/BudgetExceededModal';
 import CategoryModal from '@/components/modals/CategoryModal';
 import BankAccountModal from '@/components/modals/BankAccountModal';
+import QuickTransactionModal from '@/components/modals/QuickTransactionModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 
 import { formatDate } from '@/utils/formatters';
@@ -28,6 +29,8 @@ import bankAccountService from '@/services/bankAccountService';
 import { mockTransactions } from '@/utils/mockData';
 import subscriptionIcons from '@/data/subscriptionIcons.json';
 import cardBanks from '@/data/cardBanks.json';
+import { getBrandIcon } from '@/hooks/useBrandIcon';
+import { detectBrand } from '@/utils/brandDetection';
 import styles from './page.module.css';
 
 
@@ -102,6 +105,8 @@ function TransactionsContent() {
         installments: '',
         imageUrl: '', // For subscriptions/logos
         bankAccountId: '', // Bank account for balance tracking
+        brandKey: '', // For brand detection
+        autoDetectedBrand: false // Flag to track if icon was auto-detected
     });
 
     // Constants
@@ -140,93 +145,126 @@ function TransactionsContent() {
         }
     }, [defaultBankAccountId]);
 
-    // Load data from API
+    // 🎯 Real-time Brand Detection
+    // Detecta marca enquanto usuário digita e auto-preenche ícone
     useEffect(() => {
-        const loadData = async () => {
-            setIsLoading(true);
-            try {
-                // Determine date range based on filter
-                const now = new Date();
-                let startDate = new Date();
-                let endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // End of current month default
+        if (!newTransaction.description || newTransaction.description.length < 3) return;
 
-                if (filterDate === 'today') {
-                    startDate = now;
-                    endDate = now;
-                } else if (filterDate === 'week') {
-                    startDate.setDate(now.getDate() - 7);
-                } else if (filterDate === 'month') {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                } else if (filterDate === 'year') {
-                    startDate = new Date(now.getFullYear(), 0, 1);
-                } else if (filterDate === 'custom' && customDate.start && customDate.end) {
-                    startDate = new Date(customDate.start);
-                    endDate = new Date(customDate.end);
-                }
-
-                // Format for API (YYYY-MM-DD)
-                const startStr = startDate.toISOString().split('T')[0];
-                const endStr = endDate.toISOString().split('T')[0];
-
-                const [txRes, catRes, cardsRes, categoriesRes, allocationsRes, bankAccountsRes] = await Promise.all([
-                    transactionsAPI.list({ startDate: startStr, endDate: endStr }),
-                    transactionsAPI.getCategories(),
-                    cardsAPI.list(),
-                    categoriesService.list(),
-                    budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } })),
-                    bankAccountService.list().catch((err) => { console.error('Bank accounts fetch error:', err); return []; })
-                ]);
-
-                console.log('🏦 [TRANSACTIONS] Raw bankAccountsRes:', bankAccountsRes);
-
-                // Apply local filters
-                let filtered = txRes?.data?.transactions || [];
-
-                if (filterType !== 'Todas') {
-                    filtered = filtered.filter(t => t.type === filterType);
-                }
-                if (filterCategory !== 'Todas') {
-                    filtered = filtered.filter(t => t.category === filterCategory || t.categoryId === filterCategory);
-                }
-                if (filterCard === 'card-only') {
-                    filtered = filtered.filter(t => t.cardId);
-                } else if (filterCard === 'no-card') {
-                    filtered = filtered.filter(t => !t.cardId);
-                }
-                if (filterStatus !== 'all') {
-                    filtered = filtered.filter(t => t.status === filterStatus);
-                }
-                if (filterBank !== 'all') {
-                    filtered = filtered.filter(t => t.bankAccountId === filterBank);
-                }
-
-                // Filter by recurring if selected
-                if (filterType === 'RECURRING') {
-                    filtered = filtered.filter(t => t.isRecurring || t.subscriptionId);
-                }
-
-                setTransactions(filtered);
-                setCards(cardsRes.data || []);
-                setApiCategories(categoriesRes?.data || []);
-                setCategoryList(categoriesRes?.data || []);
-
-                // Bank accounts with default
-                // bankAccountService.list() returns array directly, not { data: [] }
-                const accounts = Array.isArray(bankAccountsRes) ? bankAccountsRes : (bankAccountsRes?.data || []);
-                console.log('🏦 [TRANSACTIONS] Parsed accounts:', accounts);
-                setBankAccounts(accounts);
-                const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
-                if (defaultAcc) {
-                    setDefaultBankAccountId(defaultAcc.id);
-                }
-                setBudgetAllocations(allocationsRes?.data?.allocations || []);
-            } catch (error) {
-                console.error("Failed to load data:", error);
-            } finally {
-                setIsLoading(false);
+        // Só auto-detecta se o usuário não escolheu manualmente um ícone
+        if (newTransaction.autoDetectedBrand === false || newTransaction.imageUrl === '') {
+            const detected = detectBrand(newTransaction.description);
+            if (detected && detected.icon) {
+                setNewTransaction(prev => ({
+                    ...prev,
+                    imageUrl: detected.icon,
+                    brandKey: detected.brandKey,
+                    autoDetectedBrand: true
+                }));
             }
-        };
+        }
+    }, [newTransaction.description]);
 
+    // Load data from API - Extracted to be reusable as callback
+    const loadData = async () => {
+        setIsLoading(true);
+        try {
+            // Determine date range based on filter
+            const now = new Date();
+            let startDate = new Date();
+            let endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // End of current month default
+
+            if (filterDate === 'today') {
+                startDate = now;
+                endDate = now;
+            } else if (filterDate === 'week') {
+                startDate.setDate(now.getDate() - 7);
+            } else if (filterDate === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            } else if (filterDate === 'year') {
+                startDate = new Date(now.getFullYear(), 0, 1);
+            } else if (filterDate === 'custom' && customDate.start && customDate.end) {
+                startDate = new Date(customDate.start);
+                endDate = new Date(customDate.end);
+            }
+
+            // Format for API (YYYY-MM-DD)
+            const startStr = startDate.toISOString().split('T')[0];
+            const endStr = endDate.toISOString().split('T')[0];
+
+            const [txRes, catRes, cardsRes, categoriesRes, allocationsRes, bankAccountsRes] = await Promise.all([
+                transactionsAPI.list({ startDate: startStr, endDate: endStr }),
+                transactionsAPI.getCategories(),
+                cardsAPI.list(),
+                categoriesService.list(),
+                budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } })),
+                bankAccountService.list().catch((err) => { console.error('Bank accounts fetch error:', err); return []; })
+            ]);
+
+            console.log('🏦 [TRANSACTIONS] Raw bankAccountsRes:', bankAccountsRes);
+
+            // Apply local filters
+            let filtered = txRes?.data?.transactions || [];
+
+            if (filterType !== 'Todas') {
+                filtered = filtered.filter(t => t.type === filterType);
+            }
+            if (filterCategory !== 'Todas') {
+                filtered = filtered.filter(t => t.category === filterCategory || t.categoryId === filterCategory);
+            }
+            if (filterCard === 'card-only') {
+                filtered = filtered.filter(t => t.cardId);
+            } else if (filterCard === 'no-card') {
+                filtered = filtered.filter(t => !t.cardId);
+            }
+            if (filterStatus !== 'all') {
+                filtered = filtered.filter(t => t.status === filterStatus);
+            }
+            if (filterBank !== 'all') {
+                filtered = filtered.filter(t => t.bankAccountId === filterBank);
+            }
+
+            // Filter by recurring if selected
+            if (filterType === 'RECURRING') {
+                filtered = filtered.filter(t => t.isRecurring || t.subscriptionId);
+            }
+
+            setTransactions(filtered);
+            setCards(cardsRes.data || []);
+            setApiCategories(categoriesRes?.data || []);
+            setCategoryList(categoriesRes?.data || []);
+
+            // Bank accounts with default
+            // bankAccountService.list() returns array directly, not { data: [] }
+            const accounts = Array.isArray(bankAccountsRes) ? bankAccountsRes : (bankAccountsRes?.data || []);
+
+            // Hydrate with dictionary data for dynamic icons
+            const hydratedAccounts = accounts.map(acc => {
+                const dictionaryEntry = cardBanks.banks[acc.bankCode?.toLowerCase()] ||
+                    Object.values(cardBanks.banks).find(b => b.name === acc.bankName) ||
+                    Object.values(cardBanks.banks).find(b => b.name === acc.nickname);
+                return {
+                    ...acc,
+                    icon: dictionaryEntry?.icon || acc.icon,
+                    color: dictionaryEntry?.color || acc.color
+                };
+            });
+
+            console.log('🏦 [TRANSACTIONS] Parsed accounts:', hydratedAccounts);
+            setBankAccounts(hydratedAccounts);
+            const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
+            if (defaultAcc) {
+                setDefaultBankAccountId(defaultAcc.id);
+            }
+            setBudgetAllocations(allocationsRes?.data?.allocations || []);
+        } catch (error) {
+            console.error("Failed to load data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Initial load and filter changes
+    useEffect(() => {
         loadData();
     }, [filterDate, filterType, filterCategory, filterCard, filterBank, filterStatus, customDate]);
 
@@ -848,73 +886,83 @@ function TransactionsContent() {
                                         <p>Nenhuma transação encontrada com os filtros selecionados.</p>
                                     </div>
                                 ) : (
-                                    transactions.map((tx) => (
-                                        <motion.div
-                                            key={tx.id}
-                                            className={`${styles.transactionItem} ${tx.status === 'PENDING' ? styles.pendingItem : ''}`}
-                                            variants={item}
-                                        >
-                                            <div
-                                                className={`${styles.transactionIcon} ${tx.type === 'INCOME' ? styles.income : styles.expense}`}
-                                                style={{ background: (tx.imageUrl || tx.icon || tx.subscription?.icon) ? 'transparent' : undefined }}
+                                    transactions.map((tx) => {
+                                        // Resolve icon: 1. DB/API 2. Subscription 3. BrandKey 4. Detect from Text
+                                        const detectedBrand = detectBrand(tx.description);
+                                        const brandIcon = tx.imageUrl || tx.icon || tx.subscription?.icon || getBrandIcon(tx.brandKey) || detectedBrand?.icon;
+
+                                        return (
+                                            <motion.div
+                                                key={tx.id}
+                                                className={`${styles.transactionItem} ${tx.status === 'PENDING' ? styles.pendingItem : ''}`}
+                                                variants={item}
                                             >
-                                                {(tx.imageUrl || tx.icon || tx.subscription?.icon) ? (
-                                                    <img
-                                                        src={tx.imageUrl || tx.icon || tx.subscription?.icon}
-                                                        alt={tx.description}
-                                                        className={styles.transactionIconImg}
-                                                    />
-                                                ) : (tx.isRecurring || tx.subscriptionId) ? <FiRepeat /> : tx.type === 'INCOME' ? <FiTrendingUp /> : <FiTrendingDown />}
-                                            </div>
-                                            <div className={styles.transactionInfo}>
-                                                <div className={styles.descRow}>
-                                                    <span className={styles.transactionDesc}>{tx.description}</span>
-                                                    {(tx.status === 'PENDING' || tx.status === 'PAID' && tx.source === 'CARD' && new Date(tx.date) > new Date()) && <span className={styles.pendingBadge}><FiClock /> Agendado</span>}
-                                                    {(new Date(tx.date) > new Date() && tx.status !== 'PENDING' && tx.status !== 'PAID') && (
-                                                        <span className={styles.futureBadge}>Futuro</span>
+                                                <div
+                                                    className={`${styles.transactionIcon} ${tx.type === 'INCOME' ? styles.income : styles.expense}`}
+                                                    style={{ background: brandIcon ? 'transparent' : undefined }}
+                                                >
+                                                    {brandIcon ? (
+                                                        <img
+                                                            src={brandIcon}
+                                                            alt={tx.description}
+                                                            className={styles.brandLogos || styles.brandLogo} // Use brandLogo class if exists or fallback
+                                                        />
+                                                    ) : (
+                                                        tx.type === 'INCOME' ? <FiTrendingUp /> : <FiTrendingDown />
                                                     )}
                                                 </div>
-                                                <div className={styles.transactionMeta}>
-                                                    <span className={styles.transactionCategory}>{tx.category}</span>
-                                                    {(tx.isRecurring || tx.subscriptionId) && (
-                                                        <span className={styles.recurringBadge}><FiRepeat /> Recorrente</span>
-                                                    )}
-                                                    {/* Show card name for card transactions */}
-                                                    {tx.source === 'CARD' && tx.sourceType && (
-                                                        <span className={styles.cardBadge}><FiCreditCard /> {tx.sourceType}</span>
-                                                    )}
-                                                    {/* Show Bank Account for manual transactions */}
-                                                    {(!tx.cardId && tx.bankAccountId) && (
-                                                        (() => {
-                                                            const acc = bankAccounts.find(a => a.id === tx.bankAccountId);
-                                                            return acc ? (
-                                                                <span className={styles.bankBadge}><FiHome /> {acc.nickname || acc.bankName}</span>
-                                                            ) : null;
-                                                        })()
-                                                    )}
-                                                    {tx.installments && (
-                                                        <span className={styles.installmentBadge}>
-                                                            <FiLayers /> {tx.installments.current}/{tx.installments.total}
-                                                        </span>
-                                                    )}
+                                                <div className={styles.transactionInfo}>
+                                                    <div className={styles.descRow}>
+                                                        <span className={styles.transactionDesc}>{tx.description}</span>
+                                                        {(tx.status === 'PENDING' || tx.status === 'PAID' && tx.source === 'CARD' && new Date(tx.date) > new Date()) && <span className={styles.pendingBadge}><FiClock /> Agendado</span>}
+                                                        {(new Date(tx.date) > new Date() && tx.status !== 'PENDING' && tx.status !== 'PAID') && (
+                                                            <span className={styles.futureBadge}>Futuro</span>
+                                                        )}
+                                                    </div>
+                                                    <div className={styles.transactionMeta}>
+                                                        <span className={styles.transactionCategory}>{tx.category}</span>
+                                                        {(tx.isRecurring || tx.subscriptionId) && (
+                                                            <span className={styles.recurringBadge}><FiRepeat /> Recorrente</span>
+                                                        )}
+                                                        {/* Show card name for card transactions */}
+                                                        {tx.source === 'CARD' && tx.sourceType && (
+                                                            <span className={styles.cardBadge}><FiCreditCard /> {tx.sourceType}</span>
+                                                        )}
+                                                        {/* Show Bank Account for manual transactions */}
+                                                        {(!tx.cardId && tx.bankAccountId) && (
+                                                            (() => {
+                                                                const acc = bankAccounts.find(a => a.id === tx.bankAccountId);
+                                                                return acc ? (
+                                                                    <span className={styles.bankBadge}><FiHome /> {acc.nickname || acc.bankName}</span>
+                                                                ) : null;
+                                                            })()
+                                                        )}
+                                                        {tx.installments && (
+                                                            <span className={styles.installmentBadge}>
+                                                                <FiLayers /> {tx.installments.current}/{tx.installments.total}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className={styles.transactionAmount}>
-                                                <span className={`${tx.type === 'INCOME' ? styles.income : styles.expense} ${(tx.status === 'PENDING' || tx.status === 'PAID') ? styles.pendingText : ''}`}>
-                                                    {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                                                </span>
-                                                <span className={styles.transactionDateHighlight}>
-                                                    {formatDate(tx.date)}
-                                                </span>
-                                            </div>
-                                            {(tx.source === 'MANUAL' || tx.source === 'CARD') && (
-                                                <div className={styles.transactionActions}>
-                                                    <button className={styles.actionBtn} onClick={(e) => { e.stopPropagation(); handleEdit(tx); }} title="Editar"><FiEdit /></button>
-                                                    <button className={`${styles.actionBtn} ${styles.danger}`} onClick={(e) => { e.stopPropagation(); openDeleteModal(tx); }} title="Excluir"><FiTrash2 /></button>
+                                                <div className={styles.transactionAmount}>
+                                                    <span className={`${tx.type === 'INCOME' ? styles.income : styles.expense} ${(tx.status === 'PENDING' || tx.status === 'PAID') ? styles.pendingText : ''}`}>
+                                                        {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                                    </span>
+                                                    <span className={styles.transactionDateHighlight}>
+                                                        {formatDate(tx.date)}
+                                                    </span>
                                                 </div>
-                                            )}
-                                        </motion.div>
-                                    ))
+                                                {
+                                                    (tx.source === 'MANUAL' || tx.source === 'CARD') && (
+                                                        <div className={styles.transactionActions}>
+                                                            <button className={styles.actionBtn} onClick={(e) => { e.stopPropagation(); handleEdit(tx); }} title="Editar"><FiEdit /></button>
+                                                            <button className={`${styles.actionBtn} ${styles.danger}`} onClick={(e) => { e.stopPropagation(); openDeleteModal(tx); }} title="Excluir"><FiTrash2 /></button>
+                                                        </div>
+                                                    )
+                                                }
+                                            </motion.div>
+                                        );
+                                    })
                                 )}
                             </motion.div>
                         )}
@@ -924,386 +972,12 @@ function TransactionsContent() {
 
             <Dock />
 
-            {/* Add/Edit Transaction Modal */}
-            <Modal
-                isOpen={showAddModal}
-                onClose={() => { setShowAddModal(false); setEditingTransaction(null); resetForm(); }}
-                title={editingTransaction ? 'Editar Transação' : 'Nova Transação'}
-                size="md"
-            >
-                <div className={styles.formGrid}>
-                    {/* Transaction Type */}
-                    <div className={styles.typeToggle}>
-                        <button
-                            className={`${styles.typeBtn} ${newTransaction.type === 'INCOME' ? styles.income : ''}`}
-                            onClick={() => setNewTransaction(prev => ({ ...prev, type: 'INCOME' }))}
-                        >
-                            <FiTrendingUp /> Receita
-                        </button>
-                        <button
-                            className={`${styles.typeBtn} ${newTransaction.type === 'EXPENSE' ? styles.expense : ''}`}
-                            onClick={() => setNewTransaction(prev => ({ ...prev, type: 'EXPENSE' }))}
-                        >
-                            <FiTrendingDown /> Despesa
-                        </button>
-                    </div>
-
-                    {/* Transaction Mode */}
-                    <div className={styles.modeSection}>
-                        <label className={styles.inputLabel}>Tipo de Lançamento</label>
-                        <div className={styles.modeToggle}>
-                            <button
-                                type="button"
-                                className={`${styles.modeBtn} ${transactionMode === 'single' ? styles.active : ''}`}
-                                onClick={() => setTransactionMode('single')}
-                            >
-                                <FiDollarSign /> Único
-                            </button>
-                            <button
-                                type="button"
-                                className={`${styles.modeBtn} ${transactionMode === 'recurring' ? styles.active : ''}`}
-                                onClick={() => setTransactionMode('recurring')}
-                            >
-                                <FiRepeat /> Recorrente
-                            </button>
-                            <button
-                                type="button"
-                                className={`${styles.modeBtn} ${transactionMode === 'installment' ? styles.active : ''}`}
-                                onClick={() => setTransactionMode('installment')}
-                            >
-                                <FiLayers /> Parcelado
-                            </button>
-                        </div>
-                    </div>
-
-                    <Input
-                        label="Descrição"
-                        placeholder="Ex: Supermercado, Netflix, iPhone..."
-                        value={newTransaction.description}
-                        onChange={(e) => setNewTransaction(prev => ({ ...prev, description: e.target.value }))}
-                        fullWidth
-                    />
-
-                    {/* Optional Icon Selector */}
-                    <div className={styles.iconSelectorSection}>
-                        <label className={styles.inputLabel}>Ícone (opcional)</label>
-                        <div
-                            className={styles.iconPreview}
-                            onClick={() => setShowIconPicker(true)}
-                        >
-                            {newTransaction.imageUrl ? (
-                                <img src={newTransaction.imageUrl} alt="Ícone" className={styles.selectedIconImg} />
-                            ) : (
-                                <span className={styles.iconPlaceholder}><FiPlus /> Escolher ícone</span>
-                            )}
-                        </div>
-                        {newTransaction.imageUrl && (
-                            <button
-                                type="button"
-                                className={styles.clearIconBtn}
-                                onClick={() => setNewTransaction(prev => ({ ...prev, imageUrl: '' }))}
-                            >
-                                <FiX /> Remover
-                            </button>
-                        )}
-                    </div>
-
-                    <div className={styles.formRow}>
-                        <Input
-                            label="Valor"
-                            type="text"
-                            placeholder="0,00"
-                            leftIcon={<FiDollarSign />}
-                            value={newTransaction.amount}
-                            onChange={handleAmountChange}
-                        />
-                        <div className={styles.inputGroup}>
-                            <div className={styles.labelWithAction}>
-                                <label className={styles.inputLabel}>Categoria</label>
-                                <button type="button" className={styles.addCategoryBtn} onClick={() => setShowCategoryModal(true)}>
-                                    <FiPlus /> Nova
-                                </button>
-                            </div>
-                            <select
-                                className={styles.selectInput}
-                                value={newTransaction.categoryId}
-                                onChange={(e) => {
-                                    const cat = categoryList.find(c => c.id == e.target.value);
-                                    setNewTransaction(prev => ({ ...prev, categoryId: e.target.value, category: cat ? cat.name : '' }));
-                                }}
-                            >
-                                <option value="">Selecione...</option>
-                                {categoryList
-                                    .filter(c => c.type === 'BOTH' || c.type === newTransaction.type)
-                                    .map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                    ))
-                                }
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Bank Account Selector - Conditional Visibility */}
-                    {transactionMode === 'single' && (
-                        <div className={styles.formRow}>
-                            <div className={styles.inputGroup} style={{ width: '100%' }}>
-                                <div className={styles.labelWithAction}>
-                                    <label className={styles.inputLabel}>Conta/Banco</label>
-                                    <button type="button" className={styles.addCategoryBtn} onClick={() => setShowBankModal(true)}>
-                                        <FiPlus /> Nova
-                                    </button>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    {/* Bank Logo Indicator */}
-                                    {newTransaction.bankAccountId && (() => {
-                                        const selectedBank = bankAccounts.find(a => a.id === newTransaction.bankAccountId);
-                                        return selectedBank?.icon ? (
-                                            <img
-                                                src={selectedBank.icon}
-                                                alt={selectedBank.bankName}
-                                                style={{
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    objectFit: 'contain',
-                                                    borderRadius: '6px',
-                                                    background: '#fff',
-                                                    padding: '4px'
-                                                }}
-                                            />
-                                        ) : (
-                                            <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                borderRadius: '6px',
-                                                background: selectedBank?.color || '#6b7280',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: '#fff',
-                                                fontWeight: 600,
-                                                fontSize: '14px'
-                                            }}>
-                                                {(selectedBank?.bankName || 'B').charAt(0)}
-                                            </div>
-                                        );
-                                    })()}
-                                    <select
-                                        className={styles.selectInput}
-                                        value={newTransaction.bankAccountId}
-                                        onChange={(e) => setNewTransaction(prev => ({ ...prev, bankAccountId: e.target.value }))}
-                                        style={{
-                                            flex: 1,
-                                            borderLeft: newTransaction.bankAccountId
-                                                ? `4px solid ${bankAccounts.find(a => a.id === newTransaction.bankAccountId)?.color || '#6b7280'}`
-                                                : undefined
-                                        }}
-                                    >
-                                        <option value="">Selecione uma conta...</option>
-                                        {bankAccounts.length > 0 ? (
-                                            bankAccounts.map(acc => (
-                                                <option key={acc.id} value={acc.id}>
-                                                    {acc.nickname || acc.bankName} {acc.isDefault ? '(Padrão)' : ''}
-                                                </option>
-                                            ))
-                                        ) : (
-                                            <option value="" disabled>Nenhuma conta cadastrada</option>
-                                        )}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className={styles.formRow}>
-                        {newTransaction.status === 'PENDING' && transactionMode !== 'recurring' && (
-                            <Input
-                                label="Data de Vencimento"
-                                type="date"
-                                value={newTransaction.date}
-                                onChange={(e) => setNewTransaction(prev => ({ ...prev, date: e.target.value }))}
-                            />
-                        )}
-                        <div className={styles.inputGroup} style={{ flex: newTransaction.status === 'PENDING' ? 1 : 'none', width: newTransaction.status === 'PENDING' ? 'auto' : '100%' }}>
-                            {transactionMode !== 'recurring' && (
-                                <>
-                                    <label className={styles.inputLabel}>Data da Transação</label>
-                                    <div className={styles.typeToggle} style={{ marginTop: '4px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                                        <button
-                                            type="button"
-                                            className={styles.typeBtn}
-                                            style={{
-                                                background: newTransaction.status === 'COMPLETED' ? '#22c55e' : '#f1f5f9',
-                                                color: newTransaction.status === 'COMPLETED' ? 'white' : '#64748b',
-                                                transition: 'all 0.2s',
-                                                justifyContent: 'center',
-                                                fontWeight: 600
-                                            }}
-                                            onClick={() => setNewTransaction(prev => ({
-                                                ...prev,
-                                                status: 'COMPLETED',
-                                                date: new Date().toISOString().split('T')[0]
-                                            }))}
-                                        >
-                                            <FiCheck /> Hoje
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={styles.typeBtn}
-                                            style={{
-                                                background: newTransaction.status === 'PENDING' ? '#3b82f6' : '#f1f5f9',
-                                                color: newTransaction.status === 'PENDING' ? 'white' : '#64748b',
-                                                transition: 'all 0.2s',
-                                                justifyContent: 'center',
-                                                fontWeight: 600
-                                            }}
-                                            onClick={() => setNewTransaction(prev => ({ ...prev, status: 'PENDING' }))}
-                                        >
-                                            <FiClock /> Futuro
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Recurring Options */}
-                    {transactionMode === 'recurring' && (
-                        <div className={styles.recurringSection}>
-                            <div className={styles.formRow}>
-                                <div className={styles.inputGroup}>
-                                    <label className={styles.inputLabel}>Frequência</label>
-                                    <select
-                                        className={styles.selectInput}
-                                        value={newTransaction.frequency}
-                                        onChange={(e) => setNewTransaction(prev => ({ ...prev, frequency: e.target.value }))}
-                                    >
-                                        <option value="MONTHLY">Mensal</option>
-                                        <option value="WEEKLY">Semanal</option>
-                                        <option value="YEARLY">Anual</option>
-                                    </select>
-                                </div>
-                                <Input
-                                    label="Dia de Cobrança"
-                                    type="number"
-                                    placeholder="Dia (1-31)"
-                                    min="1"
-                                    max="31"
-                                    value={newTransaction.recurringDay}
-                                    onChange={(e) => setNewTransaction(prev => ({ ...prev, recurringDay: e.target.value }))}
-                                />
-                            </div>
-
-
-
-                            <span className={styles.helperText}>
-                                Assinaturas devem ser vinculadas a um cartão de crédito.
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Installment Options */}
-                    {transactionMode === 'installment' && (
-                        <div className={styles.installmentSection}>
-                            <div className={styles.formRow}>
-                                <Input
-                                    label="Número de Parcelas"
-                                    type="number"
-                                    placeholder="12"
-                                    min="2"
-                                    max="48"
-                                    value={newTransaction.installments}
-                                    onChange={(e) => setNewTransaction(prev => ({ ...prev, installments: e.target.value }))}
-                                />
-                                <div className={styles.installmentPreview}>
-                                    {newTransaction.amount && newTransaction.installments && (
-                                        <>
-                                            <span className={styles.previewLabel}>Valor por parcela:</span>
-                                            <span className={styles.previewValue}>
-                                                {formatCurrency(Number(newTransaction.amount) / Number(newTransaction.installments))}
-                                            </span>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Card Selection */}
-                    {transactionMode !== 'single' && (
-                        <div className={styles.cardSection}>
-                            <div className={styles.inputGroup}>
-                                <label className={styles.inputLabel}>Vincular ao Cartão</label>
-                                <select
-                                    className={styles.selectInput}
-                                    value={newTransaction.cardId}
-                                    onChange={(e) => setNewTransaction(prev => ({ ...prev, cardId: e.target.value }))}
-                                >
-                                    <option value="">Nenhum (Débito/Dinheiro/Pix)</option>
-                                    {cards.map(card => (
-                                        <option key={card.id} value={card.id}>
-                                            {card.name} •••• {card.lastFourDigits}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <span className={styles.helperText}>Deixe em branco para pagamentos à vista.</span>
-                        </div>
-                    )}
-
-                    <div className={styles.modalActions}>
-                        <Button variant="secondary" onClick={() => { setShowAddModal(false); setEditingTransaction(null); resetForm(); }}>
-                            Cancelar
-                        </Button>
-                        <Button onClick={() => handleAddTransaction(false)}>
-                            {editingTransaction ? 'Salvar Alterações' : 'Criar Transação'}
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
-
-            {/* Category Creation Modal */}
-            <CategoryModal
-                isOpen={showCategoryModal}
-                onClose={() => setShowCategoryModal(false)}
-                onSuccess={handleCategoryCreated}
-                type={newTransaction.type}
+            {/* Add Transaction Modal - Using unified QuickTransactionModal component */}
+            <QuickTransactionModal
+                isOpen={showAddModal && !editingTransaction}
+                onClose={() => { setShowAddModal(false); resetForm(); }}
+                onSuccess={loadData}
             />
-
-            {/* Bank Account Creation Modal */}
-            <BankAccountModal
-                isOpen={showBankModal}
-                onClose={() => setShowBankModal(false)}
-                onSuccess={handleBankCreated}
-            />
-
-            {/* Icon Picker Modal */}
-            <Modal
-                isOpen={showIconPicker}
-                onClose={() => setShowIconPicker(false)}
-                title="Escolher Ícone"
-                size="lg"
-            >
-                <div className={styles.iconPickerContent}>
-                    <div className={styles.iconGrid}>
-                        {Object.entries(subscriptionIcons.subscriptions || {}).map(([key, service]) => (
-                            <button
-                                key={key}
-                                className={styles.iconGridItem}
-                                onClick={() => {
-                                    setNewTransaction(prev => ({ ...prev, imageUrl: service.icon }));
-                                    setShowIconPicker(false);
-                                }}
-                            >
-                                <img src={service.icon} alt={service.name} className={styles.iconGridImg} />
-                                <span>{service.name}</span>
-                            </button>
-                        ))}
-                    </div>
-                    <div className={styles.modalActions}>
-                        <Button variant="secondary" onClick={() => setShowIconPicker(false)}>Cancelar</Button>
-                    </div>
-                </div>
-            </Modal>
 
             {/* Budget Exceeded Modal */}
             <BudgetExceededModal

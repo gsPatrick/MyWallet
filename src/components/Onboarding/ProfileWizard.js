@@ -4,7 +4,7 @@
  * ProfileWizard
  * ========================================
  * MULTI-PROFILE SETUP WIZARD
- * With DAS, Cards, and Subscriptions configuration
+ * With DAS, Cards, Subscriptions and Brokers configuration
  * ========================================
  */
 
@@ -14,16 +14,18 @@ import {
     FiArrowRight, FiArrowLeft, FiCheck, FiCheckCircle,
     FiUser, FiBriefcase, FiLayers, FiDollarSign, FiCalendar,
     FiFileText, FiCreditCard, FiRepeat, FiPlus, FiEdit2, FiTrash2,
-    FiTool, FiHome
+    FiTool, FiHome, FiTrendingUp
 } from 'react-icons/fi';
 import { BiWallet } from 'react-icons/bi';
-import { profilesAPI, cardsAPI, subscriptionsAPI } from '@/services/api';
+import { profilesAPI, cardsAPI, subscriptionsAPI, brokersAPI } from '@/services/api';
 import bankAccountService from '@/services/bankAccountService';
 import { useProfiles } from '@/contexts/ProfileContext';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import BankAccountModal from './BankAccountModal';
+import BrokerModal from './BrokerModal';
 import cardBanksData from '@/data/cardBanks.json';
+import BROKERS_LIST from '@/data/brokers.json';
 import styles from './ProfileWizard.module.css';
 
 // Convert banks object to array for mapping (with safety check)
@@ -254,6 +256,53 @@ export default function ProfileWizard({ onComplete }) {
     // Salary linked bank
     const [salaryBankIndex, setSalaryBankIndex] = useState(savedState?.salaryBankIndex || 0);
 
+    // Brokers State - with default MyWallet Investimentos
+    const [selectedBrokers, setSelectedBrokers] = useState(savedState?.selectedBrokers || [
+        // Auto-default broker
+        {
+            code: 'MYWALLET',
+            name: 'MyWallet Investimentos',
+            customName: 'MyWallet Investimentos',
+            logoUrl: null,
+            color: '#10B981',
+            investmentFocus: 'Carteira Padrão',
+            type: 'SYSTEM',
+            isDefault: true
+        }
+    ]);
+    const [showBrokerModal, setShowBrokerModal] = useState(false);
+    const [editingBroker, setEditingBroker] = useState(null);
+    const availableBrokers = BROKERS_LIST; // Static data from JSON
+
+    // Broker Modal handlers
+    const openBrokerModal = (broker = null, index = null) => {
+        setEditingBroker(broker ? { ...broker, _index: index } : null);
+        setShowBrokerModal(true);
+    };
+
+    const handleSaveBroker = (brokerData) => {
+        if (editingBroker?._index !== undefined) {
+            // Editing existing
+            const updated = [...selectedBrokers];
+            updated[editingBroker._index] = brokerData;
+            setSelectedBrokers(updated);
+        } else {
+            // Check if broker already exists
+            if (selectedBrokers.find(b => b.code === brokerData.code)) {
+                return; // Already added
+            }
+            setSelectedBrokers([...selectedBrokers, brokerData]);
+        }
+        setShowBrokerModal(false);
+        setEditingBroker(null);
+    };
+
+    const removeBroker = (idx) => {
+        // Don't allow removing the default broker if it's the only one
+        if (selectedBrokers[idx]?.isDefault && selectedBrokers.length === 1) return;
+        setSelectedBrokers(selectedBrokers.filter((_, i) => i !== idx));
+    };
+
     // ✅ Save state to localStorage whenever it changes
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -286,14 +335,15 @@ export default function ProfileWizard({ onComplete }) {
             businessSubs,
             personalBanks,
             businessBanks,
-            salaryBankIndex
+            salaryBankIndex,
+            selectedBrokers
         };
 
         localStorage.setItem(WIZARD_STATE_KEY, JSON.stringify(stateToSave));
     }, [step, profileType, personalName, salary, salaryDay, initialBalance, businessName,
         businessSubtype, businessCnpj, businessCpf, defaultProfile, dasValue, dasDueDay,
         proLabore, proLaboreDay, businessBalance, personalCards, personalSubs, businessCards,
-        businessSubs, personalBanks, businessBanks, salaryBankIndex]);
+        businessSubs, personalBanks, businessBanks, salaryBankIndex, selectedBrokers]);
 
     const handleCurrencyChange = (value, setter) => {
         // Allow free typing with digits and comma/period
@@ -479,7 +529,7 @@ export default function ProfileWizard({ onComplete }) {
             if (profileType === 'HYBRID') {
                 setStep('banks_business');
             } else {
-                await submitWizard();
+                setStep('brokers'); // Go to brokers step before submit
             }
         } else if (step === 'banks_business') {
             setStep('financial_business');
@@ -488,6 +538,8 @@ export default function ProfileWizard({ onComplete }) {
         } else if (step === 'cards_business') {
             setStep('subs_business');
         } else if (step === 'subs_business') {
+            setStep('brokers'); // Go to brokers step before submit
+        } else if (step === 'brokers') {
             await submitWizard();
         } else {
             onComplete?.();
@@ -732,7 +784,20 @@ export default function ProfileWizard({ onComplete }) {
                 }
             }
 
-            // 7. Reset to default profile
+            // 7. Create selected brokers
+            if (selectedBrokers.length > 0) {
+                console.log('📈 [WIZARD] Creating brokers...', selectedBrokers);
+                for (const broker of selectedBrokers) {
+                    try {
+                        await brokersAPI.createFromDictionary(broker.code);
+                        console.log('📈 [WIZARD] Created broker:', broker.name);
+                    } catch (e) {
+                        console.error('⚠️ [WIZARD] Error creating broker (non-blocking):', e);
+                    }
+                }
+            }
+
+            // 8. Reset to default profile
             if (defaultProfileId && typeof window !== 'undefined') {
                 localStorage.setItem('investpro_profile_id', defaultProfileId);
                 console.log('💾 [WIZARD] Final profileId set to:', defaultProfileId);
@@ -777,21 +842,27 @@ export default function ProfileWizard({ onComplete }) {
         else if (step === 'financial_business') setStep('banks_business');
         else if (step === 'cards_business') setStep('financial_business');
         else if (step === 'subs_business') setStep('cards_business');
+        else if (step === 'brokers') {
+            // Go back to subs of the last profile configured
+            if (profileType === 'PERSONAL') setStep('subs_personal');
+            else setStep('subs_business');
+        }
     };
 
     const getProgressWidth = () => {
         const steps = {
-            'type': 6,
-            'config': 12,
-            'default': 18,
-            'banks_personal': 24,
-            'financial_personal': 32,
-            'cards_personal': 40,
-            'subs_personal': 48,
-            'banks_business': 56,
-            'financial_business': 64,
-            'cards_business': 72,
-            'subs_business': 84,
+            'type': 5,
+            'config': 10,
+            'default': 15,
+            'banks_personal': 20,
+            'financial_personal': 28,
+            'cards_personal': 36,
+            'subs_personal': 44,
+            'banks_business': 52,
+            'financial_business': 60,
+            'cards_business': 68,
+            'subs_business': 76,
+            'brokers': 88,
             'complete': 100
         };
         return `${steps[step] || 0}%`;
@@ -1517,6 +1588,76 @@ export default function ProfileWizard({ onComplete }) {
                             </motion.div>
                         )}
 
+                        {/* STEP: Brokers (Corretoras) */}
+                        {step === 'brokers' && (
+                            <motion.div
+                                key="brokers"
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className={styles.stepContent}
+                            >
+                                <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                                    <FiTrendingUp />
+                                </div>
+                                <h2>Suas Corretoras de Investimentos</h2>
+                                <p className={styles.description}>
+                                    Adicione as corretoras onde você investe (opcional)
+                                </p>
+
+                                {/* Broker List */}
+                                {selectedBrokers.length > 0 && (
+                                    <div className={styles.itemsList}>
+                                        {selectedBrokers.map((broker, idx) => (
+                                            <div key={idx} className={styles.itemRow}>
+                                                {broker.logoUrl ? (
+                                                    <div className={styles.bankLogoIcon}>
+                                                        <img src={broker.logoUrl} alt={broker.name} />
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className={styles.subIcon}
+                                                        style={{ background: broker.color || '#10B981' }}
+                                                    >
+                                                        <FiTrendingUp />
+                                                    </div>
+                                                )}
+                                                <div className={styles.itemInfo}>
+                                                    <strong>{broker.customName || broker.name}</strong>
+                                                    <span>
+                                                        {broker.investmentFocus || broker.type || 'Corretora'}
+                                                        {broker.isDefault && ' (Padrão)'}
+                                                    </span>
+                                                </div>
+                                                <div className={styles.itemActions}>
+                                                    <button onClick={() => openBrokerModal(broker, idx)}>
+                                                        <FiEdit2 />
+                                                    </button>
+                                                    {/* Only show delete if not the default or there are more than one */}
+                                                    {(!broker.isDefault || selectedBrokers.length > 1) && (
+                                                        <button className="danger" onClick={() => removeBroker(idx)}>
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => openBrokerModal()}
+                                >
+                                    <FiPlus /> Adicionar Corretora
+                                </button>
+
+                                <p className={styles.hint}>
+                                    💡 Você já tem a "MyWallet Investimentos" como padrão. Adicione outras corretoras se desejar.
+                                </p>
+                            </motion.div>
+                        )}
+
                         {/* STEP: Complete */}
                         {step === 'complete' && (
                             <motion.div
@@ -1631,6 +1772,14 @@ export default function ProfileWizard({ onComplete }) {
                 onSave={handleSaveBank}
                 editingBank={editingBank}
                 profileType={currentProfileContext === 'personal' ? 'PERSONAL' : 'BUSINESS'}
+            />
+
+            {/* Broker Modal */}
+            <BrokerModal
+                isOpen={showBrokerModal}
+                onClose={() => { setShowBrokerModal(false); setEditingBroker(null); }}
+                onSave={handleSaveBroker}
+                broker={editingBroker}
             />
         </>
     );

@@ -1,0 +1,257 @@
+/* ============================================
+   ECONOMIC TICKER - USES CSS VARIABLES
+   ============================================ */
+
+.tickerContainer {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    margin-bottom: 24px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--shadow-md);
+}
+
+/* Section Header */
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--accent-success-light);
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sectionIcon {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-success);
+}
+
+.sectionTitle span {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+}
+
+.sectionSubtitle {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sectionSubtitle::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent-success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.tickerScroll {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 16px 24px;
+}
+
+.tickerScroll::-webkit-scrollbar {
+    display: none;
+}
+
+.tickerCard {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 24px;
+    min-width: 140px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.tickerCard:first-child {
+    padding-left: 0;
+}
+
+.tickerCard:last-child {
+    padding-right: 0;
+}
+
+.divider {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 40px;
+    background: var(--border-light);
+}
+
+.tickerHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.tickerLabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.changeIndicator {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
+}
+
+.changeIndicator.positive {
+    color: var(--accent-success);
+    background: var(--accent-success-light);
+}
+
+.changeIndicator.negative {
+    color: var(--accent-danger);
+    background: var(--accent-danger-light);
+}
+
+.changeIndicator svg {
+    width: 10px;
+    height: 10px;
+}
+
+.tickerValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+
+.tickerDescription {
+    font-size: 0.65rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+    color: var(--accent-success);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sectionHeader {
+        padding: 12px 16px 10px;
+    }
+
+    .sectionTitle span {
+        font-size: 0.85rem;
+    }
+
+    .sectionSubtitle {
+        font-size: 0.65rem;
+    }
+
+    .tickerScroll {
+        padding: 12px 16px;
+    }
+
+    .tickerCard {
+        padding: 6px 16px;
+        min-width: 110px;
+    }
+
+    .tickerValue {
+        font-size: 1.1rem;
+    }
+
+    .tickerLabel {
+        font-size: 0.65rem;
+    }
+
+    .tickerDescription {
+        font-size: 0.6rem;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 480px) {
+    .sectionHeader {
+        padding: 10px 12px 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .tickerScroll {
+        padding: 10px 12px;
+        gap: 0;
+    }
+
+    .tickerCard {
+        padding: 4px 12px;
+        min-width: 90px;
+    }
+
+    .tickerValue {
+        font-size: 0.95rem;
+    }
+
+    .tickerLabel {
+        font-size: 0.6rem;
+    }
+
+    .divider {
+        height: 30px;
+    }
+}
+
+/* Hover effect */
+.tickerCard:hover .tickerValue {
+    color: var(--accent-success);
+    transition: color var(--transition-fast);
+}

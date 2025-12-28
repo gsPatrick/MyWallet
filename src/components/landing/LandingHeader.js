@@ -51,9 +51,10 @@ export default function LandingHeader() {
                 </Link>
 
                 <nav className={styles.nav}>
-                    <a href="#features" className={styles.navLink}>Funcionalidades</a>
-                    <a href="#benefits" className={styles.navLink}>Benefícios</a>
-                    <a href="#cta" className={styles.navLink}>Começar</a>
+                    <Link href="/#features" className={styles.navLink}>Funcionalidades</Link>
+                    <Link href="/patch-notes" className={styles.navLink}>Notas de Atualização</Link>
+                    <Link href="/#benefits" className={styles.navLink}>Benefícios</Link>
+                    <Link href="/#cta" className={styles.navLink}>Começar</Link>
                 </nav>
 
                 <div className={styles.actions}>

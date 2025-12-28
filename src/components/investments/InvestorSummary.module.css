@@ -1,0 +1,384 @@
+/* ============================================
+   INVESTOR SUMMARY DASHBOARD
+   Displays investor-oriented metrics from API
+   ============================================ */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+/* Main Metrics Row */
+.mainMetrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.metricCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.metricCard:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+}
+
+.metricCard.positive .metricIcon {
+    background: var(--accent-success-light);
+    color: var(--accent-success);
+}
+
+.metricCard.negative .metricIcon {
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
+}
+
+.metricIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--accent-primary-light);
+    border-radius: var(--radius-sm);
+    color: var(--accent-primary);
+    flex-shrink: 0;
+}
+
+.metricIcon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.metricContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metricLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metricValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.metricPercent {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-left: 6px;
+}
+
+/* Secondary Metrics Row */
+.secondaryMetrics {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+}
+
+.dividendsCard,
+.healthCard {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 20px;
+}
+
+.dividendsCard h4,
+.healthCard h4,
+.rankingCard h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.dividendsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.dividendItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dividendLabel {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+}
+
+.dividendValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-success);
+    font-family: var(--font-mono);
+}
+
+/* Health Card */
+.healthContent {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.healthScore {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.scoreValue {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+}
+
+.scoreMax {
+    font-size: 1rem;
+    color: var(--text-tertiary);
+}
+
+.healthStatus {
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+.healthIssues {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+}
+
+.issueItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--accent-warning);
+}
+
+.issueItem svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Rankings Row */
+.rankingsRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.rankingCard {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.rankingCard h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rankingCard h4 svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent-primary);
+}
+
+.rankingList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rankingItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+.rankPosition {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    min-width: 24px;
+}
+
+.rankTicker {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.rankValue {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.rankValue.positive {
+    color: var(--accent-success);
+}
+
+.rankValue.negative {
+    color: var(--accent-danger);
+}
+
+/* Key Indicators */
+.keyIndicators {
+    display: flex;
+    gap: 24px;
+    padding: 16px 20px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--accent-primary);
+}
+
+.indicatorItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.indicatorItem.warning {
+    color: var(--accent-warning);
+}
+
+.indicatorIcon {
+    width: 16px;
+    height: 16px;
+    color: var(--accent-success);
+}
+
+.indicatorItem.warning .indicatorIcon {
+    color: var(--accent-warning);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .mainMetrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rankingsRow {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .mainMetrics {
+        grid-template-columns: 1fr;
+    }
+
+    /* ============================================
+   TRENDS SECTION
+   ============================================ */
+    .trendsSection {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--border-light);
+    }
+
+    .trendsTitle {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .trendsGrid {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .trendItem {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .trendLabel {
+        font-size: 0.7rem;
+        color: var(--text-tertiary);
+    }
+
+    .trendStatus {
+        font-size: 0.85rem;
+        font-weight: 700;
+        font-family: var(--font-mono);
+    }
+
+    .trendStatus.growing {
+        color: var(--accent-success);
+    }
+
+    .trendStatus.declining {
+        color: var(--accent-danger);
+    }
+
+    .trendStatus.stable {
+        color: var(--accent-warning);
+    }
+
+    .trendValue {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+    }
+
+    .secondaryMetrics {
+        grid-template-columns: 1fr;
+    }
+
+    .dividendsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .keyIndicators {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

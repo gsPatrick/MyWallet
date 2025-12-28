@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiTrendingUp, FiAlertCircle } from 'react-icons/fi';
+import { FiTrendingUp, FiAlertCircle, FiPercent, FiDollarSign } from 'react-icons/fi';
 import {
     AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -16,8 +16,14 @@ const PERIOD_OPTIONS = [
     { id: 'TOTAL', label: 'Total', months: 60 },
 ];
 
+const VIEW_MODES = [
+    { id: 'percent', label: 'Rentabilidade %', icon: FiPercent },
+    { id: 'absolute', label: 'Evolução R$', icon: FiDollarSign }
+];
+
 export default function RentabilityChart() {
     const [selectedPeriod, setSelectedPeriod] = useState('1A');
+    const [viewMode, setViewMode] = useState('absolute'); // 'percent' or 'absolute'
     const [evolutionData, setEvolutionData] = useState([]);
     const [summary, setSummary] = useState({ returnPercent: 0, cdiPercent: 0, cdiForPeriod: 0 });
     const [hasRealData, setHasRealData] = useState(false);
@@ -78,16 +84,35 @@ export default function RentabilityChart() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h3>Rentabilidade</h3>
-                <div className={styles.periodSelector}>
-                    {PERIOD_OPTIONS.map(p => (
-                        <button
-                            key={p.id}
-                            className={`${styles.periodBtn} ${selectedPeriod === p.id ? styles.periodActive : ''}`}
-                            onClick={() => setSelectedPeriod(p.id)}
-                        >
-                            {p.label}
-                        </button>
-                    ))}
+                <div className={styles.headerControls}>
+                    {/* View Mode Toggle */}
+                    <div className={styles.viewModeToggle}>
+                        {VIEW_MODES.map(mode => {
+                            const Icon = mode.icon;
+                            return (
+                                <button
+                                    key={mode.id}
+                                    className={`${styles.viewModeBtn} ${viewMode === mode.id ? styles.viewModeActive : ''}`}
+                                    onClick={() => setViewMode(mode.id)}
+                                    title={mode.label}
+                                >
+                                    <Icon />
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {/* Period Selector */}
+                    <div className={styles.periodSelector}>
+                        {PERIOD_OPTIONS.map(p => (
+                            <button
+                                key={p.id}
+                                className={`${styles.periodBtn} ${selectedPeriod === p.id ? styles.periodActive : ''}`}
+                                onClick={() => setSelectedPeriod(p.id)}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -118,8 +143,8 @@ export default function RentabilityChart() {
                     <AreaChart data={evolutionData}>
                         <defs>
                             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                <stop offset="5%" stopColor={viewMode === 'percent' ? '#10b981' : '#6366f1'} stopOpacity={0.3} />
+                                <stop offset="95%" stopColor={viewMode === 'percent' ? '#10b981' : '#6366f1'} stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <XAxis
@@ -131,17 +156,34 @@ export default function RentabilityChart() {
                         />
                         <YAxis
                             hide={true}
-                            domain={['dataMin - 1000', 'dataMax + 1000']}
+                            domain={viewMode === 'percent' ? ['dataMin', 'dataMax'] : ['dataMin - 1000', 'dataMax + 1000']}
                         />
                         <Tooltip
                             content={({ active, payload, label }) => {
                                 if (active && payload?.length) {
+                                    const dataPoint = payload[0].payload;
                                     return (
                                         <div className={styles.tooltip}>
                                             <span className={styles.tooltipDate}>{label}</span>
-                                            <span className={styles.tooltipValue}>
-                                                {formatCurrency(payload[0].value)}
-                                            </span>
+                                            {viewMode === 'percent' ? (
+                                                <>
+                                                    <span className={styles.tooltipValue}>
+                                                        {dataPoint.profitPercent?.toFixed(2) || '0'}%
+                                                    </span>
+                                                    <span className={styles.tooltipSub}>
+                                                        Lucro: {formatCurrency(dataPoint.profit || 0)}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className={styles.tooltipValue}>
+                                                        {formatCurrency(payload[0].value)}
+                                                    </span>
+                                                    <span className={styles.tooltipSub}>
+                                                        Investido: {formatCurrency(dataPoint.invested || 0)}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                     );
                                 }
@@ -150,12 +192,12 @@ export default function RentabilityChart() {
                         />
                         <Area
                             type="monotone"
-                            dataKey="value"
-                            stroke="#6366f1"
+                            dataKey={viewMode === 'percent' ? 'profitPercent' : 'value'}
+                            stroke={viewMode === 'percent' ? '#10b981' : '#6366f1'}
                             strokeWidth={2}
                             fill="url(#colorValue)"
                             dot={false}
-                            activeDot={{ r: 4, fill: '#6366f1' }}
+                            activeDot={{ r: 4, fill: viewMode === 'percent' ? '#10b981' : '#6366f1' }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
@@ -163,3 +205,4 @@ export default function RentabilityChart() {
         </div>
     );
 }
+

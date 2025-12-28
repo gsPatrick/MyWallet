@@ -18,7 +18,13 @@
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-light);
+}
+
+[data-theme="light"] .modal {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
 .modalHeader {
@@ -26,7 +32,11 @@
     align-items: center;
     justify-content: space-between;
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-light);
+}
+
+[data-theme="light"] .modalHeader {
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
 .modalHeader h2 {
@@ -40,7 +50,7 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    border: none;
+    border: 1px solid var(--border-light);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
     cursor: pointer;
@@ -50,8 +60,14 @@
     transition: all 0.2s;
 }
 
+[data-theme="light"] .closeBtn {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.05);
+}
+
 .closeBtn:hover {
-    background: var(--danger);
+    background: var(--accent-danger);
+    border-color: var(--accent-danger);
     color: white;
 }
 
@@ -77,11 +93,21 @@
     width: 100%;
     padding: 0.75rem 1rem;
     background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-light);
     border-radius: 10px;
     font-size: 0.875rem;
     color: var(--text-primary);
     transition: all 0.2s;
+}
+
+[data-theme="light"] .formGroup input,
+[data-theme="light"] .formGroup select {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.formGroup input::placeholder {
+    color: var(--text-tertiary);
 }
 
 .formGroup input:focus,
@@ -105,20 +131,26 @@
     gap: 0.5rem;
     padding: 0.75rem;
     background: var(--bg-tertiary);
-    border: 2px solid transparent;
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
     outline: none;
 }
 
+[data-theme="light"] .bankOption {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
 .bankOption:hover {
     border-color: var(--bank-color);
+    background: color-mix(in srgb, var(--bank-color, #6366F1) 8%, transparent);
 }
 
 .bankOption.selected {
     border-color: var(--bank-color);
-    background: color-mix(in srgb, var(--bank-color) 10%, transparent);
+    background: color-mix(in srgb, var(--bank-color, #6366F1) 15%, transparent);
 }
 
 .bankOption img {
@@ -162,38 +194,65 @@
     padding: 0.875rem;
     border-radius: 12px;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    border: none;
 }
 
 .cancelBtn {
     background: var(--bg-tertiary);
     color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+[data-theme="light"] .cancelBtn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
 }
 
 .cancelBtn:hover {
     background: var(--bg-primary);
+    border-color: var(--border-medium);
+}
+
+[data-theme="light"] .cancelBtn:hover {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 .submitBtn {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: linear-gradient(135deg, #22c55e, #16a34a);
     color: white;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
 .submitBtn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
 }
 
 .submitBtn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+}
+
+/* Error State */
+.error {
+    color: var(--accent-danger);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
 }
 
 @media (max-width: 768px) {
     .bankGrid {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .modal {
+        max-width: 100%;
+        margin: 0 1rem;
     }
 }

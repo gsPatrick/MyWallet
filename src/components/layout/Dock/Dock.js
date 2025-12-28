@@ -36,14 +36,15 @@ import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import QuickTransactionModal from '@/components/modals/QuickTransactionModal';
 import QuickGoalModal from '@/components/modals/QuickGoalModal';
 import QuickTransferModal from '@/components/modals/QuickTransferModal';
+import SubscriptionModal from '@/components/modals/SubscriptionModal';
+import { cardsAPI } from '@/services/api';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import styles from './Dock.module.css';
 
 const dockItems = [
     { id: 'dashboard', href: '/dashboard', icon: FiHome, label: 'Dashboard' },
     { id: 'transactions', href: '/transactions', icon: FiList, label: 'Transações' },
-    { id: 'open-finance', href: '/open-finance', icon: FiLink, label: 'Open Finance', isFuture: true },
-    { id: 'investments', href: '/investments', icon: FiTrendingUp, label: 'Investimentos', isFuture: true },
+    { id: 'investments', href: '/brokers', icon: FiTrendingUp, label: 'Investimentos' },
     { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartões' },
     { id: 'goals', href: '/goals', icon: FiTarget, label: 'Metas' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento' },
@@ -52,11 +53,11 @@ const dockItems = [
 
 const quickActions = [
     { id: 'new-transaction', href: null, icon: FiPlus, label: 'Nova Transação', color: '#22c55e', isModal: 'transaction' },
-    { id: 'new-goal', href: null, icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6', isModal: 'goal' },
-    { id: 'new-transfer', href: null, icon: FiRepeat, label: 'Nova Transferência', color: '#f59e0b', isModal: 'transfer' },
+    { id: 'new-subscription', href: null, icon: FiRepeat, label: 'Nova Assinatura', color: '#8b5cf6', isModal: 'subscription' },
+    { id: 'new-goal', href: null, icon: FiTarget, label: 'Nova Meta', color: '#f59e0b', isModal: 'goal' },
+    { id: 'new-transfer', href: null, icon: FiRepeat, label: 'Nova Transferência', color: '#0ea5e9', isModal: 'transfer' },
     { id: 'profile', href: '/profile/me', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
     { id: 'banks', href: '/banks', icon: BsBank2, label: 'Bancos', color: '#0ea5e9' },
-    { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
     { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
     { id: 'logout', href: null, icon: FiLogOut, label: 'Sair', color: '#ef4444', isLogout: true },
 ];
@@ -77,6 +78,21 @@ export default function Dock() {
     const [showTransactionModal, setShowTransactionModal] = useState(false);
     const [showGoalModal, setShowGoalModal] = useState(false);
     const [showTransferModal, setShowTransferModal] = useState(false);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    const [cards, setCards] = useState([]);
+
+    // Load cards for subscription modal
+    useEffect(() => {
+        const loadCards = async () => {
+            try {
+                const res = await cardsAPI.list();
+                setCards(res.data || []);
+            } catch (error) {
+                console.error('Error loading cards:', error);
+            }
+        };
+        loadCards();
+    }, []);
 
     const handleLogout = async () => {
         setShowQuickActions(false);
@@ -99,6 +115,11 @@ export default function Dock() {
         setShowTransferModal(true);
     };
 
+    const handleOpenSubscriptionModal = () => {
+        setShowQuickActions(false);
+        setShowSubscriptionModal(true);
+    };
+
     // When modal closes, reopen quick actions
     const handleTransactionModalClose = () => {
         setShowTransactionModal(false);
@@ -113,6 +134,24 @@ export default function Dock() {
     const handleTransferModalClose = () => {
         setShowTransferModal(false);
         setShowQuickActions(true);
+    };
+
+    const handleSubscriptionModalClose = () => {
+        setShowSubscriptionModal(false);
+        setShowQuickActions(true);
+    };
+
+    const handleSubscriptionSave = async (payload) => {
+        try {
+            // Import subscriptions API dynamically to avoid circular dependency
+            const { subscriptionsAPI } = await import('@/services/api');
+            await subscriptionsAPI.create(payload);
+            setShowSubscriptionModal(false);
+            setShowQuickActions(true);
+        } catch (error) {
+            console.error('Error creating subscription:', error);
+            alert(error.response?.data?.message || 'Erro ao criar assinatura');
+        }
     };
 
     const isActive = (href) => {
@@ -275,13 +314,15 @@ export default function Dock() {
                                         );
                                     }
 
-                                    // Modal actions (Transaction & Goal)
+                                    // Modal actions (Transaction, Goal, Transfer, Subscription)
                                     if (action.isModal) {
                                         const handleClick = action.isModal === 'transaction'
                                             ? handleOpenTransactionModal
                                             : action.isModal === 'goal'
                                                 ? handleOpenGoalModal
-                                                : handleOpenTransferModal;
+                                                : action.isModal === 'transfer'
+                                                    ? handleOpenTransferModal
+                                                    : handleOpenSubscriptionModal;
                                         return (
                                             <button
                                                 key={action.id}
@@ -394,6 +435,12 @@ export default function Dock() {
                 onSuccess={() => {
                     // Optional: refresh data or show notification
                 }}
+            />
+            <SubscriptionModal
+                isOpen={showSubscriptionModal}
+                onClose={handleSubscriptionModalClose}
+                onSave={handleSubscriptionSave}
+                cards={cards}
             />
         </>
     );

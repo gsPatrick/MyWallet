@@ -1,7 +1,11 @@
+/* ============================================
+   RENTABILITY CHART - USES CSS VARIABLES
+   ============================================ */
+
 .container {
-    background: var(--bg-card);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-light);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     padding: 20px;
     margin-bottom: 24px;
 }
@@ -20,24 +24,68 @@
     margin: 0;
 }
 
+.headerControls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.viewModeToggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-tertiary);
+    padding: 3px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.viewModeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-radius: var(--radius-xs);
+    transition: all var(--transition-fast);
+}
+
+.viewModeBtn:hover {
+    color: var(--text-primary);
+    background: var(--bg-glass);
+}
+
+.viewModeActive {
+    background: var(--accent-success);
+    color: var(--text-inverse);
+}
+
+.viewModeActive:hover {
+    background: var(--accent-success);
+    color: var(--text-inverse);
+}
+
 .periodSelector {
     display: flex;
     gap: 4px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-tertiary);
     padding: 4px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .periodBtn {
     padding: 6px 12px;
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-tertiary);
     font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s;
+    border-radius: var(--radius-xs);
+    transition: all var(--transition-fast);
 }
 
 .periodBtn:hover {
@@ -45,8 +93,8 @@
 }
 
 .periodActive {
-    background: #6366f1;
-    color: white;
+    background: var(--accent-primary);
+    color: var(--text-inverse);
 }
 
 .metrics {
@@ -75,11 +123,11 @@
 }
 
 .positive {
-    color: #22c55e;
+    color: var(--accent-success);
 }
 
 .negative {
-    color: #ef4444;
+    color: var(--accent-danger);
 }
 
 .metricLabel {
@@ -102,9 +150,9 @@
 }
 
 .tooltip {
-    background: #1e1e2d;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
     padding: 8px 12px;
     display: flex;
     flex-direction: column;
@@ -113,20 +161,25 @@
 
 .tooltipDate {
     font-size: 0.7rem;
-    color: #64748b;
+    color: var(--text-tertiary);
 }
 
 .tooltipValue {
     font-size: 0.9rem;
     font-weight: 600;
-    color: white;
+    color: var(--text-primary);
+}
+
+.tooltipSub {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
 }
 
 .mockDataWarning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
+    background: var(--accent-warning-light);
+    color: var(--accent-warning);
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 0.75rem;
     margin-bottom: 12px;
     text-align: center;
@@ -138,6 +191,20 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: #ef4444;
+    color: var(--accent-danger);
     font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .headerControls {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .metrics {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
 }

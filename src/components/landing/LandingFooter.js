@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './LandingFooter.module.css';
 
 export default function LandingFooter() {
@@ -29,10 +30,10 @@ export default function LandingFooter() {
                     {/* Right - Navigation */}
                     <div className={styles.navigation}>
                         <h4>NAVEGAÇÃO</h4>
-                        <a href="#features">Funcionalidades</a>
-                        <a href="#pricing">Planos</a>
-                        <a href="#benefits">Benefícios</a>
-                        <a href="#cta">Começar</a>
+                        <Link href="/#features">Funcionalidades</Link>
+                        <Link href="/#pricing">Planos</Link>
+                        <Link href="/#benefits">Benefícios</Link>
+                        <Link href="/#cta">Começar</Link>
                     </div>
                 </div>
 

@@ -56,11 +56,12 @@ export default function BankAccountCard({
                 <div className={styles.header}>
                     <div className={styles.bankIdentity}>
                         <div className={styles.bankLogoWrapper}>
-                            {icon ? (
+                            {icon && (icon.startsWith('http') || icon.startsWith('/')) ? (
                                 <img src={icon} alt={bankName} className={styles.bankLogoImg} />
                             ) : (
                                 <span className={styles.bankLogoText}>{bankName?.charAt(0)}</span>
                             )}
+
                         </div>
                         <div className={styles.bankNameGroup}>
                             <span className={styles.bankName}>{bankName}</span>

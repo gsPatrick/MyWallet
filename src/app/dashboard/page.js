@@ -15,13 +15,15 @@ import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfiles } from '@/contexts/ProfileContext';
 import { formatDate } from '@/utils/formatters';
-import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI, budgetsAPI } from '@/services/api';
+import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI, budgetsAPI, brokersAPI } from '@/services/api';
 import bankAccountService from '@/services/bankAccountService';
 import ActivityList from '@/components/dashboard/ActivityList';
 import SubscriptionWidget from '@/components/dashboard/SubscriptionWidget';
 import BankAccountsWidget from '@/components/dashboard/BankAccountsWidget';
 import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
+import BrokersWidget from '@/components/dashboard/BrokersWidget';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
+import PortfolioTable from '@/components/investments/PortfolioTable';
 import styles from './page.module.css';
 
 const mockAllocation = [
@@ -63,6 +65,10 @@ export default function DashboardPage() {
     const [bankAccountsTotal, setBankAccountsTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Broker filter for investments tab
+    const [brokersList, setBrokersList] = useState([]);
+    const [selectedBrokerFilter, setSelectedBrokerFilter] = useState(null);
+
     useEffect(() => {
         loadDashboardData();
     }, [currentProfile?.id]); // Reload when profile changes
@@ -86,11 +92,35 @@ export default function DashboardPage() {
             setDashboardSummary(summaryRes?.data || summaryRes || {});
             setBudgets(budgetsRes?.data?.allocations || budgetsRes?.allocations || []);
             setBankAccountsTotal(bankBalanceRes?.data?.totalBalance || 0);
+
+            // Load brokers list for filter
+            try {
+                const brokersRes = await brokersAPI.list();
+                setBrokersList(brokersRes?.data || brokersRes || []);
+            } catch (e) {
+                console.error('Error loading brokers:', e);
+            }
         } catch (error) {
             console.error("Erro ao carregar dashboard:", error);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Reload portfolio when broker filter changes
+    const loadFilteredPortfolio = async (brokerId) => {
+        try {
+            const portfolioRes = await reportsAPI.getPortfolio(brokerId || null);
+            setPortfolioData(portfolioRes);
+        } catch (error) {
+            console.error('Error loading filtered portfolio:', error);
+        }
+    };
+
+    // Handle broker filter change
+    const handleBrokerFilterChange = (brokerId) => {
+        setSelectedBrokerFilter(brokerId);
+        loadFilteredPortfolio(brokerId);
     };
 
     const summary = portfolioData?.summary || { totalCurrentValue: 0, totalProfit: 0, totalProfitPercent: 0, totalCost: 0 };
@@ -163,13 +193,12 @@ export default function DashboardPage() {
         );
     }
 
-    // Tab buttons component for reuse
     const TabsComponent = (
         <div className={styles.tabs}>
             {[
                 { id: 'geral', label: 'Geral', icon: FiHome },
                 { id: 'manual', label: 'Manual', icon: FiDollarSign },
-                { id: 'openfinance', label: 'Open Finance', icon: FiLink },
+                { id: 'openfinance', label: 'Open Finance', icon: FiLink, isFuture: true },
                 { id: 'investments', label: 'Investimentos', icon: FiTrendingUp }
             ].map(tab => {
                 const Icon = tab.icon;
@@ -179,7 +208,7 @@ export default function DashboardPage() {
                         id={`tab-${tab.id}`}
                         className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
                         onClick={() => {
-                            if (tab.id === 'openfinance' || tab.id === 'investments') {
+                            if (tab.isFuture) {
                                 setShowFutureModal(true);
                             } else {
                                 setActiveTab(tab.id);
@@ -645,69 +674,150 @@ export default function DashboardPage() {
 
                     {/* INVESTMENTS TAB */}
                     {
-                        activeTab === 'investments' && (
-                            <>
-                                <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                                    <span className={styles.heroLabel}>Patrimônio Investido</span>
-                                    <span className={styles.heroValue}>{formatCurrency(summary.totalCurrentValue)}</span>
-                                    <span className={`${styles.heroPeriod} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
-                                        {summary.totalProfit >= 0 ? '+' : ''}{formatCurrency(summary.totalProfit)} ({summary.totalProfitPercent.toFixed(2)}%)
-                                    </span>
-                                </motion.div>
+                        activeTab === 'investments' && (() => {
+                            const typeColors = {
+                                'STOCK': '#3b82f6',
+                                'FII': '#22c55e',
+                                'ETF': '#8b5cf6',
+                                'BDR': '#f59e0b',
+                                'CRYPTO': '#ec4899'
+                            };
 
-                                <motion.div className={styles.summaryRow} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                                    <div className={styles.summaryCard}>
-                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Lucro Total</span><FiTrendingUp className={styles.iconSuccess} /></div>
-                                        <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>{formatCurrency(summary.totalProfit)}</span>
-                                    </div>
-                                    <div className={styles.summaryCard}>
-                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Rentabilidade</span><FiPieChart className={styles.iconPrimary} /></div>
-                                        <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
-                                            {summary.totalProfitPercent >= 0 ? '+' : ''}{summary.totalProfitPercent.toFixed(2)}%
+                            const typeNames = {
+                                'STOCK': 'Ações',
+                                'FII': 'FIIs',
+                                'ETF': 'ETFs',
+                                'BDR': 'BDRs',
+                                'CRYPTO': 'Cripto'
+                            };
+
+                            // Calculate portfolio allocation by asset type
+                            const typeAllocation = positions.reduce((acc, pos) => {
+                                const type = pos.type || 'STOCK';
+                                if (!acc[type]) {
+                                    acc[type] = { type, value: 0, count: 0 };
+                                }
+                                acc[type].value += pos.currentValue || 0;
+                                acc[type].count += 1;
+                                return acc;
+                            }, {});
+
+                            const allocationData = Object.values(typeAllocation)
+                                .map(item => ({
+                                    ...item,
+                                    name: typeNames[item.type] || item.type,
+                                    color: typeColors[item.type] || '#6366f1',
+                                    percent: summary.totalCurrentValue > 0 ? (item.value / summary.totalCurrentValue) * 100 : 0
+                                }))
+                                .sort((a, b) => b.value - a.value);
+
+                            return (
+                                <>
+                                    <motion.div className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <span className={styles.heroLabel}>Patrimônio Investido</span>
+                                        <span className={styles.heroValue}>{formatCurrency(summary.totalCurrentValue)}</span>
+                                        <span className={`${styles.heroPeriod} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
+                                            {summary.totalProfit >= 0 ? '+' : ''}{formatCurrency(summary.totalProfit)} ({summary.totalProfitPercent.toFixed(2)}%)
                                         </span>
-                                    </div>
-                                    <div className={styles.summaryCard}>
-                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Total Investido</span><FiTrendingUp className={styles.iconMuted} /></div>
-                                        <span className={styles.cardValue}>{formatCurrency(summary.totalCost)}</span>
-                                    </div>
-                                    <div className={styles.summaryCard}>
-                                        <div className={styles.cardHeader}><span className={styles.cardLabel}>Ativos</span><FiCreditCard className={styles.iconMuted} /></div>
-                                        <span className={styles.cardValue}>{positions.length}</span>
-                                    </div>
-                                </motion.div>
+                                    </motion.div>
 
-                                <motion.div className={styles.bottomGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                                    <div className={styles.largeCard}>
-                                        <h3 className={styles.largeCardTitle}>Evolução Patrimonial</h3>
-                                        <div className={styles.emptyState}>Gráfico disponível em breve</div>
-                                    </div>
-                                    <div className={styles.largeCard}>
-                                        <h3 className={styles.largeCardTitle}>Posições</h3>
-                                        {positions.length > 0 ? (
-                                            <div className={styles.positionsList}>
-                                                {positions.slice(0, 4).map(pos => (
-                                                    <div key={pos.ticker} className={styles.positionItem}>
-                                                        <span className={styles.posTicker}>{pos.ticker}</span>
-                                                        <span className={styles.posValue}>{formatCurrency(pos.currentValue)}</span>
-                                                        <span className={pos.profitPercent >= 0 ? styles.profit : styles.loss}>
-                                                            {pos.profitPercent >= 0 ? '+' : ''}{pos.profitPercent.toFixed(2)}%
-                                                        </span>
+                                    <div className={styles.dashboardGrid}>
+                                        {/* LEFT COLUMN: Main Content */}
+                                        <div className={styles.dashboardMain}>
+                                            <motion.div className={styles.summaryRow} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Lucro Total</span><FiTrendingUp className={styles.iconSuccess} /></div>
+                                                    <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>{formatCurrency(summary.totalProfit)}</span>
+                                                </div>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Rentabilidade</span><FiPieChart className={styles.iconPrimary} /></div>
+                                                    <span className={`${styles.cardValue} ${summary.totalProfit >= 0 ? styles.profit : styles.loss}`}>
+                                                        {summary.totalProfitPercent >= 0 ? '+' : ''}{summary.totalProfitPercent.toFixed(2)}%
+                                                    </span>
+                                                </div>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Total Investido</span><FiTrendingUp className={styles.iconMuted} /></div>
+                                                    <span className={styles.cardValue}>{formatCurrency(summary.totalCost)}</span>
+                                                </div>
+                                                <div className={styles.summaryCard}>
+                                                    <div className={styles.cardHeader}><span className={styles.cardLabel}>Ativos</span><FiCreditCard className={styles.iconMuted} /></div>
+                                                    <span className={styles.cardValue}>{positions.length}</span>
+                                                </div>
+                                            </motion.div>
+
+                                            {/* Allocation by Type - Bar Chart Style */}
+                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                                <div className={styles.allocationCard}>
+                                                    <div className={styles.allocationHeader}>
+                                                        <h3>Distribuição por Tipo</h3>
+                                                        <select
+                                                            className={styles.brokerSelect}
+                                                            value={selectedBrokerFilter || ''}
+                                                            onChange={(e) => handleBrokerFilterChange(e.target.value || null)}
+                                                        >
+                                                            <option value="">Todas Corretoras</option>
+                                                            {brokersList.map(broker => (
+                                                                <option key={broker.id} value={broker.id}>{broker.name}</option>
+                                                            ))}
+                                                        </select>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className={styles.emptyState}>Nenhuma posição.</div>
-                                        )}
-                                    </div>
-                                    <div className={styles.actionCard}>
-                                        <div className={styles.actionCardInner}>
-                                            <span className={styles.actionText}>Registre operações</span>
-                                            <Link href="/investments" className={styles.actionBtn}><FiPlus />Ver Carteira</Link>
+                                                    {allocationData.length > 0 ? (
+                                                        <div className={styles.barChartContainer}>
+                                                            {allocationData.map(a => (
+                                                                <div key={a.type} className={styles.barItem}>
+                                                                    <div className={styles.barLabel}>
+                                                                        <span className={styles.barDot} style={{ background: a.color }} />
+                                                                        <span>{a.name} ({a.count})</span>
+                                                                    </div>
+                                                                    <div className={styles.barTrack} style={{ background: `${a.color}20` }}>
+                                                                        <div
+                                                                            className={styles.barFill}
+                                                                            style={{ width: `${a.percent}%`, background: a.color }}
+                                                                        />
+                                                                        <span className={styles.barValueInline}>
+                                                                            {formatCurrency(a.value)} ({a.percent.toFixed(1)}%)
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className={styles.emptyState}>
+                                                            <span>Nenhum ativo cadastrado</span>
+                                                            <Link href="/brokers" className={styles.addBtn}><FiPlus /> Ir para Corretoras</Link>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+
+                                            {/* Positions Table */}
+                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                                                <div className={styles.largeCard}>
+                                                    <h3 className={styles.largeCardTitle}>Carteira de Ativos</h3>
+                                                    <PortfolioTable
+                                                        positions={positions.slice(0, 8)}
+                                                        formatCurrency={formatCurrency}
+                                                        onTradeClick={(ticker) => console.log('Trade', ticker)}
+                                                    />
+                                                    {positions.length > 8 && (
+                                                        <div className={styles.tableFooter}>
+                                                            <Link href="/brokers" className={styles.viewAllBtn}>
+                                                                Ver carteira completa →
+                                                            </Link>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        </div>
+
+                                        {/* RIGHT COLUMN: Brokers Sidebar */}
+                                        <div className={styles.dashboardSidebar}>
+                                            <BrokersWidget />
                                         </div>
                                     </div>
-                                </motion.div>
-                            </>
-                        )
+                                </>
+                            );
+                        })()
                     }
                 </main >
 

@@ -41,6 +41,8 @@ const tabs = [
     { id: 'goals', label: 'Metas', icon: FiTarget }
 ];
 
+import CardModal from '@/components/modals/CardModal';
+
 export default function BankDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -50,6 +52,7 @@ export default function BankDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('summary');
+    const [showCardModal, setShowCardModal] = useState(false);
 
     // Tab data
     const [cards, setCards] = useState([]);
@@ -157,6 +160,11 @@ export default function BankDetailPage() {
             loadTabData(activeTab);
         }
     }, [account, activeTab, loadTabData]);
+
+    const handleCardSave = () => {
+        loadTabData('cards');
+        setShowCardModal(false);
+    };
 
     if (loading) {
         return (
@@ -302,13 +310,27 @@ export default function BankDetailPage() {
                                     {/* CARDS TAB */}
                                     {activeTab === 'cards' && (
                                         <div className={styles.cardsList}>
+                                            {cards.length > 0 && (
+                                                <div className={styles.tabActions}>
+                                                    <button
+                                                        className={styles.addBtn}
+                                                        onClick={() => setShowCardModal(true)}
+                                                    >
+                                                        <FiPlus /> Novo Cartão
+                                                    </button>
+                                                </div>
+                                            )}
+
                                             {cards.length === 0 ? (
                                                 <div className={styles.emptyTab}>
                                                     <FiCreditCard />
                                                     <p>Nenhum cartão vinculado a esta conta</p>
-                                                    <Link href="/cards" className={styles.linkBtn}>
-                                                        Gerenciar Cartões
-                                                    </Link>
+                                                    <button
+                                                        className={styles.linkBtn}
+                                                        onClick={() => setShowCardModal(true)}
+                                                    >
+                                                        Novo Cartão
+                                                    </button>
                                                 </div>
                                             ) : (
                                                 cards.map(card => (
@@ -409,6 +431,14 @@ export default function BankDetailPage() {
                 </div>
             </main>
             <Dock />
+
+            {/* Card Modal */}
+            <CardModal
+                isOpen={showCardModal}
+                onClose={() => setShowCardModal(false)}
+                onSave={handleCardSave}
+                bankAccounts={[account]} // Pre-select current account
+            />
         </AppShell>
     );
 }

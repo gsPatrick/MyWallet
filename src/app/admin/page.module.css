@@ -53,6 +53,47 @@
     box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
+/* Tab Navigation */
+.tabsContainer {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 6px;
+    background: var(--admin-input-bg);
+    border-radius: 14px;
+    border: 1px solid var(--admin-border);
+}
+
+.tabButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tabButton:hover {
+    color: var(--admin-text);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.tabButton.tabActive {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.tabButton svg {
+    font-size: 18px;
+}
+
 /* KPI Grid */
 .kpiGrid {
     display: grid;

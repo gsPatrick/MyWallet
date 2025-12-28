@@ -5,42 +5,70 @@
             "icon": "https://upload.wikimedia.org/wikipedia/commons/7/75/Netflix_icon.svg",
             "color": "#E50914",
             "category": "STREAMING",
-            "defaultAmount": 39.90
+            "defaultAmount": 39.90,
+            "keywords": [
+                "netflix",
+                "netfix"
+            ]
         },
         "spotify": {
             "name": "Spotify",
             "icon": "https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg",
             "color": "#1DB954",
             "category": "MUSIC",
-            "defaultAmount": 21.90
+            "defaultAmount": 21.90,
+            "keywords": [
+                "spotify"
+            ]
         },
         "amazon_prime": {
             "name": "Amazon Prime",
             "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png",
             "color": "#FF9900",
             "category": "STREAMING",
-            "defaultAmount": 14.90
+            "defaultAmount": 14.90,
+            "keywords": [
+                "amazon prime",
+                "prime video",
+                "amazon prime video",
+                "primevideo"
+            ]
         },
         "disney_plus": {
             "name": "Disney+",
             "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
             "color": "#113CCF",
             "category": "STREAMING",
-            "defaultAmount": 33.90
+            "defaultAmount": 33.90,
+            "keywords": [
+                "disney+",
+                "disney plus",
+                "disneyplus"
+            ]
         },
         "hbo_max": {
             "name": "HBO Max",
             "icon": "https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg",
             "color": "#5822B4",
             "category": "STREAMING",
-            "defaultAmount": 34.90
+            "defaultAmount": 34.90,
+            "keywords": [
+                "hbo max",
+                "hbomax",
+                "hbo"
+            ]
         },
         "youtube_premium": {
             "name": "YouTube Premium",
             "icon": "https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",
             "color": "#FF0000",
             "category": "STREAMING",
-            "defaultAmount": 24.90
+            "defaultAmount": 24.90,
+            "keywords": [
+                "youtube premium",
+                "youtube music",
+                "yt premium"
+            ]
         },
         "apple_music": {
             "name": "Apple Music",
@@ -51,7 +79,7 @@
         },
         "deezer": {
             "name": "Deezer",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Deezer_logo.svg",
+            "icon": "https://merlinnetwork.org/wp-content/uploads/2023/08/Deezer.png",
             "color": "#FEAA2D",
             "category": "MUSIC",
             "defaultAmount": 21.90
@@ -65,56 +93,56 @@
         },
         "globoplay": {
             "name": "Globoplay",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Globoplay_logo.svg",
+            "icon": "https://i.imgur.com/Q884Fva.png",
             "color": "#FF0000",
             "category": "STREAMING",
             "defaultAmount": 24.90
         },
         "crunchyroll": {
             "name": "Crunchyroll",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.svg",
+            "icon": "https://m.media-amazon.com/images/I/41o03HyOYlL.png",
             "color": "#F47521",
             "category": "STREAMING",
             "defaultAmount": 14.99
         },
         "xbox_game_pass": {
             "name": "Xbox Game Pass",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/43/Xbox_Game_Pass_logo.svg",
+            "icon": "https://t.ctcdn.com.br/etDcbBfOMKMnWijUxYTFRRuVSwQ=/768x432/smart/i483735.png",
             "color": "#107C10",
             "category": "GAMING",
             "defaultAmount": 44.99
         },
         "playstation_plus": {
             "name": "PlayStation Plus",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/00/PlayStation_Plus_logo.svg",
+            "icon": "https://assets-prd.ignimgs.com/2022/09/22/playstation-plus-button-2-1663806500843.jpg",
             "color": "#003791",
             "category": "GAMING",
             "defaultAmount": 42.90
         },
         "nintendo_online": {
             "name": "Nintendo Online",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Nintendo_Switch_Online_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsN8MVsUnjeyPIv1IBcybsuRmUec6PmMiiGQ&s",
             "color": "#E60012",
             "category": "GAMING",
             "defaultAmount": 24.90
         },
         "twitch": {
             "name": "Twitch",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Twitch_logo_2019.svg",
+            "icon": "https://m.media-amazon.com/images/I/21kRx-CJsUL.png",
             "color": "#9146FF",
             "category": "STREAMING",
             "defaultAmount": 24.90
         },
         "icloud": {
             "name": "iCloud",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+            "icon": "https://www.apple.com/v/icloud/ai/images/overview/hero_icloud__e5pazz6xmweq_large.png",
             "color": "#3693F3",
             "category": "STORAGE",
             "defaultAmount": 3.50
         },
         "google_one": {
             "name": "Google One",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_One_logo.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Google_One_logo.png/250px-Google_One_logo.png",
             "color": "#4285F4",
             "category": "STORAGE",
             "defaultAmount": 6.99
@@ -142,7 +170,7 @@
         },
         "zoom": {
             "name": "Zoom",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Zoom_Communications_Logo.svg",
+            "icon": "https://521324.fs1.hubspotusercontent-na1.net/hubfs/521324/__hs-marketplace__/Zoom%20logo-2-1.png",
             "color": "#2D8CFF",
             "category": "SOFTWARE",
             "defaultAmount": 73.90
@@ -156,14 +184,14 @@
         },
         "adobe_cc": {
             "name": "Adobe Creative Cloud",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Creative_Cloud_rainbow_icon.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Adobe_Creative_Cloud_rainbow_icon.svg/1200px-Adobe_Creative_Cloud_rainbow_icon.svg.png",
             "color": "#FF0000",
             "category": "SOFTWARE",
             "defaultAmount": 224.00
         },
         "canva": {
             "name": "Canva Pro",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/08/Canva_icon_2021.svg",
+            "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxo4K81Ei7WzcnqEk8W.MgwZWUeamBB3adXRlcNbgrJf4bgL2SLm_fP_9D0ISp9gungP08J_aiScgT66LweyZR0c-&format=source",
             "color": "#00C4CC",
             "category": "SOFTWARE",
             "defaultAmount": 34.99
@@ -198,98 +226,91 @@
         },
         "star_plus": {
             "name": "Star+",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Star_Plus_logo.svg",
+            "icon": "https://t2.tudocdn.net/562158?w=1200&h=1200",
             "color": "#FFCC00",
             "category": "STREAMING",
             "defaultAmount": 40.90
         },
         "apple_tv_plus": {
             "name": "Apple TV+",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Apple_TV_Plus_Logo.svg",
+            "icon": "https://www.apple.com/v/apple-tv/b/images/meta/apple-tv__ft1nltyknfmi_og.png",
             "color": "#000000",
             "category": "STREAMING",
             "defaultAmount": 21.90
         },
         "viki": {
             "name": "Viki",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Viki_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOZT2E5W4ZlODCJzPX03l0IvXaJup7E8P-rQ&s",
             "color": "#FF5722",
             "category": "STREAMING",
             "defaultAmount": 19.90
         },
-        "pluto_tv": {
-            "name": "Pluto TV",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Pluto_TV_logo.svg",
-            "color": "#FFD400",
-            "category": "STREAMING",
-            "defaultAmount": 0.00
-        },
         "soundcloud_go": {
             "name": "SoundCloud Go",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a2/SoundCloud_logo.svg",
+            "icon": "https://photos.prnewswire.com/prnfull/20160329/348731LOGO",
             "color": "#FF5500",
             "category": "MUSIC",
             "defaultAmount": 16.90
         },
         "tidal": {
             "name": "Tidal",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/75/Tidal_logo.svg",
+            "icon": "https://tidal.com/img/FB_1200x627.png",
             "color": "#000000",
             "category": "MUSIC",
             "defaultAmount": 21.90
         },
         "amazon_music": {
             "name": "Amazon Music Unlimited",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Amazon_Music_logo.svg",
+            "icon": "https://store-images.s-microsoft.com/image/apps.20311.13756631990520576.c7bf8936-a11d-4c89-b498-2442c2977baf.d9909661-86c4-4ca8-b820-20101dd12a50",
             "color": "#00A8E1",
             "category": "MUSIC",
             "defaultAmount": 21.90
         },
         "youtube_music": {
             "name": "YouTube Music",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/d/d8/YouTube_Music_logo.svg",
+            "icon": "https://www.datocms-assets.com/116987/1744276991-youtube-music.svg",
             "color": "#FF0000",
             "category": "MUSIC",
             "defaultAmount": 21.90
         },
         "ea_play": {
             "name": "EA Play",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0c/EA_Play_logo.svg",
+            "icon": "https://media.contentapi.ea.com/content/dam/eacom/images/2020/06/ea-featured-image-02-ea-play-16x9.jpg.adapt.crop191x100.1200w.jpg",
             "color": "#FF4747",
             "category": "GAMING",
             "defaultAmount": 19.90
         },
         "ubisoft_plus": {
             "name": "Ubisoft+",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/78/Ubisoft_logo.svg",
+            "icon": "https://sm.ign.com/t/ign_pt/screenshot/default/ubisoft-plus-imagem-destaque_nhdg.1200.png",
             "color": "#000000",
             "category": "GAMING",
             "defaultAmount": 59.90
         },
         "steam": {
             "name": "Steam",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
+            "icon": "https://sm.ign.com/ign_br/screenshot/default/steam-logo_kk9c.jpg",
             "color": "#171A21",
             "category": "GAMING",
             "defaultAmount": 0.00
         },
         "google_play_pass": {
             "name": "Google Play Pass",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_Play_Store_badge_EN.svg",
+            "icon": "https://lh3.googleusercontent.com/0xn3QeM4oIHPZxFF5nCf5i2OGIG4JFDTkmMGijR7V-kmhWI0uBPGW8UA17ZIfomWs5y9D_BL9mnG_9h1nZFU4y3mzhTLvo2sA8dX3gN-4QJ3st0bsOs=s1000",
             "color": "#34A853",
             "category": "GAMING",
             "defaultAmount": 9.90
         },
         "medium": {
             "name": "Medium",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Medium_logo_Monogram.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVo1t-J-uTBYzvAmx8nXV-Beko-bxaYy_oBA&s",
             "color": "#000000",
             "category": "NEWS",
             "defaultAmount": 25.00
         },
         "new_york_times": {
             "name": "The New York Times",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0e/New_York_Times_logo.svg",
+            "icon": "https://craftpeak-cooler-images.imgix.net/hill-farmstead-brewery/new_york_times.jpg?auto=compress%2Cformat&fit=crop&h=600&ixlib=php-3.3.1&w=600&wpsize=tile_strict&s=10e856fef5654a8a80885bf45928b108",
             "color": "#000000",
             "category": "NEWS",
             "defaultAmount": 69.90
@@ -303,7 +324,7 @@
         },
         "google_workspace": {
             "name": "Google Workspace",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Workspace_logo.svg",
+            "icon": "https://www.webmundi.com/wp-content/uploads/Google-Workspace-900x0-1.png",
             "color": "#4285F4",
             "category": "SOFTWARE",
             "defaultAmount": 27.00
@@ -345,196 +366,273 @@
         },
         "geforce_now": {
             "name": "GeForce NOW",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Nvidia_logo.svg",
+            "icon": "https://www.adrenaline.com.br/wp-content/uploads/2023/01/geforce-now3-1.jpg",
             "color": "#76B900",
             "category": "GAMING",
             "defaultAmount": 49.99
         },
         "boosteroid": {
             "name": "Boosteroid",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Boosteroid_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/OgSkgjmRCMI75fA92EDmpg1VPPEsUpInGzr_0wD6zItvh_O9pRgOIPWHBcqGi3KI1A",
             "color": "#FFCC00",
             "category": "GAMING",
             "defaultAmount": 39.90
         },
         "xbox_cloud_gaming": {
             "name": "Xbox Cloud Gaming",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/43/Xbox_Game_Pass_logo.svg",
+            "icon": "https://img.odcdn.com.br/wp-content/uploads/2022/11/xcloud-xbox-cloud-gaming-xbox-microsoft-como-acessar-jogos-em-nuvem.png",
             "color": "#107C10",
             "category": "GAMING",
             "defaultAmount": 0.00
         },
         "waze": {
             "name": "Waze",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Waze_logo.svg",
+            "icon": "https://miro.medium.com/1*rdFSukbSXoX7dfgM5cQubQ.jpeg",
             "color": "#33CCFF",
             "category": "UTILITIES",
             "defaultAmount": 0.00
         },
         "uber": {
             "name": "Uber",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.svg",
+            "icon": "https://play-lh.googleusercontent.com/WTGDz8M2gRie-UPC1eFZ321-RavuXFhKlcvxHp0uVEDN0UrWfCMwU9uMvuEE98H3VtZG",
             "color": "#000000",
             "category": "UTILITIES",
-            "defaultAmount": 0.00
+            "defaultAmount": 0.00,
+            "keywords": [
+                "uber",
+                "uber*trip",
+                "uber trip",
+                "ubereats",
+                "uber eats"
+            ]
         },
         "99": {
             "name": "99",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2b/99_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/J9KidDzcxQnXeIEijBiWHnRLfsiobflzsVslyhlBfEYFK2nrSO9RyoNkP971WzRFFQ",
             "color": "#FFD100",
             "category": "UTILITIES",
+            "defaultAmount": 0.00,
+            "keywords": [
+                "99app",
+                "99 pop",
+                "99pop",
+                "99 taxi",
+                "99pay",
+                "99p"
+            ]
+        },
+        "99freelas": {
+            "name": "99Freelas",
+            "icon": "https://play-lh.googleusercontent.com/yNBbWLb1_Te7UELDjx4OjKpkYcW79nklxeB-xJThgaN0hiXpIDs2hHt3P9XISi4fEjwH",
+            "color": "#FF6600",
+            "category": "SOFTWARE",
+            "defaultAmount": 0.00,
+            "keywords": [
+                "99freelas",
+                "99 freelas",
+                "99f"
+            ]
+        },
+        "workana": {
+            "name": "Workana",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ07x8UG10kbAC2J_dKiyC59gwn8cOrEapyow&s",
+            "color": "#FF6C00",
+            "category": "SOFTWARE",
+            "defaultAmount": 0.00
+        },
+        "freelancer_com": {
+            "name": "Freelancer.com",
+            "icon": "https://play-lh.googleusercontent.com/JZhz6Cc1sIKfeASdmgn4mvuwJJZZj6U1ILqP__T7ByWhK-LjDzYMJ_3Y0qljrzTX8JI=w416-h235-rw",
+            "color": "#1EAAF1",
+            "category": "SOFTWARE",
+            "defaultAmount": 0.00
+        },
+        "claude": {
+            "name": "Claude",
+            "icon": "https://cdn.worldvectorlogo.com/logos/anthropic-1.svg",
+            "color": "#000000",
+            "category": "SOFTWARE",
+            "defaultAmount": 120.00
+        },
+        "trello": {
+            "name": "Trello",
+            "icon": "https://play-lh.googleusercontent.com/Tt-6ZaQDUAjfSNSeLz4XyYkPsEQfVVp0lBtwrnuyqubhCna0LKu5OZxKgegBJIrEhz8",
+            "color": "#026AA7",
+            "category": "SOFTWARE",
+            "defaultAmount": 0.00
+        },
+        "one_drive": {
+            "name": "OneDrive",
+            "icon": "https://www.virtru.com/hubfs/onedrive-symbol-673f930571682.webp",
+            "color": "#094AB2",
+            "category": "STORAGE",
+            "defaultAmount": 0.00
+        },
+        "box": {
+            "name": "Box",
+            "icon": "https://play-lh.googleusercontent.com/kif95mwH33EVmCgo5HEtExiHMEotoOiMDNVfs2fmIb2LLbsfIrOsNmAlt8bq3xZ_Xuk",
+            "color": "#0061D5",
+            "category": "STORAGE",
             "defaultAmount": 0.00
         },
         "cabify": {
             "name": "Cabify",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Cabify_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/cD-_QuzaXqANt_tmczxXccqUlHJ1fJnPA0KAwJLdq8F8rsonSB-c1HxuURtNFNIHQd0",
             "color": "#6C2EFF",
             "category": "UTILITIES",
-            "defaultAmount": 0.00
+            "defaultAmount": 0.00,
+            "keywords": [
+                "cabify"
+            ]
         },
         "vivo": {
             "name": "Vivo",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Vivo_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDj0ldVmeFkcRIjxUAJkSTRCzDY2c3DIGGOw&s",
             "color": "#660099",
             "category": "UTILITIES",
-            "defaultAmount": 120.00
+            "defaultAmount": 120.00,
+            "keywords": [
+                "vivo",
+                "telefonica",
+                "vivo fibra"
+            ]
         },
         "claro": {
             "name": "Claro",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Claro_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/pkPyvNUYcDwFdocveWqGJvuaY7OOfR4Gma7rKWkcln53grJgcgs8V_1zcbWbVoCyUw",
             "color": "#E60019",
             "category": "UTILITIES",
-            "defaultAmount": 110.00
+            "defaultAmount": 110.00,
+            "keywords": [
+                "claro",
+                "claro net",
+                "net claro"
+            ]
         },
         "tim": {
             "name": "TIM",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7f/TIM_logo.svg",
+            "icon": "https://timfibra.com.br/OPENGRAPH-TIM.png",
             "color": "#0033A0",
             "category": "UTILITIES",
-            "defaultAmount": 105.00
+            "defaultAmount": 105.00,
+            "keywords": [
+                "tim",
+                "tim celular",
+                "tim fibra"
+            ]
         },
         "oi": {
             "name": "Oi",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/57/Oi_logo.svg",
+            "icon": "https://logodownload.org/wp-content/uploads/2014/02/oi-logo-c5.png",
             "color": "#FFD100",
             "category": "UTILITIES",
-            "defaultAmount": 95.00
+            "defaultAmount": 95.00,
+            "keywords": [
+                "oi",
+                "oi fibra"
+            ]
         },
         "starlink": {
             "name": "Starlink",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Starlink_Logo.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Starlink_Logo.svg/1200px-Starlink_Logo.svg.png",
             "color": "#000000",
             "category": "UTILITIES",
             "defaultAmount": 230.00
         },
-        "alexa": {
-            "name": "Amazon Alexa",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Amazon_Alexa_logo.svg",
-            "color": "#00CAFF",
-            "category": "UTILITIES",
-            "defaultAmount": 0.00
-        },
-        "google_nest": {
-            "name": "Google Nest",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Google_Nest_logo.svg",
-            "color": "#4285F4",
-            "category": "UTILITIES",
-            "defaultAmount": 0.00
-        },
         "ring": {
             "name": "Ring",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Ring_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/pT0dFzZQDNRPldjCAQ2vYhr0N-am7xjXRNhLXKkbIpGo2anKlG5Bm6llqFXzCfKBnmwv=w240-h480-rw",
             "color": "#00BCE4",
             "category": "UTILITIES",
             "defaultAmount": 30.00
         },
         "jira": {
             "name": "Jira",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Jira_Logo.svg",
+            "icon": "https://www.robodev.com.br/wp-content/uploads/2025/08/jira-1.png",
             "color": "#0052CC",
             "category": "SOFTWARE",
             "defaultAmount": 49.00
         },
         "confluence": {
             "name": "Confluence",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Confluence_Logo.svg",
+            "icon": "https://pbs.twimg.com/profile_images/1022908662392619008/5_z16TbH_400x400.jpg",
             "color": "#172B4D",
             "category": "SOFTWARE",
             "defaultAmount": 39.00
         },
         "clickup": {
             "name": "ClickUp",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7e/ClickUp_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEVJIUqsxceoNJdwZZfFmIXHdX4yAsDJ2vOQ&s",
             "color": "#7B68EE",
             "category": "SOFTWARE",
             "defaultAmount": 29.00
         },
         "linear": {
             "name": "Linear",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Linear_logo.svg",
+            "icon": "https://static.intercomassets.com/developer-home/change-request-image-uploads/6595/original/logo-padding-1622840635.png?1622840635",
             "color": "#5E6AD2",
             "category": "SOFTWARE",
             "defaultAmount": 40.00
         },
         "bitwarden": {
             "name": "Bitwarden",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Bitwarden_logo.svg",
+            "icon": "https://store-images.s-microsoft.com/image/apps.24799.14276088864040359.1692422a-6f71-4948-aef3-cad992bea4ad.6d7acc88-57bc-44c0-ab32-be407e0739ca",
             "color": "#175DDC",
             "category": "SOFTWARE",
             "defaultAmount": 9.99
         },
         "lastpass": {
             "name": "LastPass",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7a/LastPass_logo.svg",
+            "icon": "https://www.datto.com/wp-content/uploads/lastassv1-400x400-1.png",
             "color": "#D32D27",
             "category": "SOFTWARE",
             "defaultAmount": 14.99
         },
         "norton": {
             "name": "Norton",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Norton_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSg52GV3BYAyrVRqK530PQu-wucP3bOeLIh6Q&s",
             "color": "#FFD100",
             "category": "SOFTWARE",
             "defaultAmount": 19.99
         },
         "kaspersky": {
             "name": "Kaspersky",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Kaspersky_logo.svg",
+            "icon": "https://s2.glbimg.com/AiORv88lL2zSJeTzmrgkZQhwyIM=/620x430/e.glbimg.com/og/ed/f/original/2022/05/09/frpesbdxmaeyals.jpg",
             "color": "#006D5C",
             "category": "SOFTWARE",
             "defaultAmount": 19.99
         },
         "github_copilot": {
             "name": "GitHub Copilot",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
+            "icon": "https://assets-blog.hostgator.com.br/wp-content/uploads/2025/05/copilot-chat-ee053e45453d.webp",
             "color": "#181717",
             "category": "SOFTWARE",
             "defaultAmount": 49.00
         },
         "jetbrains_all_products": {
             "name": "JetBrains All Products Pack",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/71/JetBrains_Logo_2020.svg",
+            "icon": "https://avatars.githubusercontent.com/u/878437?s=200&v=4",
             "color": "#000000",
             "category": "SOFTWARE",
             "defaultAmount": 129.00
         },
         "postman": {
             "name": "Postman",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Postman_%28software%29_logo.svg",
+            "icon": "https://apibrasil.blog/wp-content/uploads/2023/11/Postman-logo.webp",
             "color": "#FF6C37",
             "category": "SOFTWARE",
             "defaultAmount": 49.00
         },
         "sentry": {
             "name": "Sentry",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Sentry_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKluWOzlUctfOCMnI8orSYFr1T762y3Qgf9g&s",
             "color": "#362D59",
             "category": "SOFTWARE",
             "defaultAmount": 39.00
         },
         "datadog": {
             "name": "Datadog",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Datadog_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5uUfx_L6okE5dM7IVx5LKuVSFfkN6-vrlmQ&s",
             "color": "#632CA6",
             "category": "SOFTWARE",
             "defaultAmount": 99.00
@@ -548,42 +646,42 @@
         },
         "supabase": {
             "name": "Supabase",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Supabase_logo.svg",
+            "icon": "https://yt3.googleusercontent.com/KVjptxDSWT7rjVfGax2TgTNVAYgplgo1z_fwaV3MFjPpcmNVZC0TIgQV030BPJ0ybCP3_Fz-2w=s900-c-k-c0x00ffffff-no-rj",
             "color": "#3ECF8E",
             "category": "SOFTWARE",
             "defaultAmount": 25.00
         },
         "firebase": {
             "name": "Firebase",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/37/Firebase_Logo.svg",
+            "icon": "https://www.webbuildinfotech.com/tech/firebase.png",
             "color": "#FFCA28",
             "category": "SOFTWARE",
             "defaultAmount": 30.00
         },
         "openai_api": {
             "name": "OpenAI API",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg",
+            "icon": "https://static.vecteezy.com/system/resources/previews/038/600/534/non_2x/official-chatgpt-logo-icons-logo-openai-ai-in-green-background-free-vector.jpg",
             "color": "#10A37F",
             "category": "SOFTWARE",
             "defaultAmount": 120.00
         },
         "anthropic": {
             "name": "Anthropic",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Anthropic_logo.svg",
+            "icon": "https://cdn.worldvectorlogo.com/logos/anthropic-1.svg",
             "color": "#000000",
             "category": "SOFTWARE",
             "defaultAmount": 120.00
         },
         "midjourney": {
             "name": "Midjourney",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Midjourney_Emblem.svg",
+            "icon": "https://upload.wikimedia.org/wikipedia/en/0/06/Midjourney_logo.svg",
             "color": "#000000",
             "category": "SOFTWARE",
             "defaultAmount": 60.00
         },
         "runway": {
             "name": "Runway",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1e/RunwayML_logo.svg",
+            "icon": "https://aianimation.com/wp-content/uploads/2024/01/runway-ml-logo.jpg",
             "color": "#000000",
             "category": "SOFTWARE",
             "defaultAmount": 75.00
@@ -597,52 +695,614 @@
         },
         "envato_elements": {
             "name": "Envato Elements",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Envato_logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNhRIDTeidX455bTDATQNxhgCCxOkcV6vZtA&s",
             "color": "#82B541",
             "category": "SOFTWARE",
             "defaultAmount": 89.00
         },
         "shutterstock": {
             "name": "Shutterstock",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Shutterstock_Logo.svg",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR13h24ubQViNHZtSXaCVexr87haitf1hJBuA&s",
             "color": "#EE2B24",
             "category": "SOFTWARE",
             "defaultAmount": 199.00
         },
-        "getty_images": {
-            "name": "Getty Images",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Getty_Images_logo.svg",
-            "color": "#000000",
-            "category": "SOFTWARE",
-            "defaultAmount": 399.00
-        },
-        "courier": {
-            "name": "Courier",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Courier_logo.svg",
-            "color": "#6E56CF",
-            "category": "SOFTWARE",
-            "defaultAmount": 29.00
-        },
         "sendgrid": {
             "name": "SendGrid",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/7/78/SendGrid_logo.svg",
+            "icon": "https://cdn.sanity.io/images/4n6i22w6/production/6901af2c97afac8b0c014943b818f98502a246e9-512x512.png?w=1920&q=75&fit=clip&auto=format",
             "color": "#1A82E2",
             "category": "SOFTWARE",
             "defaultAmount": 29.00
         },
         "mailchimp": {
             "name": "Mailchimp",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Mailchimp_logo.svg",
+            "icon": "https://www.drupal.org/files/project-images/MC_Logo_0.jpg",
             "color": "#FFE01B",
             "category": "SOFTWARE",
             "defaultAmount": 39.00
         },
         "brevo": {
             "name": "Brevo (Sendinblue)",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Brevo_logo.svg",
+            "icon": "https://play-lh.googleusercontent.com/NIdaYvkgQaWkbtrjIgzX_7q9ihRVfFKK-4vy11umGRishb51xeJRyP2bSnEHXksaCw",
             "color": "#0092FF",
             "category": "SOFTWARE",
-            "defaultAmount": 25.00
+            "defaultAmount": 25.00,
+            "keywords": [
+                "brevo",
+                "sendinblue"
+            ]
+        },
+        "ifood": {
+            "name": "iFood",
+            "icon": "https://static.ifood.com.br/webapp/images/logo-smile-512x512.png",
+            "color": "#EA1D2C",
+            "category": "FOOD",
+            "keywords": [
+                "ifood",
+                "pag*ifood",
+                "ifood*",
+                "i food"
+            ]
+        },
+        "rappi": {
+            "name": "Rappi",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ431XT-vhoeIsdw02viy_ITPbASwVCDRnz5g&s",
+            "color": "#FF5A00",
+            "category": "FOOD",
+            "keywords": [
+                "rappi",
+                "rappipay"
+            ]
+        },
+        "ze_delivery": {
+            "name": "Zé Delivery",
+            "icon": "https://courier-images-web.imgix.net/public/assets/img/meta_image.png?auto=compress,format&fit=max&w=undefined&h=undefined&dpr=2&fm=png",
+            "color": "#FFC300",
+            "category": "FOOD",
+            "keywords": [
+                "ze delivery",
+                "zé delivery",
+                "zedelivery"
+            ]
+        },
+        "mcdonalds": {
+            "name": "McDonald's",
+            "icon": "https://yt3.googleusercontent.com/m2N3G5IuofYk3Lld7t1jKxUMrJZzpYLul6P0nE-MGKmLKN7qvC6Ocf8YMKw6UEXmaO8wVa2Dvck=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#FFC72C",
+            "category": "FOOD",
+            "keywords": [
+                "mcdonalds",
+                "mequi",
+                "mc donalds",
+                "mc donald",
+                "mcd",
+                "big mac",
+                "arcos dourados"
+            ]
+        },
+        "burger_king": {
+            "name": "Burger King",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg",
+            "color": "#D62300",
+            "category": "FOOD",
+            "keywords": [
+                "burger king",
+                "bk",
+                "bk brasil",
+                "whopper"
+            ]
+        },
+        "starbucks": {
+            "name": "Starbucks",
+            "icon": "https://www.citypng.com/public/uploads/preview/hd-starbucks-circle-woman-logo-png-701751694778942nj9szlwtvw.png",
+            "color": "#00704A",
+            "category": "FOOD",
+            "keywords": [
+                "starbucks",
+                "sbux"
+            ]
+        },
+        "bobs": {
+            "name": "Bob's",
+            "icon": "https://play-lh.googleusercontent.com/-N6QJbcqVpN6nrY2k_r_MGuf68N3MPuwjK6PQgVDos9gtmJME_y81LT-mug9PO7EZmme",
+            "color": "#FF0000",
+            "category": "FOOD",
+            "keywords": [
+                "bobs",
+                "bob's",
+                "big bob"
+            ]
+        },
+        "subway": {
+            "name": "Subway",
+            "icon": "https://e7.pngegg.com/pngimages/153/30/png-clipart-subway-logo-submarine-sandwich-fast-food-restaurant-franchising-subway-angle-food-thumbnail.png",
+            "color": "#008C15",
+            "category": "FOOD",
+            "keywords": [
+                "subway"
+            ]
+        },
+        "pizza_hut": {
+            "name": "Pizza Hut",
+            "icon": "https://logos-world.net/wp-content/uploads/2021/10/Pizza-Hut-Logo-2014-2019.png",
+            "color": "#EE3A24",
+            "category": "FOOD",
+            "keywords": [
+                "pizza hut",
+                "pizzahut"
+            ]
+        },
+        "dominos": {
+            "name": "Domino's",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Domino%27s_pizza_logo.svg/960px-Domino%27s_pizza_logo.svg.png",
+            "color": "#006491",
+            "category": "FOOD",
+            "keywords": [
+                "dominos",
+                "domino's",
+                "dominos pizza"
+            ]
+        },
+        "outback": {
+            "name": "Outback",
+            "icon": "https://www3.santoandre.sp.gov.br/turismosantoandre/wp-content/uploads/2022/03/Logo-outback.png",
+            "color": "#A52A2A",
+            "category": "FOOD",
+            "keywords": [
+                "outback",
+                "outback steakhouse"
+            ]
+        },
+        "mercado_livre": {
+            "name": "Mercado Livre",
+            "icon": "https://play-lh.googleusercontent.com/iVaeA0HDw8CZjEM-K7GdLB9XYmpcwVFSuv4Q8o9uh4Br7PuKCm3QSYCVU73tr9BBXdR_7xTX4yO0azOJegRVcA",
+            "color": "#FFE600",
+            "category": "SHOPPING",
+            "keywords": [
+                "mercado livre",
+                "mercadolivre",
+                "mercadopago",
+                "meli",
+                "ml*"
+            ]
+        },
+        "amazon": {
+            "name": "Amazon",
+            "icon": "https://images.icon-icons.com/2108/PNG/512/amazon_icon_130999.png",
+            "color": "#FF9900",
+            "category": "SHOPPING",
+            "keywords": [
+                "amazon",
+                "amzn mktp",
+                "amazon.com.br",
+                "amz*"
+            ]
+        },
+        "shopee": {
+            "name": "Shopee",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopee_logo.svg/1442px-Shopee_logo.svg.png",
+            "color": "#EE4D2D",
+            "category": "SHOPPING",
+            "keywords": [
+                "shopee",
+                "shopee brasil"
+            ]
+        },
+        "shein": {
+            "name": "Shein",
+            "icon": "https://i.pinimg.com/originals/10/a0/4a/10a04a48aa29fba6aa3186541a524d1b.jpg",
+            "color": "#000000",
+            "category": "SHOPPING",
+            "keywords": [
+                "shein"
+            ]
+        },
+        "magalu": {
+            "name": "Magalu",
+            "icon": "https://images.seeklogo.com/logo-png/36/1/magalu-logo-png_seeklogo-362494.png",
+            "color": "#0086FF",
+            "category": "SHOPPING",
+            "keywords": [
+                "magalu",
+                "magazine luiza",
+                "magazineluiza",
+                "mglu"
+            ]
+        },
+        "casas_bahia": {
+            "name": "Casas Bahia",
+            "icon": "https://assets.b9.com.br/wp-content/uploads/2020/07/B.png",
+            "color": "#00447C",
+            "category": "SHOPPING",
+            "keywords": [
+                "casas bahia",
+                "casasbahia"
+            ]
+        },
+        "americanas": {
+            "name": "Americanas",
+            "icon": "https://anacouto.com.br/wp-content/uploads/2021/07/GALERIA-SITE-AMERICANAS.png",
+            "color": "#ED2E38",
+            "category": "SHOPPING",
+            "keywords": [
+                "americanas",
+                "lojas americanas",
+                "ame digital"
+            ]
+        },
+        "aliexpress": {
+            "name": "AliExpress",
+            "icon": "https://m.media-amazon.com/images/I/41-1uF7Pn8L._h1_.png",
+            "color": "#FF4747",
+            "category": "SHOPPING",
+            "keywords": [
+                "aliexpress",
+                "ali express"
+            ]
+        },
+        "carrefour": {
+            "name": "Carrefour",
+            "icon": "https://w7.pngwing.com/pngs/23/923/png-transparent-logo-brand-carrefour-self-checkout-european-chemical-industry-council-store-shop-text-logo-symbol.png",
+            "color": "#004E9A",
+            "category": "MARKET",
+            "keywords": [
+                "carrefour",
+                "atacadao",
+                "atacadão"
+            ]
+        },
+        "pao_de_acucar": {
+            "name": "Pão de Açúcar",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe6UWnZZLIDW0yxux93BbXXazWe9eC4k5N9g&s",
+            "color": "#EE1C25",
+            "category": "MARKET",
+            "keywords": [
+                "pao de acucar",
+                "pão de açúcar",
+                "gpa"
+            ]
+        },
+        "assai": {
+            "name": "Assaí",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Assa%C3%AD_Atacadista_logo_2024.svg/2560px-Assa%C3%AD_Atacadista_logo_2024.svg.png",
+            "color": "#009739",
+            "category": "MARKET",
+            "keywords": [
+                "assai",
+                "assaí atacadista"
+            ]
+        },
+        "extra": {
+            "name": "Extra",
+            "icon": "https://play-lh.googleusercontent.com/XPEZAOcxikdx5m-Ow4Dhzq-ocJ8Y3blPpTJNLLZlb_neD8tTZWVMzHMIFd9sXhAzN9g",
+            "color": "#EE3124",
+            "category": "MARKET",
+            "keywords": [
+                "extra",
+                "extra hipermercado"
+            ]
+        },
+        "shell": {
+            "name": "Shell",
+            "icon": "https://logosmarcas.net/wp-content/uploads/2020/11/Shell-Logo-1971-1995.png",
+            "color": "#FFD500",
+            "category": "FUEL",
+            "keywords": [
+                "shell",
+                "posto shell",
+                "shell box"
+            ]
+        },
+        "ipiranga": {
+            "name": "Ipiranga",
+            "icon": "https://yt3.googleusercontent.com/ytc/AIdro_lABDL1T80crmzs6j6f_W72qzhDXXQhcO9Qk_WzBagcHQ=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#004C9B",
+            "category": "FUEL",
+            "keywords": [
+                "ipiranga",
+                "posto ipiranga",
+                "abastece ai",
+                "km de vantagens"
+            ]
+        },
+        "petrobras": {
+            "name": "Petrobras",
+            "icon": "https://i.pinimg.com/736x/b4/e8/f3/b4e8f3a19680f3dbf2ee1e543df41ace.jpg",
+            "color": "#007932",
+            "category": "FUEL",
+            "keywords": [
+                "petrobras",
+                "br mania",
+                "premmia",
+                "posto br"
+            ]
+        },
+        "drogasil": {
+            "name": "Drogasil",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOQpIs1Lxg4Q1ElD-LjlKQXuPvDUErdoPN7g&s",
+            "color": "#00A551",
+            "category": "HEALTH",
+            "keywords": [
+                "drogasil",
+                "droga sil"
+            ]
+        },
+        "droga_raia": {
+            "name": "Droga Raia",
+            "icon": "https://guiafloripa.com.br/wp-content/uploads/2018/09/droga-raia.png",
+            "color": "#004990",
+            "category": "HEALTH",
+            "keywords": [
+                "droga raia",
+                "raia",
+                "drogaraia"
+            ]
+        },
+        "pacheco": {
+            "name": "Drogarias Pacheco",
+            "icon": "https://play-lh.googleusercontent.com/CdfD4-zGAHNrsFcDRp4qnMfcpIY-p8y-bl5EN_CX2vsKzZ7PrIITi9V46RE5VKlrCy0b",
+            "color": "#00873F",
+            "category": "HEALTH",
+            "keywords": [
+                "pacheco",
+                "drogarias pacheco"
+            ]
+        },
+        "nubank": {
+            "name": "Nubank",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Nubank_logo_2021.svg",
+            "color": "#820AD1",
+            "category": "FINANCE",
+            "keywords": [
+                "nubank",
+                "nu",
+                "nuconta"
+            ]
+        },
+        "picpay": {
+            "name": "PicPay",
+            "icon": "https://play-lh.googleusercontent.com/pTvc9kCumx_24eJDwGUpvcBwljcIBkrsL3qHwhBW2NalMQ-XxTtHRV9YAJanBxkV0Rw",
+            "color": "#21C25E",
+            "category": "FINANCE",
+            "keywords": [
+                "picpay",
+                "pic pay"
+            ]
+        },
+        "pagbank": {
+            "name": "PagBank",
+            "icon": "https://play-lh.googleusercontent.com/4Znye9QMuQvEx8n9KS-g_KtT_mSUdUOWuaAj96359de5eJnDDnYR0x6AYXxA_6vrsh8",
+            "color": "#78BE20",
+            "category": "FINANCE",
+            "keywords": [
+                "pagbank",
+                "pagseguro"
+            ]
+        },
+        "itau": {
+            "name": "Itaú",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banco_Ita%C3%BA_logo.svg",
+            "color": "#EC7000",
+            "category": "FINANCE",
+            "keywords": [
+                "itau",
+                "itaú",
+                "itau unibanco",
+                "itaucard"
+            ]
+        },
+        "bradesco": {
+            "name": "Bradesco",
+            "icon": "https://pbs.twimg.com/profile_images/1737158472225927168/zyASghk-.jpg",
+            "color": "#CC092F",
+            "category": "FINANCE",
+            "keywords": [
+                "bradesco",
+                "bradescard"
+            ]
+        },
+        "santander": {
+            "name": "Santander",
+            "icon": "https://yt3.googleusercontent.com/2zcKPq4-lOXeh8_moIMZjHu_ntKBoLuPAwaXs7VhUWFU_o1HBJNQm83QsRGGyEcn48NoTbRzQ_c=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#EC0000",
+            "category": "FINANCE",
+            "keywords": [
+                "santander",
+                "santander brasil"
+            ]
+        },
+        "bb": {
+            "name": "Banco do Brasil",
+            "icon": "https://yt3.googleusercontent.com/YoY6PQUzk6UXJEW8sTYs8zf_TfPLHNLSim65mswp_w5CX0jYgtl_le41QPRwoI1Hyj4OM2q_=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#FFCC00",
+            "category": "FINANCE",
+            "keywords": [
+                "banco do brasil",
+                "bb",
+                "ourocard"
+            ]
+        },
+        "caixa": {
+            "name": "Caixa",
+            "icon": "https://yt3.googleusercontent.com/YoY6PQUzk6UXJEW8sTYs8zf_TfPLHNLSim65mswp_w5CX0jYgtl_le41QPRwoI1Hyj4OM2q_=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#005CA9",
+            "category": "FINANCE",
+            "keywords": [
+                "caixa",
+                "caixa economica",
+                "caixa federal",
+                "cef"
+            ]
+        },
+        "inter": {
+            "name": "Banco Inter",
+            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIgsBVZLc-3vFUjstseoM0Cg9j3jP_OCsIzg&s",
+            "color": "#FF7A00",
+            "category": "FINANCE",
+            "keywords": [
+                "inter",
+                "banco inter",
+                "inter bank"
+            ]
+        },
+        "c6": {
+            "name": "C6 Bank",
+            "icon": "https://yt3.googleusercontent.com/DCP_24vUEA5Hgci9YDsLDHEkzEuZp1TnXh5LDrUhFZFIj-F-80PM8UsCidZw6l-wYQlH-FAw1w=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#242424",
+            "category": "FINANCE",
+            "keywords": [
+                "c6",
+                "c6 bank"
+            ]
+        },
+        "xp": {
+            "name": "XP",
+            "icon": "https://www.xpinc.com/wp-content/uploads/sites/6/2023/08/XP.png",
+            "color": "#FECB00",
+            "category": "FINANCE",
+            "keywords": [
+                "xp",
+                "xp investimentos"
+            ]
+        },
+        "mercadopago": {
+            "name": "Mercado Pago",
+            "icon": "https://play-lh.googleusercontent.com/4Znye9QMuQvEx8n9KS-g_KtT_mSUdUOWuaAj96359de5eJnDDnYR0x6AYXxA_6vrsh8",
+            "color": "#009EE3",
+            "category": "FINANCE",
+            "keywords": [
+                "mercado pago",
+                "mercadopago"
+            ]
+        },
+        "will": {
+            "name": "Will Bank",
+            "icon": "https://play-lh.googleusercontent.com/fazUU0h6BiMpjSxgq1son0-VRhBhkimr6kzCLw6T1Y3ZGZj1Nrnvi-ETM2je3-miRQ",
+            "color": "#FFDE59",
+            "category": "FINANCE",
+            "keywords": [
+                "will bank",
+                "will"
+            ]
+        },
+        "next": {
+            "name": "Next",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Next_logo.svg",
+            "color": "#00E676",
+            "category": "FINANCE",
+            "keywords": [
+                "next",
+                "next bank"
+            ]
+        },
+        "original": {
+            "name": "Banco Original",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Logo_Oficial_Banco_Original_-_Verde.png",
+            "color": "#00A859",
+            "category": "FINANCE",
+            "keywords": [
+                "original",
+                "banco original"
+            ]
+        },
+        "neon": {
+            "name": "Neon",
+            "icon": "https://margens.com.br/wp-content/uploads/2025/04/telefone-neon-800x416.webp",
+            "color": "#00D4AA",
+            "category": "FINANCE",
+            "keywords": [
+                "neon",
+                "neon bank"
+            ]
+        },
+        "pan": {
+            "name": "Banco Pan",
+            "icon": "https://yt3.googleusercontent.com/mGZ4gt6MHCDkp3rn2ZRYb8glF2yX4QphOpZtcuoAF0KaAEyNa9tFqffAQQqyKQBsrJYxmQrQKg=s900-c-k-c0x00ffffff-no-rj",
+            "color": "#00529B",
+            "category": "FINANCE",
+            "keywords": [
+                "pan",
+                "banco pan"
+            ]
+        },
+        "safra": {
+            "name": "Safra",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/90/Banco_Safra_logo.svg",
+            "color": "#00529B",
+            "category": "FINANCE",
+            "keywords": [
+                "safra",
+                "banco safra"
+            ]
+        },
+        "btg": {
+            "name": "BTG Pactual",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/0/09/BTG_Pactual_logo.svg",
+            "color": "#002D62",
+            "category": "FINANCE",
+            "keywords": [
+                "btg",
+                "btg pactual"
+            ]
+        },
+        "digio": {
+            "name": "Digio",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Digio_logo.svg",
+            "color": "#0066FF",
+            "category": "FINANCE",
+            "keywords": [
+                "digio"
+            ]
+        },
+        "rico": {
+            "name": "Rico",
+            "icon": "https://i.imgur.com/uSxEe0t.jpeg",
+            "color": "#FF6600",
+            "category": "FINANCE",
+            "keywords": [
+                "rico",
+                "rico investimentos"
+            ]
+        },
+        "nuinvest": {
+            "name": "NuInvest",
+            "icon": "https://logo.clearbit.com/nuinvest.com.br",
+            "color": "#820AD1",
+            "category": "FINANCE",
+            "keywords": [
+                "nuinvest",
+                "nu invest"
+            ]
+        },
+        "clear": {
+            "name": "Clear",
+            "icon": "https://logo.clearbit.com/clear.com.br",
+            "color": "#00A3E0",
+            "category": "FINANCE",
+            "keywords": [
+                "clear",
+                "clear corretora"
+            ]
+        },
+        "binance": {
+            "name": "Binance",
+            "icon": "https://logo.clearbit.com/binance.com",
+            "color": "#F0B90B",
+            "category": "FINANCE",
+            "keywords": [
+                "binance"
+            ]
+        },
+        "mercadobitcoin": {
+            "name": "Mercado Bitcoin",
+            "icon": "https://logo.clearbit.com/mercadobitcoin.com.br",
+            "color": "#00D4A1",
+            "category": "FINANCE",
+            "keywords": [
+                "mercado bitcoin",
+                "mercadobitcoin",
+                "mb"
+            ]
         }
     },
     "categories": [

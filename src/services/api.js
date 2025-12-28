@@ -78,7 +78,7 @@ export const dashboardAPI = {
 // Investments API
 export const investmentsAPI = {
     list: (params) => api.get('/investments', { params }),
-    getPortfolio: () => api.get('/investments/portfolio'),
+    getPortfolio: (brokerId) => api.get('/investments/portfolio', { params: brokerId ? { brokerId } : {} }),
     getPosition: (ticker) => api.get(`/investments/position/${ticker}`),
     getHistory: (ticker) => api.get(`/investments/history/${ticker}`),
     registerOperation: (data) => api.post('/investments', data),
@@ -87,6 +87,9 @@ export const investmentsAPI = {
     }),
     getDividends: () => api.get('/investments/dividends'),
     getEvolution: (months = 12) => api.get('/investments/evolution', { params: { months } }),
+    // Health Diagnostics
+    getHealthDiagnostics: () => api.get('/investments/health/diagnostics'),
+    testHealthService: (service) => api.get(`/investments/health/test/${service}`),
 };
 
 // Investment Dashboard API (Analytics)
@@ -97,6 +100,17 @@ export const investmentDashboardAPI = {
     getEvolution: (months = 12) => api.get('/investment-dashboard/evolution', { params: { months } }),
     getDividends: (year, month) => api.get('/investment-dashboard/dividends', { params: { year, month } }),
     getAlerts: () => api.get('/investment-dashboard/alerts'),
+};
+
+// Brokers API (Corretoras)
+export const brokersAPI = {
+    list: () => api.get('/brokers'),
+    get: (id) => api.get(`/brokers/${id}`),
+    create: (data) => api.post('/brokers', data),
+    createFromDictionary: (code) => api.post('/brokers/from-dictionary', { code }),
+    update: (id, data) => api.put(`/brokers/${id}`, data),
+    delete: (id) => api.delete(`/brokers/${id}`),
+    getAvailable: () => api.get('/brokers/available'),
 };
 
 // Financial Products API
@@ -117,6 +131,7 @@ export const transactionsAPI = {
     delete: (id) => api.delete(`/transactions/${id}`),
     updateMetadata: (id, data) => api.put(`/transactions/${id}/metadata`, data),
     getCategories: () => api.get('/transactions/categories'),
+    internalTransfer: (data) => api.post('/transactions/internal-transfer', data),
 };
 
 // Budgets API
@@ -195,7 +210,7 @@ export const messagesAPI = {
 
 // Reports API
 export const reportsAPI = {
-    getPortfolio: () => api.get('/reports/portfolio'),
+    getPortfolio: (brokerId) => api.get('/reports/portfolio', { params: brokerId ? { brokerId } : {} }),
     getEvolution: () => api.get('/reports/evolution'),
     getDividends: () => api.get('/reports/dividends'),
     // Statement (Extrato Financeiro)
@@ -240,5 +255,40 @@ export const bankAccountsAPI = {
     delete: (id) => api.delete(`/bank-accounts/${id}`),
 };
 
-export default api;
+// Settings API
+export const settingsAPI = {
+    // Profile
+    getProfile: () => api.get('/settings/profile'),
+    updateProfile: (data) => api.put('/settings/profile', data),
+    changePassword: (currentPassword, newPassword) =>
+        api.put('/settings/password', { currentPassword, newPassword }),
 
+    // Devices
+    listDevices: () => api.get('/settings/devices'),
+    revokeDevice: (deviceId) => api.delete(`/settings/devices/${deviceId}`),
+
+    // Notifications
+    getNotificationPreferences: () => api.get('/settings/notifications'),
+    updateNotificationPreferences: (preferences) => api.put('/settings/notifications', preferences),
+
+    // Privacy
+    getPrivacySettings: () => api.get('/settings/privacy'),
+    updatePrivacySettings: (settings) => api.put('/settings/privacy', settings),
+
+    // Account
+    deleteAccount: (password, reason) => api.delete('/settings/account', { data: { password, reason } }),
+
+    // Plans
+    getPlanInfo: () => api.get('/settings/plan'),
+
+    // Payment Methods
+    listPaymentMethods: () => api.get('/settings/payment-methods'),
+    addPaymentMethod: (data) => api.post('/settings/payment-methods', data),
+    removePaymentMethod: (id) => api.delete(`/settings/payment-methods/${id}`),
+    setDefaultPaymentMethod: (id) => api.put(`/settings/payment-methods/${id}/default`),
+
+    // LGPD Export
+    exportData: () => api.get('/settings/export-data'),
+};
+
+export default api;
