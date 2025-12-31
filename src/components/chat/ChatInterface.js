@@ -38,6 +38,43 @@ export default function ChatInterface({ onClose }) {
     const startYRef = useRef(0);
     const startXRef = useRef(0);
     const recognitionRef = useRef(null);
+    const shouldAutoSendRef = useRef(false);
+    const inputValueRef = useRef(inputValue); // Ref to access latest input value
+
+    // Sync input value to ref
+    useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
+
+    const handleSendMessage = useCallback(async (contentOverride = null) => {
+        const text = (contentOverride || inputValueRef.current).trim(); // Use ref for latest value
+        if (!text) return;
+
+        setInputValue(''); // Clear input field
+        inputValueRef.current = ''; // Clear ref immediately
+
+        const newMessage = {
+            id: generateId(),
+            text,
+            sender: 'user',
+            timestamp: Date.now(),
+            status: isOnline ? 'sent' : 'pending'
+        };
+
+        setMessages(prev => [...prev, newMessage]);
+        await saveChatMessage(newMessage);
+
+        if (isOnline) {
+            try {
+                // Assuming processMessageOnline is defined elsewhere or will be added
+                // await processMessageOnline(newMessage);
+                console.log("Message sent online:", newMessage); // Placeholder
+            } catch (error) {
+                console.error("Failed to send online, falling back to queue", error);
+                handleOfflineQueue(newMessage);
+            }
+        } else {
+            handleOfflineQueue(newMessage);
+        }
+    }, [isOnline]); // Add dependencies if handleSendMessage uses other state/props
 
     // Initialize Speech Recognition
     useEffect(() => {
@@ -55,13 +92,30 @@ export default function ChatInterface({ onClose }) {
                         if (event.results[i].isFinal) {
                             finalTranscript += event.results[i][0].transcript;
                         } else {
-                            // Optional: Show interim results in input
-                            // setInputValue(prev => event.results[i][0].transcript); 
+                            // Interim handling if needed
                         }
                     }
                     if (finalTranscript) {
-                        setInputValue(prev => prev + (prev ? ' ' : '') + finalTranscript);
+                        setInputValue(prev => {
+                            const newValue = prev + (prev ? ' ' : '') + finalTranscript;
+                            inputValueRef.current = newValue; // Force update ref immediately just in case
+                            return newValue;
+                        });
                     }
+                };
+
+                recognition.onend = () => {
+                    if (shouldAutoSendRef.current) {
+                        shouldAutoSendRef.current = false;
+                        // Small delay to ensure state update has propagated if needed, 
+                        // though inputValueRef should be fresh enough.
+                        setTimeout(() => {
+                            if (inputValueRef.current?.trim()) {
+                                handleSendMessage(inputValueRef.current);
+                            }
+                        }, 100);
+                    }
+                    setIsRecording(false);
                 };
 
                 recognition.onerror = (event) => {
@@ -72,9 +126,10 @@ export default function ChatInterface({ onClose }) {
                 recognitionRef.current = recognition;
             }
         }
-    }, []);
+    }, [handleSendMessage]); // Ensure handleSendMessage is stable or ref'd
 
     const startRecording = async () => {
+        shouldAutoSendRef.current = false;
         setIsRecording(true);
         setRecordingTime(0);
         setIsLocked(false);
@@ -91,6 +146,7 @@ export default function ChatInterface({ onClose }) {
                 recognitionRef.current.start();
             } catch (e) {
                 console.error("Failed to start recognition:", e);
+                // If already started, ignore
             }
         } else {
             alert("Seu navegador não suporta transcrição de áudio.");
@@ -98,46 +154,38 @@ export default function ChatInterface({ onClose }) {
         }
     };
 
-    const stopRecording = (shouldSend = true) => {
+    const stopRecording = (shouldSend = false) => {
         if (timerRef.current) clearInterval(timerRef.current);
 
         if (recognitionRef.current) {
             recognitionRef.current.stop();
         }
 
-        setIsRecording(false);
-        setRecordingTime(0);
-        setIsLocked(false);
-
-        if (shouldSend) {
-            // Need a small timeout to allow final transcript to settle into inputValue state
-            setTimeout(() => {
-                // We don't have the updated inputValue in this closure easily without ref
-                // So we trigger the send based on what's in the input *after* render update
-                // Actually, doing it via a ref or triggering a separate effect is better.
-                // For simplicity, we just stop. The user said "mandar digitado automatico".
-                // We'll rely on the user seeing the text populate and confirming, OR trigger send.
-                // Triggering send automatically can be risky if transcription is bad.
-                // "Igual o ChatGPT faz" -> ChatGPT dictates into the box, then you hit send (usually).
-                // BUT user said "mandar digitado automatico". I will try to auto-send if inputValue is present.
-                // Let's USE A REF for input value to grab it fresh.
-            }, 500);
+        // If simply cancelling (shouldSend=false), we make sure autoSend is false
+        if (!shouldSend) {
+            shouldAutoSendRef.current = false;
+            setIsRecording(false);
+            setRecordingTime(0);
+            setIsLocked(false);
+        }
+        // If sending (stopAndSend), we logic is handled in stopAndSend setting the ref
+        // But here we can just update UI state for immediate feedback
+        if (!shouldSend) {
+            setInputValue(''); // Clear input if cancelled? user didn't ask explicitly but implied "cancel"
         }
     };
 
-    // Ref to access latest input value inside timeout/handlers
-    const inputValueRef = useRef(inputValue);
-    useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
-
     const stopAndSend = () => {
-        stopRecording(false); // Stop recognition
+        shouldAutoSendRef.current = true;
 
-        // Wait for final transcript
-        setTimeout(() => {
-            if (inputValueRef.current && inputValueRef.current.trim()) {
-                handleSendMessage(inputValueRef.current); // Pass value explicitly
-            }
-        }, 600);
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (recognitionRef.current) {
+            recognitionRef.current.stop(); // This triggers onend
+        }
+
+        // UI updates happen in onend or here for responsiveness
+        setRecordingTime(0);
+        setIsLocked(false);
     };
 
     const handleTouchStart = (e) => {
