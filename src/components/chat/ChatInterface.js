@@ -31,77 +31,113 @@ export default function ChatInterface({ onClose }) {
     const messagesEndRef = useRef(null);
     const menuRef = useRef(null);
 
-    // Audio Recording Logic
+    // Audio Recording Logic (Voice to Text)
     const [recordingTime, setRecordingTime] = useState(0);
     const [isLocked, setIsLocked] = useState(false);
     const timerRef = useRef(null);
     const startYRef = useRef(0);
     const startXRef = useRef(0);
-    const mediaRecorderRef = useRef(null);
-    const audioChunksRef = useRef([]);
+    const recognitionRef = useRef(null);
+
+    // Initialize Speech Recognition
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'pt-BR'; // Set to Portuguese
+
+                recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            // Optional: Show interim results in input
+                            // setInputValue(prev => event.results[i][0].transcript); 
+                        }
+                    }
+                    if (finalTranscript) {
+                        setInputValue(prev => prev + (prev ? ' ' : '') + finalTranscript);
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error", event.error);
+                    stopRecording(false);
+                };
+
+                recognitionRef.current = recognition;
+            }
+        }
+    }, []);
 
     const startRecording = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
-            mediaRecorderRef.current = mediaRecorder;
-            audioChunksRef.current = [];
+        setIsRecording(true);
+        setRecordingTime(0);
+        setIsLocked(false);
 
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    audioChunksRef.current.push(event.data);
-                }
-            };
+        // Start Timer
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+            setRecordingTime(prev => prev + 1);
+        }, 1000);
 
-            mediaRecorder.start();
-            setIsRecording(true);
-            setRecordingTime(0);
-            setIsLocked(false);
-
-            timerRef.current = setInterval(() => {
-                setRecordingTime(prev => prev + 1);
-            }, 1000);
-        } catch (err) {
-            console.error("Error accessing microphone:", err);
-            alert("Erro ao acessar microfone. Verifique as permissões.");
+        // Start Recognition
+        if (recognitionRef.current) {
+            try {
+                recognitionRef.current.start();
+            } catch (e) {
+                console.error("Failed to start recognition:", e);
+            }
+        } else {
+            alert("Seu navegador não suporta transcrição de áudio.");
+            setIsRecording(false);
         }
     };
 
     const stopRecording = (shouldSend = true) => {
         if (timerRef.current) clearInterval(timerRef.current);
 
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            mediaRecorderRef.current.onstop = () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-
-                if (shouldSend) {
-                    const audioMessage = {
-                        id: generateId(),
-                        sender: 'user',
-                        timestamp: Date.now(),
-                        status: isOnline ? 'sent' : 'pending',
-                        audioUrl: audioUrl,
-                        media: audioBlob // Store blob for syncing
-                    };
-
-                    setMessages(prev => [...prev, audioMessage]);
-                    saveChatMessage(audioMessage);
-
-                    // TODO: Implement actual backend upload for audio
-                    // For now, it stays local/cached. 
-                    // addToQueue logic for files needs to be handled if not already.
-                }
-
-                // Stop all tracks
-                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-            };
-            mediaRecorderRef.current.stop();
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
         }
 
         setIsRecording(false);
         setRecordingTime(0);
         setIsLocked(false);
+
+        if (shouldSend) {
+            // Need a small timeout to allow final transcript to settle into inputValue state
+            setTimeout(() => {
+                // We don't have the updated inputValue in this closure easily without ref
+                // So we trigger the send based on what's in the input *after* render update
+                // Actually, doing it via a ref or triggering a separate effect is better.
+                // For simplicity, we just stop. The user said "mandar digitado automatico".
+                // We'll rely on the user seeing the text populate and confirming, OR trigger send.
+                // Triggering send automatically can be risky if transcription is bad.
+                // "Igual o ChatGPT faz" -> ChatGPT dictates into the box, then you hit send (usually).
+                // BUT user said "mandar digitado automatico". I will try to auto-send if inputValue is present.
+                // Let's USE A REF for input value to grab it fresh.
+            }, 500);
+        }
+    };
+
+    // Ref to access latest input value inside timeout/handlers
+    const inputValueRef = useRef(inputValue);
+    useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
+
+    const stopAndSend = () => {
+        stopRecording(false); // Stop recognition
+
+        // Wait for final transcript
+        setTimeout(() => {
+            if (inputValueRef.current && inputValueRef.current.trim()) {
+                handleSendMessage(inputValueRef.current); // Pass value explicitly
+            }
+        }, 600);
     };
 
     const handleTouchStart = (e) => {
@@ -135,7 +171,7 @@ export default function ChatInterface({ onClose }) {
 
     const handleTouchEnd = () => {
         if (!isLocked) {
-            stopRecording(true); // Send
+            stopAndSend(); // Send (transcribe and send)
         }
     };
 
@@ -187,8 +223,10 @@ export default function ChatInterface({ onClose }) {
 
     // iOS Keyboard Fix: Use visualViewport to resize container
     useEffect(() => {
-        // Lock body scroll when chat is open to prevent background scrolling
+        // Lock body scroll and overscroll when chat is open
         document.body.style.overflow = 'hidden';
+        document.body.style.overscrollBehavior = 'none';
+        document.documentElement.style.overscrollBehavior = 'none'; // Lock html too
 
         const handleResize = () => {
             if (window.visualViewport) {
@@ -197,6 +235,8 @@ export default function ChatInterface({ onClose }) {
                     // Match the container exactly to the visual viewport
                     container.style.height = `${window.visualViewport.height}px`;
                     container.style.top = `${window.visualViewport.offsetTop}px`;
+                    // Ensure full width
+                    container.style.width = '100%';
 
                     // Force scroll to bottom after resize to ensure input is visible
                     setTimeout(() => {
@@ -215,6 +255,8 @@ export default function ChatInterface({ onClose }) {
         return () => {
             // Unlock body scroll
             document.body.style.overflow = 'unset';
+            document.body.style.overscrollBehavior = 'auto';
+            document.documentElement.style.overscrollBehavior = 'auto';
 
             if (window.visualViewport) {
                 window.visualViewport.removeEventListener('resize', handleResize);
@@ -251,10 +293,10 @@ export default function ChatInterface({ onClose }) {
         }
     };
 
-    const handleSendMessage = async () => {
-        if (!inputValue.trim()) return;
+    const handleSendMessage = async (contentOverride = null) => {
+        const text = (contentOverride || inputValue).trim();
+        if (!text) return;
 
-        const text = inputValue.trim();
         setInputValue('');
 
         const newMessage = {
@@ -661,7 +703,7 @@ export default function ChatInterface({ onClose }) {
                         className={`${styles.micButtonWrapper} ${isLocked ? styles.lockedMic : ''}`}
                         onMouseDown={startRecording}
                         onMouseUp={() => {
-                            if (isRecording && !isLocked) stopRecording(true);
+                            if (isRecording && !isLocked) stopAndSend();
                         }}
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
@@ -670,7 +712,7 @@ export default function ChatInterface({ onClose }) {
                         {isLocked ? (
                             <button
                                 className={styles.actionButton}
-                                onClick={() => stopRecording(true)}
+                                onClick={() => stopAndSend()}
                             >
                                 <FiSend size={20} />
                             </button>
