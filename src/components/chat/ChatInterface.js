@@ -187,13 +187,21 @@ export default function ChatInterface({ onClose }) {
 
     // iOS Keyboard Fix: Use visualViewport to resize container
     useEffect(() => {
+        // Lock body scroll when chat is open to prevent background scrolling
+        document.body.style.overflow = 'hidden';
+
         const handleResize = () => {
             if (window.visualViewport) {
                 const container = document.getElementById('chat-container');
                 if (container) {
+                    // Match the container exactly to the visual viewport
                     container.style.height = `${window.visualViewport.height}px`;
-                    // Optional: adjust top if needed, but usually height is enough
-                    // container.style.top = `${window.visualViewport.offsetTop}px`;
+                    container.style.top = `${window.visualViewport.offsetTop}px`;
+
+                    // Force scroll to bottom after resize to ensure input is visible
+                    setTimeout(() => {
+                        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+                    }, 100);
                 }
             }
         };
@@ -205,6 +213,9 @@ export default function ChatInterface({ onClose }) {
         }
 
         return () => {
+            // Unlock body scroll
+            document.body.style.overflow = 'unset';
+
             if (window.visualViewport) {
                 window.visualViewport.removeEventListener('resize', handleResize);
                 window.visualViewport.removeEventListener('scroll', handleResize);
