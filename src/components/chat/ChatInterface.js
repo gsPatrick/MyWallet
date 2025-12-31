@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon } from 'react-icons/fi';
+import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon, FiTrash2 } from 'react-icons/fi';
 import { BsCheckAll, BsWhatsapp } from 'react-icons/bs';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 import { addToQueue } from '@/services/offline/queue';
@@ -111,6 +111,10 @@ export default function ChatInterface({ onClose }) {
     };
 
     const handleTouchMove = (e) => {
+        // Prevent scrolling while recording gesture is active
+        // Note: this requires the element to not be passive, which React 18+ might default to.
+        // We rely on touch-action: none in CSS to make this work smoothly without passive: false listener.
+
         if (!isRecording || isLocked) return;
 
         const currentY = e.touches[0].clientY;

@@ -16,6 +16,10 @@
     overscroll-behavior: contain;
     touch-action: pan-y;
     /* Allow vertical scroll inside */
+    background-color: #efe7dd;
+    /* Default solid background to prevent see-through */
+    transform: translateZ(0);
+    /* Hardware acceleration to separate layer */
 }
 
 /* ========================================
