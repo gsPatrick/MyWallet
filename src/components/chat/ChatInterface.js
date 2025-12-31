@@ -604,8 +604,9 @@ export default function ChatInterface({ onClose }) {
 
             {/* Input */}
             <div className={styles.inputArea}>
-                {!isRecording ? (
-                    <>
+                {/* Left Side: Input Field or Recording Info */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                    {!isRecording ? (
                         <input
                             type="text"
                             className={styles.inputField}
@@ -614,70 +615,65 @@ export default function ChatInterface({ onClose }) {
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                         />
+                    ) : (
+                        <div className={styles.recordingInterface} style={{ padding: 0 }}>
+                            <div className={styles.recordingTimer}>
+                                <div className={styles.recordingDot} />
+                                <span>{formatTime(recordingTime)}</span>
+                            </div>
 
-                        {inputValue ? (
-                            <button className={styles.actionButton} onClick={handleSendMessage}>
+                            {!isLocked ? (
+                                <div className={styles.slideToCancel}>
+                                    <FiArrowLeft size={14} />
+                                    <span>Deslize para cancelar</span>
+                                </div>
+                            ) : (
+                                <button
+                                    className={styles.actionButton}
+                                    style={{ backgroundColor: 'transparent', color: '#ef4444', width: 'auto', marginLeft: 'auto', marginRight: '10px' }}
+                                    onClick={() => stopRecording(false)}
+                                >
+                                    <FiTrash2 size={20} />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Side: Action Button (Send or Mic) */}
+                {inputValue && !isRecording ? (
+                    <button className={styles.actionButton} onClick={handleSendMessage}>
+                        <FiSend size={20} />
+                    </button>
+                ) : (
+                    <div
+                        className={`${styles.micButtonWrapper} ${isLocked ? styles.lockedMic : ''}`}
+                        onMouseDown={startRecording}
+                        onMouseUp={() => {
+                            if (isRecording && !isLocked) stopRecording(true);
+                        }}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                    >
+                        {isLocked ? (
+                            <button
+                                className={styles.actionButton}
+                                onClick={() => stopRecording(true)}
+                            >
                                 <FiSend size={20} />
                             </button>
                         ) : (
-                            <div
-                                className={styles.micButtonWrapper}
-                                onMouseDown={startRecording}
-                                onMouseUp={() => {
-                                    if (isRecording && !isLocked) stopRecording(true);
-                                }}
-                                onTouchStart={handleTouchStart}
-                                onTouchMove={handleTouchMove}
-                                onTouchEnd={handleTouchEnd}
-                            >
-                                <button className={styles.actionButton}>
-                                    <FiMic size={20} />
-                                </button>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className={styles.recordingInterface}>
-                        <div className={styles.recordingTimer}>
-                            <div className={styles.recordingDot} />
-                            <span>{formatTime(recordingTime)}</span>
-                        </div>
-
-                        {!isLocked ? (
-                            <div className={styles.slideToCancel}>
-                                <FiArrowLeft size={14} />
-                                <span>Deslize para cancelar</span>
-                            </div>
-                        ) : (
-                            <button
-                                className={styles.actionButton}
-                                style={{ backgroundColor: 'transparent', color: '#ef4444', width: 'auto' }}
-                                onClick={() => stopRecording(false)}
-                            >
-                                <FiTrash2 size={20} />
+                            <button className={`${styles.actionButton} ${isRecording ? styles.micActive : ''}`}>
+                                <FiMic size={20} />
                             </button>
                         )}
 
-                        <div className={`${styles.micButtonWrapper} ${isLocked ? styles.lockedMic : ''}`}>
-                            {isLocked ? (
-                                <button
-                                    className={styles.actionButton}
-                                    onClick={() => stopRecording(true)}
-                                >
-                                    <FiSend size={20} />
-                                </button>
-                            ) : (
-                                <button className={`${styles.actionButton} ${styles.micActive}`}>
-                                    <FiMic size={20} />
-                                </button>
-                            )}
-
-                            {!isLocked && (
-                                <div className={styles.lockIndicator}>
-                                    <div className={styles.lockArrow}>▲</div>
-                                </div>
-                            )}
-                        </div>
+                        {isRecording && !isLocked && (
+                            <div className={styles.lockIndicator}>
+                                <div className={styles.lockArrow}>▲</div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
