@@ -64,9 +64,7 @@ export default function ChatInterface({ onClose }) {
 
         if (isOnline) {
             try {
-                // Assuming processMessageOnline is defined elsewhere or will be added
-                // await processMessageOnline(newMessage);
-                console.log("Message sent online:", newMessage); // Placeholder
+                await processMessageOnline(newMessage);
             } catch (error) {
                 console.error("Failed to send online, falling back to queue", error);
                 handleOfflineQueue(newMessage);
@@ -121,6 +119,16 @@ export default function ChatInterface({ onClose }) {
                 recognition.onerror = (event) => {
                     console.error("Speech recognition error", event.error);
                     stopRecording(false);
+
+                    if (event.error === 'not-allowed') {
+                        alert("O acesso ao microfone foi bloqueado. Por favor, vá nas configurações do seu navegador/celular e permita o acesso ao microfone para este site.");
+                    } else if (event.error === 'service-not-allowed') {
+                        alert("O serviço de reconhecimento de voz não está disponível. Verifique sua conexão ou tente usar o Google Chrome.");
+                    } else if (event.error === 'no-speech') {
+                        // Ignore, just stopped hearing
+                    } else if (event.error === 'network') {
+                        alert("Erro de conexão com o serviço de transcrição.");
+                    }
                 };
 
                 recognitionRef.current = recognition;
