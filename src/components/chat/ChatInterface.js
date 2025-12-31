@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon, FiTrash2 } from 'react-icons/fi';
 import { BsCheckAll, BsWhatsapp } from 'react-icons/bs';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
@@ -341,34 +341,7 @@ export default function ChatInterface({ onClose }) {
         }
     };
 
-    const handleSendMessage = async (contentOverride = null) => {
-        const text = (contentOverride || inputValue).trim();
-        if (!text) return;
 
-        setInputValue('');
-
-        const newMessage = {
-            id: generateId(),
-            text,
-            sender: 'user',
-            timestamp: Date.now(),
-            status: isOnline ? 'sent' : 'pending'
-        };
-
-        setMessages(prev => [...prev, newMessage]);
-        await saveChatMessage(newMessage);
-
-        if (isOnline) {
-            try {
-                await processMessageOnline(newMessage);
-            } catch (error) {
-                console.error("Failed to send online, falling back to queue", error);
-                handleOfflineQueue(newMessage);
-            }
-        } else {
-            handleOfflineQueue(newMessage);
-        }
-    };
 
     const handleOfflineQueue = async (message) => {
         await updateChatMessageStatus(message.id, 'pending');
