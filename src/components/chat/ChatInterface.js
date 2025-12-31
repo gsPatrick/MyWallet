@@ -31,6 +31,116 @@ export default function ChatInterface({ onClose }) {
     const messagesEndRef = useRef(null);
     const menuRef = useRef(null);
 
+    // Audio Recording Logic
+    const [recordingTime, setRecordingTime] = useState(0);
+    const [isLocked, setIsLocked] = useState(false);
+    const timerRef = useRef(null);
+    const startYRef = useRef(0);
+    const startXRef = useRef(0);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+            setRecordingTime(0);
+            setIsLocked(false);
+
+            timerRef.current = setInterval(() => {
+                setRecordingTime(prev => prev + 1);
+            }, 1000);
+        } catch (err) {
+            console.error("Error accessing microphone:", err);
+            alert("Erro ao acessar microfone. Verifique as permissões.");
+        }
+    };
+
+    const stopRecording = (shouldSend = true) => {
+        if (timerRef.current) clearInterval(timerRef.current);
+
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                if (shouldSend) {
+                    const audioMessage = {
+                        id: generateId(),
+                        sender: 'user',
+                        timestamp: Date.now(),
+                        status: isOnline ? 'sent' : 'pending',
+                        audioUrl: audioUrl,
+                        media: audioBlob // Store blob for syncing
+                    };
+
+                    setMessages(prev => [...prev, audioMessage]);
+                    saveChatMessage(audioMessage);
+
+                    // TODO: Implement actual backend upload for audio
+                    // For now, it stays local/cached. 
+                    // addToQueue logic for files needs to be handled if not already.
+                }
+
+                // Stop all tracks
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            };
+            mediaRecorderRef.current.stop();
+        }
+
+        setIsRecording(false);
+        setRecordingTime(0);
+        setIsLocked(false);
+    };
+
+    const handleTouchStart = (e) => {
+        startYRef.current = e.touches[0].clientY;
+        startXRef.current = e.touches[0].clientX;
+        startRecording();
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isRecording || isLocked) return;
+
+        const currentY = e.touches[0].clientY;
+        const currentX = e.touches[0].clientX;
+        const deltaY = startYRef.current - currentY; // Positive = swipe up
+        const deltaX = startXRef.current - currentX; // Positive = swipe left
+
+        // Lock threshold (swipe up 50px)
+        if (deltaY > 50) {
+            setIsLocked(true);
+        }
+
+        // Cancel threshold (swipe left 100px)
+        if (deltaX > 100) {
+            stopRecording(false); // Cancel
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (!isLocked) {
+            stopRecording(true); // Send
+        }
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
     // Load history and theme on mount
     useEffect(() => {
         const savedTheme = localStorage.getItem('chat_theme') || THEMES.WHATSAPP;
@@ -70,6 +180,33 @@ export default function ChatInterface({ onClose }) {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // iOS Keyboard Fix: Use visualViewport to resize container
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.visualViewport) {
+                const container = document.getElementById('chat-container');
+                if (container) {
+                    container.style.height = `${window.visualViewport.height}px`;
+                    // Optional: adjust top if needed, but usually height is enough
+                    // container.style.top = `${window.visualViewport.offsetTop}px`;
+                }
+            }
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleResize);
+            window.visualViewport.addEventListener('scroll', handleResize);
+            handleResize(); // Init
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleResize);
+                window.visualViewport.removeEventListener('scroll', handleResize);
+            }
+        };
+    }, []);
 
     // Change theme
     const handleThemeChange = (newTheme) => {
@@ -388,14 +525,13 @@ export default function ChatInterface({ onClose }) {
     };
 
     return (
-        <div className={`${styles.chatContainer} ${getThemeClass()}`}>
-            {/* Header */}
+        <div id="chat-container" className={`${styles.chatContainer} ${getThemeClass()}`}>
+            {/* ... (Header) ... */}
             <div className={styles.header}>
                 <button onClick={onClose} className={styles.backButton}>
                     <FiArrowLeft size={24} />
                 </button>
 
-                {/* Logo */}
                 <div className={styles.logoWrapper}>
                     <img
                         src="/logo-mywallet.png"
@@ -412,7 +548,6 @@ export default function ChatInterface({ onClose }) {
                     </span>
                 </div>
 
-                {/* Settings Menu */}
                 <div className={styles.menuContainer} ref={menuRef}>
                     <button
                         className={styles.menuButton}
@@ -465,29 +600,81 @@ export default function ChatInterface({ onClose }) {
 
             {/* Input */}
             <div className={styles.inputArea}>
-                <input
-                    type="text"
-                    className={styles.inputField}
-                    placeholder="Digite uma mensagem..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                />
+                {!isRecording ? (
+                    <>
+                        <input
+                            type="text"
+                            className={styles.inputField}
+                            placeholder="Digite uma mensagem..."
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                        />
 
-                {inputValue ? (
-                    <button className={styles.actionButton} onClick={handleSendMessage}>
-                        <FiSend size={20} />
-                    </button>
+                        {inputValue ? (
+                            <button className={styles.actionButton} onClick={handleSendMessage}>
+                                <FiSend size={20} />
+                            </button>
+                        ) : (
+                            <div
+                                className={styles.micButtonWrapper}
+                                onMouseDown={startRecording}
+                                onMouseUp={() => {
+                                    if (isRecording && !isLocked) stopRecording(true);
+                                }}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleTouchEnd}
+                            >
+                                <button className={styles.actionButton}>
+                                    <FiMic size={20} />
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    <button
-                        className={`${styles.actionButton} ${isRecording ? styles.micActive : ''}`}
-                        onMouseDown={() => setIsRecording(true)}
-                        onMouseUp={() => setIsRecording(false)}
-                        onTouchStart={() => setIsRecording(true)}
-                        onTouchEnd={() => setIsRecording(false)}
-                    >
-                        <FiMic size={20} />
-                    </button>
+                    <div className={styles.recordingInterface}>
+                        <div className={styles.recordingTimer}>
+                            <div className={styles.recordingDot} />
+                            <span>{formatTime(recordingTime)}</span>
+                        </div>
+
+                        {!isLocked ? (
+                            <div className={styles.slideToCancel}>
+                                <FiArrowLeft size={14} />
+                                <span>Deslize para cancelar</span>
+                            </div>
+                        ) : (
+                            <button
+                                className={styles.actionButton}
+                                style={{ backgroundColor: '#ef4444' }}
+                                onClick={() => stopRecording(false)}
+                            >
+                                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>CANCELAR</span>
+                            </button>
+                        )}
+
+                        <div className={`${styles.micButtonWrapper} ${isLocked ? styles.lockedMic : ''}`}>
+                            {isLocked ? (
+                                <button
+                                    className={styles.actionButton}
+                                    onClick={() => stopRecording(true)}
+                                >
+                                    <FiSend size={20} />
+                                </button>
+                            ) : (
+                                <button className={`${styles.actionButton} ${styles.micActive}`}>
+                                    <FiMic size={20} />
+                                </button>
+                            )}
+
+                            {!isLocked && (
+                                <div className={styles.lockIndicator}>
+                                    <div className={styles.lockArrow}>▲</div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 )}
             </div>
         </div>
