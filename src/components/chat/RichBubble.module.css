@@ -1,0 +1,964 @@
+/* RichBubble.module.css - Multi-theme support with adaptive card colors */
+
+.richBubble {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   THEME: WhatsApp / Light (Default)
+   Cards have WHITE background, DARK text
+   ======================================== */
+.themeWhatsapp,
+.themeLight {
+    background: white;
+}
+
+.themeWhatsapp .confirmationBanner,
+.themeLight .confirmationBanner {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.themeWhatsapp .cardContent,
+.themeLight .cardContent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    position: relative;
+}
+
+/* Mini Card Styles */
+.cardItemWrapper {
+    margin-bottom: 12px;
+}
+
+.miniCard {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.586 / 1;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.miniCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.mnBankLogo {
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.mnBankLogo img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    background-color: white;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.mnBankName {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+}
+
+.mnCardNumber {
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.mnCardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.mnCardName {
+    font-size: 0.625rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+.mnBrandLogo {
+    height: 24px;
+}
+
+.mnBrandLogo img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.cardItemDetails {
+    padding: 0 4px;
+}
+
+/* Reusing existing cardBrandIcon but keeping it for legacy support */
+.cardBrandIcon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.themeWhatsapp .brandIconWrapper,
+.themeLight .brandIconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.themeWhatsapp .fallbackIcon,
+.themeLight .fallbackIcon {
+    font-size: 1.5rem;
+    color: #6b7280;
+}
+
+.themeWhatsapp .description,
+.themeLight .description {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 2px;
+}
+
+.themeWhatsapp .category,
+.themeLight .category {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.themeWhatsapp .meta,
+.themeLight .meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px 8px;
+    font-size: 0.7rem;
+    color: #9ca3af;
+}
+
+/* ========================================
+   THEME: Dark
+   Cards have DARK background, WHITE text
+   ======================================== */
+.themeDark {
+    background: #1e1e2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.themeDark .confirmationBanner {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.15);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.themeDark .cardContent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    position: relative;
+}
+
+.themeDark .brandIconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.themeDark .fallbackIcon {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.themeDark .description {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+}
+
+.themeDark .category {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.themeDark .meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px 8px;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================
+   COMMON ELEMENTS
+   ======================================== */
+.brandIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.mainContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.valueWrapper {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.value {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.valuePositive {
+    color: #10b981;
+}
+
+.valueNegative {
+    color: #ef4444;
+}
+
+/* ========================================
+   TYPE-SPECIFIC BORDERS
+   ======================================== */
+
+/* EXPENSE - Red border */
+.expense.themeWhatsapp,
+.expense.themeLight {
+    border-left: 4px solid #ef4444;
+}
+
+.expense.themeDark {
+    border-left: 4px solid #f87171;
+}
+
+.expense .brandIconWrapper {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.expense.themeDark .brandIconWrapper {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.expense .fallbackIcon {
+    color: #ef4444;
+}
+
+/* INCOME - Green border */
+.income.themeWhatsapp,
+.income.themeLight {
+    border-left: 4px solid #10b981;
+}
+
+.income.themeDark {
+    border-left: 4px solid #34d399;
+}
+
+.income .brandIconWrapper {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.income.themeDark .brandIconWrapper {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.income .fallbackIcon {
+    color: #10b981;
+}
+
+/* CARD/INVOICE - Credit card style (always dark) */
+.card {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%) !important;
+    border: none !important;
+}
+
+.cardDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cardName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.cardChip {
+    width: 32px;
+    height: 24px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 4px;
+}
+
+.cardInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.cardLabel {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cardValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+}
+
+.dueDate {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.card .meta {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* SUBSCRIPTION - Purple border */
+.subscription.themeWhatsapp,
+.subscription.themeLight {
+    border-left: 4px solid #8b5cf6;
+}
+
+.subscription.themeDark {
+    border-left: 4px solid #a78bfa;
+}
+
+.subscription .brandIconWrapper {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.subscription.themeDark .brandIconWrapper {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.subscription .fallbackIcon {
+    color: #8b5cf6;
+}
+
+.nextCharge {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.themeDark .nextCharge {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.recurrenceIcon {
+    animation: spin 4s linear infinite;
+    color: #8b5cf6;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   PENDING STATE
+   ======================================== */
+.pending {
+    opacity: 0.7;
+}
+
+.pending .cardContent::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.02) 10px,
+            rgba(0, 0, 0, 0.02) 20px);
+    pointer-events: none;
+}
+
+.themeDark.pending .cardContent::after {
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(255, 255, 255, 0.03) 10px,
+            rgba(255, 255, 255, 0.03) 20px);
+}
+
+/* ========================================
+   SUMMARY CARD STYLES (Balance, Cards List)
+   ======================================== */
+
+.summaryCard {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.summaryCard.themeWhatsapp,
+.summaryCard.themeLight {
+    background: white;
+}
+
+.summaryCard.themeDark {
+    background: #1e1e2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summaryCard.cardsTheme.themeWhatsapp,
+.summaryCard.cardsTheme.themeLight {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+}
+
+.summaryHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.themeWhatsapp .summaryHeader,
+.themeLight .summaryHeader {
+    color: #1f2937;
+    background: #f8fafc;
+}
+
+.themeDark .summaryHeader {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardsTheme .summaryHeader {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.summaryTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.themeDark .summaryTotal {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summaryLabel {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.themeWhatsapp .summaryLabel,
+.themeLight .summaryLabel {
+    color: #6b7280;
+}
+
+.themeDark .summaryLabel {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.summaryValue {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.positive {
+    color: #10b981;
+}
+
+.negative {
+    color: #ef4444;
+}
+
+.summaryList {
+    padding: 8px 0;
+}
+
+.summaryItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    transition: background 0.15s;
+}
+
+.themeWhatsapp .summaryItem:hover,
+.themeLight .summaryItem:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.themeDark .summaryItem:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.itemIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.themeWhatsapp .itemIcon,
+.themeLight .itemIcon {
+    background: #e0e7ff;
+    color: #6366f1;
+}
+
+.themeDark .itemIcon {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+}
+
+.bankIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.itemName {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.themeWhatsapp .itemName,
+.themeLight .itemName {
+    color: #374151;
+}
+
+.themeDark .itemName {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.itemValue {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Menu Card */
+.menuCard .summaryHeader span {
+    color: var(--text-primary);
+}
+
+.menuSection {
+    margin-bottom: 12px;
+}
+
+.menuSection h4 {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.menuItem,
+.exampleItem {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+}
+
+.menuItem strong {
+    display: block;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.menuItem span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.exampleItem {
+    border-left: 3px solid var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    font-style: italic;
+    color: var(--text-primary);
+}
+
+/* Report Card (QUERY_RESULT) */
+.reportCard .reportStats {
+    margin-bottom: 16px;
+}
+
+.reportRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.totalRow {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.miniTransList {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.miniTransItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.miniTransItem:last-child {
+    border-bottom: none;
+}
+
+.miniTransInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.miniTransDesc {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.miniTransDate {
+    font-size: 0.6875rem;
+    color: var(--text-secondary);
+}
+
+/* Invoice List (INVOICES / HISTORY) */
+.invoiceListCard .summaryHeader {
+    background: #6366f1;
+    color: white;
+}
+
+.invoiceGroup {
+    margin-bottom: 16px;
+}
+
+.groupHeader {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    padding-left: 4px;
+    font-weight: 600;
+}
+
+.invoiceItem {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+}
+
+.invoiceInfo {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.invoiceMonth {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.invoiceStatus {
+    font-size: 0.6875rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.invoiceValues {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.invoiceTotal {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.invoiceRemaining {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Receipt Card (INVOICE_PAYMENT) */
+.receiptCard .receiptHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    color: #10b981;
+}
+
+.checkIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #d1fae5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.receiptBody {
+    background: var(--bg-surface-secondary);
+    border-radius: 8px;
+    padding: 16px;
+    border: 2px dashed rgba(0, 0, 0, 0.1);
+}
+
+.receiptRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.875rem;
+}
+
+.receiptRow span {
+    color: var(--text-secondary);
+}
+
+.receiptRow strong {
+    color: var(--text-primary);
+}
+
+.congratsMessage {
+    text-align: center;
+    padding-top: 12px;
+    color: #059669;
+    font-weight: 600;
+}
+
+/* Dark Theme Adjustments */
+.themeDark .menuItem,
+.themeDark .exampleItem {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.themeDark .miniTransList {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.themeDark .invoiceItem {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.themeDark .receiptBody {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.themeDark .checkIcon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+/* Card Item (for CARDS_LIST) */
+.cardItem {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardItem:last-child {
+    border-bottom: none;
+}
+
+.cardItemHeader {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.cardIndicator {
+    font-size: 0.8rem;
+}
+
+.cardIconWrapper {
+    width: 28px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    flex-shrink: 0;
+    color: white;
+}
+
+.cardBrandIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 3px;
+}
+
+.cardItemName {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: white;
+}
+
+.cardItemLast4 {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.cardItemDetails {
+    padding-left: 20px;
+}
+
+.cardProgress {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.cardProgressBar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.cardItemStats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Balance type styling */
+.balance {
+    border-left: 4px solid #6366f1;
+}
+
+.cardsList {
+    border-left: none;
+}

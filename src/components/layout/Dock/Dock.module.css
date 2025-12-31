@@ -94,6 +94,17 @@
     color: var(--text-tertiary);
 }
 
+.mobileOnly {
+    display: none;
+}
+
+/* Show mobileOnly items only on small screens */
+@media (max-width: 768px) {
+    .mobileOnly {
+        display: block;
+    }
+}
+
 .privacyBtn:hover,
 .quickActionsBtn:hover {
     color: var(--text-primary);

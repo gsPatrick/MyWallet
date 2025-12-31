@@ -39,11 +39,15 @@ import QuickTransferModal from '@/components/modals/QuickTransferModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import { cardsAPI } from '@/services/api';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
+import ChatInterface from '@/components/chat/ChatInterface';
+import OfflineBanner from '@/components/ui/OfflineBanner';
 import styles from './Dock.module.css';
+import { FiMessageSquare } from 'react-icons/fi';
 
 const dockItems = [
     { id: 'dashboard', href: '/dashboard', icon: FiHome, label: 'Dashboard' },
     { id: 'transactions', href: '/transactions', icon: FiList, label: 'Transações' },
+    { id: 'assistant', href: null, icon: FiMessageSquare, label: 'Assistente', mobileOnly: true },
     { id: 'investments', href: '/brokers', icon: FiTrendingUp, label: 'Investimentos' },
     { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartões' },
     { id: 'goals', href: '/goals', icon: FiTarget, label: 'Metas' },
@@ -73,6 +77,7 @@ export default function Dock() {
     const [showQuickActions, setShowQuickActions] = useState(false);
     const [profileSwitching, setProfileSwitching] = useState({ isActive: false, type: null });
     const [showFutureModal, setShowFutureModal] = useState(false);
+    const [showChat, setShowChat] = useState(false);
 
     // Quick Action Modals
     const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -172,6 +177,21 @@ export default function Dock() {
                 onClose={() => setShowFutureModal(false)}
             />
 
+            {/* Chat Interface Modal */}
+            <AnimatePresence>
+                {showChat && (
+                    <motion.div
+                        initial={{ opacity: 0, y: '100%' }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: '100%' }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}
+                    >
+                        <ChatInterface onClose={() => setShowChat(false)} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <nav className={styles.dock}>
                 <div className={styles.dockContainer}>
                     {/* Privacy Toggle */}
@@ -185,6 +205,11 @@ export default function Dock() {
                         {hideData ? <FiEyeOff className={styles.icon} /> : <FiEye className={styles.icon} />}
                     </motion.button>
 
+                    {/* Offline Banner Integration (can be placed elsewhere, but Dock is always present) */}
+                    <div style={{ position: 'absolute', top: '-40px', left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <OfflineBanner />
+                    </div>
+
                     {/* Divider */}
                     <div className={styles.dockDivider} />
 
@@ -192,6 +217,22 @@ export default function Dock() {
                     {dockItems.map((item, index) => {
                         const Icon = item.icon;
                         const active = isActive(item.href);
+
+                        if (item.id === 'assistant') {
+                            // Mobile-only Assistant Button
+                            return (
+                                <div key={item.id} className={`${styles.dockItemWrapper} ${styles.mobileOnly}`} onClick={() => setShowChat(true)}>
+                                    <motion.div
+                                        className={`${styles.dockItem} ${showChat ? styles.active : ''} ${styles.assistantBtn}`}
+                                        whileHover={{ scale: 1.3, y: -8, transition: { type: 'spring', stiffness: 400, damping: 15 } }}
+                                        whileTap={{ scale: 1.1 }}
+                                    >
+                                        <Icon className={styles.icon} />
+                                        <motion.span className={styles.tooltip}>Assistente</motion.span>
+                                    </motion.div>
+                                </div>
+                            );
+                        }
 
                         if (item.isFuture) {
                             return (
