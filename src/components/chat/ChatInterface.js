@@ -647,10 +647,10 @@ export default function ChatInterface({ onClose }) {
                         ) : (
                             <button
                                 className={styles.actionButton}
-                                style={{ backgroundColor: '#ef4444' }}
+                                style={{ backgroundColor: 'transparent', color: '#ef4444', width: 'auto' }}
                                 onClick={() => stopRecording(false)}
                             >
-                                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>CANCELAR</span>
+                                <FiTrash2 size={20} />
                             </button>
                         )}
 
