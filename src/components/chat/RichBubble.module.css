@@ -2,11 +2,18 @@
 
 .richBubble {
     width: 100%;
-    max-width: 320px;
+    max-width: 350px;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     animation: slideIn 0.3s ease-out;
+}
+
+/* Widen specific cards */
+.reportCard,
+.invoiceListCard,
+.menuCard {
+    max-width: 450px !important;
 }
 
 @keyframes slideIn {
