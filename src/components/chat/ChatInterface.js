@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon, FiTrash2 } from 'react-icons/fi';
-import { BsCheckAll, BsWhatsapp } from 'react-icons/bs';
-import { useOfflineStatus } from '@/hooks/useOfflineStatus';
+import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon, FiTrash2, FiDownload } from 'react-icons/fi';
+import { BsCheckAll, BsWhatsapp } from 'react-icons/bs'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useAI } from '@/contexts/AIContext';
 import { addToQueue } from '@/services/offline/queue';
 import { saveChatMessage, getChatHistory, updateChatMessageStatus } from '@/services/offline/db';
 import { handleOfflineCommand, cacheUserData } from '@/services/offline/cache';
@@ -22,12 +23,14 @@ const THEMES = {
 };
 
 export default function ChatInterface({ onClose }) {
-    const isOnline = useOfflineStatus();
+    const { isOnline } = useNetworkStatus();
+    const ai = useAI(); // Global AI context for offline speech
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isRecording, setIsRecording] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [theme, setTheme] = useState(THEMES.WHATSAPP);
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
     const messagesEndRef = useRef(null);
     const menuRef = useRef(null);
 
@@ -148,25 +151,49 @@ export default function ChatInterface({ onClose }) {
             setRecordingTime(prev => prev + 1);
         }, 1000);
 
-        // Start Recognition
-        if (recognitionRef.current) {
+        // HYBRID SPEECH: Online vs Offline
+        if (isOnline && recognitionRef.current) {
+            // ONLINE: Use native Speech Recognition (zero download, Google powered)
             try {
                 recognitionRef.current.start();
             } catch (e) {
                 console.error("Failed to start recognition:", e);
-                // If already started, ignore
             }
         } else {
-            alert("Seu navegador não suporta transcrição de áudio.");
-            setIsRecording(false);
+            // OFFLINE: Use Whisper via Global AI Context
+            if (!ai.isModelReady) {
+                // Model still downloading - show progress, don't block
+                if (ai.status === 'downloading') {
+                    setShowDownloadModal(true);
+                }
+                setIsRecording(false);
+                if (timerRef.current) clearInterval(timerRef.current);
+                return;
+            }
+
+            // Model is ready, start recording
+            try {
+                const success = await ai.startRecording();
+                if (!success) {
+                    alert("Erro ao acessar o microfone.");
+                    setIsRecording(false);
+                }
+            } catch (e) {
+                console.error("Failed to start offline recording:", e);
+                alert("Erro ao acessar o microfone.");
+                setIsRecording(false);
+            }
         }
     };
 
     const stopRecording = (shouldSend = false) => {
         if (timerRef.current) clearInterval(timerRef.current);
 
-        if (recognitionRef.current) {
+        // HYBRID STOP: Check which method is active
+        if (isOnline && recognitionRef.current) {
             recognitionRef.current.stop();
+        } else if (ai.status === 'recording') {
+            ai.cancelRecording();
         }
 
         // If simply cancelling (shouldSend=false), we make sure autoSend is false
@@ -175,26 +202,41 @@ export default function ChatInterface({ onClose }) {
             setIsRecording(false);
             setRecordingTime(0);
             setIsLocked(false);
-        }
-        // If sending (stopAndSend), we logic is handled in stopAndSend setting the ref
-        // But here we can just update UI state for immediate feedback
-        if (!shouldSend) {
-            setInputValue(''); // Clear input if cancelled? user didn't ask explicitly but implied "cancel"
+            setInputValue(''); // Clear input if cancelled
         }
     };
 
-    const stopAndSend = () => {
+    const stopAndSend = async () => {
         shouldAutoSendRef.current = true;
 
         if (timerRef.current) clearInterval(timerRef.current);
-        if (recognitionRef.current) {
-            recognitionRef.current.stop(); // This triggers onend
+
+        // HYBRID SEND: Check which method is active
+        if (isOnline && recognitionRef.current) {
+            recognitionRef.current.stop(); // This triggers onend which sends
+        } else if (ai.status === 'recording') {
+            // Stop offline recording and wait for transcription
+            await ai.stopRecording();
+            // The transcript will be in ai.transcript after processing
         }
 
-        // UI updates happen in onend or here for responsiveness
+        // UI updates
         setRecordingTime(0);
         setIsLocked(false);
     };
+
+    // Watch for offline transcription result from global AI context
+    useEffect(() => {
+        if (ai.transcript && ai.status === 'ready') {
+            setInputValue(ai.transcript);
+            setIsRecording(false);
+            // Auto-send if shouldAutoSend was set
+            if (shouldAutoSendRef.current) {
+                shouldAutoSendRef.current = false;
+                handleSendMessage(ai.transcript);
+            }
+        }
+    }, [ai.transcript, ai.status, handleSendMessage]);
 
     const handleTouchStart = (e) => {
         startYRef.current = e.touches[0].clientY;
@@ -612,7 +654,46 @@ export default function ChatInterface({ onClose }) {
 
     return (
         <div id="chat-container" className={`${styles.chatContainer} ${getThemeClass()}`}>
-            {/* ... (Header) ... */}
+            {/* AI Model Download Modal */}
+            {showDownloadModal && (
+                <div className={styles.downloadModal}>
+                    <div className={styles.downloadContent}>
+                        <FiDownload size={32} className={styles.downloadIcon} />
+                        <h3>Baixando IA de Voz</h3>
+                        <p>Modelo Whisper (~40MB) para transcrição offline</p>
+                        <div className={styles.progressBar}>
+                            <div
+                                className={styles.progressFill}
+                                style={{ width: `${ai.downloadProgress}%` }}
+                            />
+                        </div>
+                        <span className={styles.progressText}>
+                            {ai.status === 'downloading'
+                                ? `${ai.downloadProgress}%`
+                                : ai.status === 'ready'
+                                    ? 'Pronto! Toque no microfone novamente.'
+                                    : 'Iniciando...'}
+                        </span>
+                        {ai.status === 'ready' && (
+                            <button
+                                className={styles.downloadCloseBtn}
+                                onClick={() => setShowDownloadModal(false)}
+                            >
+                                Fechar
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Offline Processing Indicator */}
+            {ai.status === 'processing' && (
+                <div className={styles.processingBanner}>
+                    🧠 Processando áudio localmente...
+                </div>
+            )}
+
+            {/* Header */}
             <div className={styles.header}>
                 <button onClick={onClose} className={styles.backButton}>
                     <FiArrowLeft size={24} />

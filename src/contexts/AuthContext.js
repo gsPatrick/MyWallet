@@ -56,26 +56,52 @@ export function AuthProvider({ children }) {
         try {
             const token = localStorage.getItem('investpro_token');
             if (token) {
-                const response = await authAPI.me();
-                // API response format: { success: true, data: user } or { user: {...} }
-                const userData = response?.data || response?.user || response;
-                if (userData?.id) {
-                    setUser(userData);
+                try {
+                    const response = await authAPI.me();
+                    // API response format: { success: true, data: user } or { user: {...} }
+                    const userData = response?.data || response?.user || response;
+                    if (userData?.id) {
+                        setUser(userData);
+                        // Update localStorage cache
+                        localStorage.setItem('investpro_user', JSON.stringify(userData));
 
-                    // IMMEDIATE PAYWALL CHECK after auth
-                    const currentPath = window.location.pathname;
-                    const publicPaths = ['/login', '/signup', '/checkout', '/admin', '/forgot-password', '/', '/landing'];
-                    const isPublicPath = publicPaths.some(path => currentPath === path || currentPath.startsWith(path + '?'));
+                        // IMMEDIATE PAYWALL CHECK after auth
+                        const currentPath = window.location.pathname;
+                        const publicPaths = ['/login', '/signup', '/checkout', '/admin', '/forgot-password', '/', '/landing'];
+                        const isPublicPath = publicPaths.some(path => currentPath === path || currentPath.startsWith(path + '?'));
 
-                    if (!isPublicPath) {
-                        // Check if needs to go to checkout
-                        if (userData.plan !== 'OWNER' && userData.subscriptionStatus !== 'ACTIVE') {
-                            console.log('PAYWALL (checkAuth): Redirecting to checkout', userData);
-                            router.push('/checkout');
-                            return;
+                        if (!isPublicPath) {
+                            // Check if needs to go to checkout
+                            if (userData.plan !== 'OWNER' && userData.subscriptionStatus !== 'ACTIVE') {
+                                console.log('PAYWALL (checkAuth): Redirecting to checkout', userData);
+                                router.push('/checkout');
+                                return;
+                            }
+                        }
+                    } else {
+                        localStorage.removeItem('investpro_token');
+                        localStorage.removeItem('investpro_user');
+                    }
+                } catch (apiError) {
+                    // OFFLINE RESILIENCE: If API fails (network error), try localStorage fallback
+                    console.warn('API unreachable, attempting offline fallback:', apiError);
+
+                    const cachedUser = localStorage.getItem('investpro_user');
+                    if (cachedUser) {
+                        try {
+                            const userData = JSON.parse(cachedUser);
+                            if (userData?.id) {
+                                console.log('Offline mode: Using cached user data');
+                                setUser(userData);
+                                // Don't redirect - allow access with cached data
+                                return;
+                            }
+                        } catch (parseError) {
+                            console.error('Failed to parse cached user:', parseError);
                         }
                     }
-                } else {
+
+                    // No cached user and API failed - clear auth
                     localStorage.removeItem('investpro_token');
                     localStorage.removeItem('investpro_user');
                 }

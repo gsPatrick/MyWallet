@@ -7,6 +7,7 @@ import { PrivacyProvider } from '@/contexts/PrivacyContext';
 import { MedalProvider } from '@/contexts/MedalContext';
 import { PaymentNotificationProvider } from '@/contexts/PaymentNotificationContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import { AIProvider } from '@/contexts/AIContext';
 import { PageTransitionProvider } from '@/components/PageTransition';
 import { ServiceWorkerRegister } from '@/components/PWA';
 
@@ -86,9 +87,11 @@ export default function RootLayout({ children }) {
                                     <PaymentNotificationProvider>
                                         <NotificationProvider>
                                             <PrivacyProvider>
-                                                <PageTransitionProvider>
-                                                    {children}
-                                                </PageTransitionProvider>
+                                                <AIProvider>
+                                                    <PageTransitionProvider>
+                                                        {children}
+                                                    </PageTransitionProvider>
+                                                </AIProvider>
                                             </PrivacyProvider>
                                         </NotificationProvider>
                                     </PaymentNotificationProvider>

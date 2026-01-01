@@ -11,6 +11,53 @@ const api = axios.create({
     },
 });
 
+// ============================================
+// OFFLINE CACHE HELPERS
+// ============================================
+const CACHE_PREFIX = 'cache_';
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+const getCacheKey = (url) => `${CACHE_PREFIX}${url}`;
+
+const saveToCache = (url, data) => {
+    try {
+        const cacheEntry = {
+            data,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(getCacheKey(url), JSON.stringify(cacheEntry));
+    } catch (e) {
+        console.warn('Cache write failed:', e);
+    }
+};
+
+const getFromCache = (url) => {
+    try {
+        const cached = localStorage.getItem(getCacheKey(url));
+        if (!cached) return null;
+
+        const { data, timestamp } = JSON.parse(cached);
+
+        // Check if cache is still valid
+        if (Date.now() - timestamp > CACHE_TTL) {
+            localStorage.removeItem(getCacheKey(url));
+            return null;
+        }
+
+        return data;
+    } catch (e) {
+        return null;
+    }
+};
+
+// Check if we're truly online (with heartbeat validation)
+let isNetworkOnline = true;
+if (typeof window !== 'undefined') {
+    window.addEventListener('mywalletNetworkStatus', (e) => {
+        isNetworkOnline = e.detail.isOnline;
+    });
+}
+
 // Request interceptor to add auth token AND profile context
 api.interceptors.request.use(
     (config) => {
@@ -26,6 +73,18 @@ api.interceptors.request.use(
             if (profileId) {
                 config.headers['x-profile-id'] = profileId;
             }
+
+            // OFFLINE CACHING: For GET requests when offline, return cached data
+            if (config.method === 'get' && !isNetworkOnline) {
+                const cachedData = getFromCache(config.url);
+                if (cachedData) {
+                    console.log('[Offline] Serving cached data for:', config.url);
+                    // Cancel the actual request and resolve with cached data
+                    const source = axios.CancelToken.source();
+                    config.cancelToken = source.token;
+                    source.cancel({ __cached: true, data: cachedData });
+                }
+            }
         }
         return config;
     },
@@ -34,10 +93,21 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling AND cache write
 api.interceptors.response.use(
-    (response) => response.data,
+    (response) => {
+        // Cache successful GET responses
+        if (response.config.method === 'get' && response.status === 200) {
+            saveToCache(response.config.url, response.data);
+        }
+        return response.data;
+    },
     (error) => {
+        // Handle our custom cache cancellation
+        if (axios.isCancel(error) && error.message?.__cached) {
+            return Promise.resolve(error.message.data);
+        }
+
         const url = error.config?.url || '';
         const isAuthEndpoint = url.includes('/auth/');
         const isGamificationEndpoint = url.includes('/gamification/');
@@ -50,6 +120,16 @@ api.interceptors.response.use(
                 window.location.href = '/login';
             }
         }
+
+        // OFFLINE FALLBACK: If network error on GET, try cache
+        if (!error.response && error.config?.method === 'get') {
+            const cachedData = getFromCache(error.config.url);
+            if (cachedData) {
+                console.log('[Offline Fallback] Serving stale cache for:', error.config.url);
+                return Promise.resolve(cachedData);
+            }
+        }
+
         return Promise.reject(error.response?.data || error.message);
     }
 );
