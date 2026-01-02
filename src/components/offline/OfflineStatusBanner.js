@@ -1,14 +1,15 @@
 'use client';
 
 /**
- * OfflineStatusBanner
- * Shows download progress and offline readiness status
- * - Appears when downloading data for offline
- * - Shows what's available in offline mode
+ * OfflineStatusBanner - Smart Capsule Version
+ * =============================================
+ * Mobile-only floating pill that shows download and offline status.
+ * Positioned below iPhone notch using safe-area-inset-top.
+ * Desktop: Hidden (returns null)
  */
 
-import React from 'react';
-import { FiWifi, FiWifiOff, FiDownload, FiCheck, FiMic, FiDatabase } from 'react-icons/fi';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FiWifiOff, FiDownload, FiCheck, FiMic, FiDatabase, FiLoader } from 'react-icons/fi';
 import { useOfflinePrefetch } from '@/hooks/useOfflinePrefetch';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useAI } from '@/contexts/AIContext';
@@ -19,108 +20,133 @@ export default function OfflineStatusBanner() {
     const { isPrefetching, prefetchProgress, isOfflineReady, lastSync } = useOfflinePrefetch();
     const ai = useAI();
 
-    // Don't render on SSR or if online and nothing happening
-    if (!isMounted) return null;
+    const [isMobile, setIsMobile] = useState(false);
+    const [showCompleteBadge, setShowCompleteBadge] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
 
-    // Show download progress banner
-    if (isPrefetching && prefetchProgress) {
-        return (
-            <div className={styles.banner} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
-                <div className={styles.content}>
-                    <FiDownload className={styles.icon} />
-                    <div className={styles.info}>
-                        <span className={styles.title}>Preparando modo offline...</span>
-                        <span className={styles.subtitle}>
-                            {prefetchProgress.name} ({prefetchProgress.current}/{prefetchProgress.total})
-                        </span>
-                    </div>
-                    <div className={styles.progressWrapper}>
-                        <div
-                            className={styles.progressBar}
-                            style={{ width: `${prefetchProgress.percent}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // Check if mobile viewport
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
 
-    // Show offline status when offline
-    if (!isOnline) {
-        const aiStatus = ai.isModelReady ? 'Voz ✓' : 'Voz ✗';
-        const dataStatus = isOfflineReady ? 'Dados ✓' : 'Dados ✗';
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
 
-        return (
-            <div className={styles.banner} style={{ background: '#1a1a2e' }}>
-                <div className={styles.content}>
-                    <FiWifiOff className={styles.icon} style={{ color: '#f59e0b' }} />
-                    <div className={styles.info}>
-                        <span className={styles.title}>Modo Offline</span>
-                        <span className={styles.subtitle}>
-                            {dataStatus} • {aiStatus}
-                        </span>
-                    </div>
-                    <div className={styles.badges}>
-                        {isOfflineReady && (
-                            <span className={styles.badge} style={{ background: '#22c55e' }}>
-                                <FiDatabase size={12} /> Dados
-                            </span>
-                        )}
-                        {ai.isModelReady && (
-                            <span className={styles.badge} style={{ background: '#8b5cf6' }}>
-                                <FiMic size={12} /> Voz
-                            </span>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
-    // Show AI download progress when downloading
-    if (ai.status === 'downloading') {
-        return (
-            <div className={styles.banner} style={{ background: 'linear-gradient(135deg, #8b5cf6, #a855f7)' }}>
-                <div className={styles.content}>
-                    <FiMic className={styles.icon} />
-                    <div className={styles.info}>
-                        <span className={styles.title}>Baixando IA de voz...</span>
-                        <span className={styles.subtitle}>{Math.round(ai.downloadProgress * 100)}%</span>
-                    </div>
-                    <div className={styles.progressWrapper}>
-                        <div
-                            className={styles.progressBar}
-                            style={{ width: `${ai.downloadProgress * 100}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // Determine visibility based on state
+    useEffect(() => {
+        const shouldShow = isPrefetching || ai.status === 'downloading' || !isOnline || showCompleteBadge;
+        setIsVisible(shouldShow);
+    }, [isPrefetching, ai.status, isOnline, showCompleteBadge]);
 
-    // Show success banner briefly after prefetch completes
-    if (isOfflineReady && lastSync) {
-        const syncDate = new Date(lastSync);
-        const now = new Date();
-        const minutesAgo = Math.floor((now - syncDate) / (1000 * 60));
+    // Handle completion badge
+    useEffect(() => {
+        if (isOfflineReady && lastSync) {
+            const syncDate = new Date(lastSync);
+            const now = new Date();
+            const minutesAgo = Math.floor((now - syncDate) / (1000 * 60));
 
-        // Only show if sync was recent (within 2 minutes)
-        if (minutesAgo < 2) {
-            return (
-                <div className={styles.banner} style={{ background: '#22c55e' }}>
-                    <div className={styles.content}>
-                        <FiCheck className={styles.icon} />
-                        <div className={styles.info}>
-                            <span className={styles.title}>Pronto para uso offline!</span>
-                            <span className={styles.subtitle}>
-                                Dados sincronizados • {ai.isModelReady ? 'Voz ativa' : 'Apenas texto'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            );
+            if (minutesAgo < 2) {
+                setShowCompleteBadge(true);
+                const timer = setTimeout(() => setShowCompleteBadge(false), 3000);
+                return () => clearTimeout(timer);
+            }
         }
-    }
+    }, [isOfflineReady, lastSync]);
 
-    return null;
+    // Handle AI download complete
+    useEffect(() => {
+        if (ai.status === 'ready' && ai.downloadProgress === 100) {
+            setShowCompleteBadge(true);
+            const timer = setTimeout(() => setShowCompleteBadge(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [ai.status, ai.downloadProgress]);
+
+    // Don't render on SSR, desktop, or if nothing to show
+    if (!isMounted || !isMobile || !isVisible) return null;
+
+    // Determine content
+    const getContent = () => {
+        // Show completion state
+        if (showCompleteBadge && !isPrefetching && ai.status !== 'downloading') {
+            return {
+                icon: <FiCheck className={styles.iconSuccess} />,
+                text: 'Pronto para offline',
+                isComplete: true
+            };
+        }
+
+        // Show AI download progress
+        if (ai.status === 'downloading') {
+            return {
+                icon: <FiLoader className={styles.iconSpinner} />,
+                text: `Baixando IA... ${Math.round(ai.downloadProgress)}%`,
+                progress: ai.downloadProgress
+            };
+        }
+
+        // Show data prefetching
+        if (isPrefetching && prefetchProgress) {
+            return {
+                icon: <FiDownload className={styles.iconPulse} />,
+                text: `${prefetchProgress.name}`,
+                progress: prefetchProgress.percent
+            };
+        }
+
+        // Show offline status
+        if (!isOnline) {
+            const hasData = isOfflineReady;
+            const hasVoice = ai.isModelReady;
+
+            return {
+                icon: <FiWifiOff className={styles.iconWarning} />,
+                text: 'Modo Offline',
+                badges: [
+                    hasData && { icon: <FiDatabase size={12} />, label: 'Dados' },
+                    hasVoice && { icon: <FiMic size={12} />, label: 'Voz' }
+                ].filter(Boolean)
+            };
+        }
+
+        return null;
+    };
+
+    const content = getContent();
+    if (!content) return null;
+
+    return (
+        <div className={`${styles.capsule} ${content.isComplete ? styles.capsuleComplete : ''}`}>
+            <div className={styles.capsuleContent}>
+                {content.icon}
+                <span className={styles.capsuleText}>{content.text}</span>
+
+                {/* Progress bar */}
+                {content.progress !== undefined && (
+                    <div className={styles.miniProgress}>
+                        <div
+                            className={styles.miniProgressFill}
+                            style={{ width: `${content.progress}%` }}
+                        />
+                    </div>
+                )}
+
+                {/* Badges for offline mode */}
+                {content.badges && (
+                    <div className={styles.capsuleBadges}>
+                        {content.badges.map((badge, i) => (
+                            <span key={i} className={styles.miniBadge}>
+                                {badge.icon}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }

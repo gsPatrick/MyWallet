@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon, FiTrash2, FiDownload } from 'react-icons/fi';
+import { FiArrowLeft, FiSend, FiMic, FiClock, FiCheck, FiMoreVertical, FiSun, FiMoon, FiTrash2, FiDownload, FiCpu } from 'react-icons/fi';
 import { BsCheckAll, BsWhatsapp } from 'react-icons/bs'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useAI } from '@/contexts/AIContext';
@@ -140,6 +140,12 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
     }, [handleSendMessage]); // Ensure handleSendMessage is stable or ref'd
 
     const startRecording = async () => {
+        // Guard: prevent starting if already recording
+        if (isRecording) {
+            console.warn('[ChatInterface] Already recording, ignoring start request');
+            return;
+        }
+
         shouldAutoSendRef.current = false;
         setIsRecording(true);
         setRecordingTime(0);
@@ -721,7 +727,7 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
                 <div className={styles.aiSetupOverlay}>
                     <div className={styles.aiSetupContent}>
                         <div className={styles.aiSetupIcon}>
-                            🎙️
+                            <FiMic size={48} />
                         </div>
                         <h2 className={styles.aiSetupTitle}>
                             Ativar Modo de Voz Offline
@@ -783,7 +789,8 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
             {/* Offline Processing Indicator */}
             {ai.status === 'processing' && (
                 <div className={styles.processingBanner}>
-                    🧠 Processando áudio localmente...
+                    <FiCpu size={16} style={{ marginRight: '8px' }} />
+                    Processando áudio localmente...
                 </div>
             )}
 

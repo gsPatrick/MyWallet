@@ -5,18 +5,43 @@
  * ========================================
  * Wraps protected pages with ProfileGate
  * Shows ProfileWizard AFTER Tour is complete (when user has no profiles)
+ * Shows OfflineTransition when network goes offline
  * ========================================
  */
 
+import { useState, useEffect, useRef } from 'react';
 import { useProfiles } from '@/contexts/ProfileContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import ProfileWizard from '@/components/Onboarding/ProfileWizard';
+import OfflineTransition from '@/components/ui/OfflineTransition';
 
 export default function AppShell({ children }) {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const { profiles, loading: profilesLoading, hasProfiles, refreshProfiles } = useProfiles();
     const { phase } = useOnboarding();
+    const { isOnline, isMounted } = useNetworkStatus();
+
+    // Track previous online state to detect transitions
+    const prevOnlineRef = useRef(true);
+    const [showOfflineTransition, setShowOfflineTransition] = useState(false);
+
+    // Detect offline transition
+    useEffect(() => {
+        if (!isMounted) return;
+
+        // Only trigger if transitioning from online to offline
+        if (prevOnlineRef.current && !isOnline) {
+            setShowOfflineTransition(true);
+        }
+
+        prevOnlineRef.current = isOnline;
+    }, [isOnline, isMounted]);
+
+    const handleOfflineTransitionComplete = () => {
+        setShowOfflineTransition(false);
+    };
 
     // Handle wizard completion
     const handleWizardComplete = async () => {
@@ -46,13 +71,33 @@ export default function AppShell({ children }) {
                 <>
                     {children}
                     <ProfileWizard onComplete={handleWizardComplete} />
+                    <OfflineTransition
+                        isVisible={showOfflineTransition}
+                        onComplete={handleOfflineTransitionComplete}
+                    />
                 </>
             );
         }
         // Tour is still showing, 'complete', or 'idle' - just render children
-        return <>{children}</>;
+        return (
+            <>
+                {children}
+                <OfflineTransition
+                    isVisible={showOfflineTransition}
+                    onComplete={handleOfflineTransitionComplete}
+                />
+            </>
+        );
     }
 
     // User has profiles - show normal app
-    return <>{children}</>;
+    return (
+        <>
+            {children}
+            <OfflineTransition
+                isVisible={showOfflineTransition}
+                onComplete={handleOfflineTransitionComplete}
+            />
+        </>
+    );
 }

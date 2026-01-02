@@ -95,7 +95,7 @@ export function AIProvider({ children }) {
                     localStorage.setItem(STORAGE_KEYS.MODEL_DOWNLOADED, 'true');
                     // Show completion toast
                     if (!hasShownToast) {
-                        showToast('✅ IA de voz pronta para uso offline!', 'success');
+                        showToast('IA de voz pronta para uso offline!', 'success');
                         setHasShownToast(true);
                     }
                     break;
@@ -136,12 +136,12 @@ export function AIProvider({ children }) {
     const triggerDownload = useCallback(() => {
         // Use navigator.onLine for simple check (no external hook dependency)
         if (typeof window !== 'undefined' && !navigator.onLine) {
-            showToast('❌ Você precisa estar online para baixar o modelo.', 'error');
+            showToast('Você precisa estar online para baixar o modelo.', 'error');
             return;
         }
 
         setShowSetupScreen(false);
-        showToast('📥 Baixando IA de voz...', 'info');
+        showToast('Baixando IA de voz...', 'info');
         workerRef.current?.postMessage({ type: 'load' });
     }, []);
 
@@ -207,15 +207,43 @@ export function AIProvider({ children }) {
             setTranscript('');
             audioChunksRef.current = [];
 
-            // Get microphone access
-            const stream = await navigator.mediaDevices.getUserMedia({
+            // Clean up any existing stream before requesting new one
+            if (mediaStreamRef.current) {
+                console.log('[AIContext] Cleaning up existing stream before new request');
+                mediaStreamRef.current.getTracks().forEach(track => track.stop());
+                mediaStreamRef.current = null;
+            }
+
+            // Close any existing audio context
+            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+                try {
+                    await audioContextRef.current.close();
+                } catch (e) {
+                    console.warn('[AIContext] Error closing audio context:', e);
+                }
+                audioContextRef.current = null;
+            }
+
+            // Get microphone access with retry logic
+            const audioConstraints = {
                 audio: {
                     sampleRate: 16000,
                     channelCount: 1,
                     echoCancellation: true,
                     noiseSuppression: true
                 }
-            });
+            };
+
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+            } catch (firstError) {
+                console.warn('[AIContext] First getUserMedia attempt failed, retrying in 100ms:', firstError);
+                // Wait 100ms and retry
+                await new Promise(resolve => setTimeout(resolve, 100));
+                stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+            }
+
             mediaStreamRef.current = stream;
 
             // Create AudioContext for processing
@@ -239,6 +267,7 @@ export function AIProvider({ children }) {
             setStatus('recording');
             return true;
         } catch (err) {
+            console.error('[AIContext] Failed to start recording:', err);
             setError(err.message);
             return false;
         }
