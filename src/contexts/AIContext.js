@@ -1,31 +1,45 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 /**
  * AI Context - Global Background Preloading for Whisper Model
  * 
- * This context initializes the Whisper worker on app mount, allowing the model
- * to download in the background while the user navigates other pages.
+ * This context manages the Whisper worker lifecycle and provides:
+ * - First access check: Shows setup screen if model not downloaded
+ * - Manual download trigger: User must explicitly click to download
+ * - Persistent skip preference: Stored in localStorage
  */
+
+const STORAGE_KEYS = {
+    MODEL_DOWNLOADED: 'mywallet_ai_model_downloaded',
+    SETUP_SKIPPED: 'mywallet_ai_setup_skipped'
+};
 
 const AIContext = createContext({
     status: 'idle', // 'idle' | 'downloading' | 'ready' | 'processing' | 'error'
     downloadProgress: 0,
     error: null,
     isModelReady: false,
+    showSetupScreen: false,
     startRecording: async () => { },
     stopRecording: async () => { },
     cancelRecording: () => { },
+    triggerDownload: () => { },
+    skipSetup: () => { },
     transcript: '',
 });
 
 export function AIProvider({ children }) {
+    const { isOnline } = useNetworkStatus();
     const [status, setStatus] = useState('idle');
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [error, setError] = useState(null);
     const [transcript, setTranscript] = useState('');
     const [hasShownToast, setHasShownToast] = useState(false);
+    const [showSetupScreen, setShowSetupScreen] = useState(false);
+    const [userSkippedSetup, setUserSkippedSetup] = useState(false);
 
     const workerRef = useRef(null);
     const audioContextRef = useRef(null);
@@ -33,7 +47,24 @@ export function AIProvider({ children }) {
     const audioChunksRef = useRef([]);
     const processorRef = useRef(null);
 
-    // Initialize worker and start preloading on mount
+    // Check localStorage on mount for previous state
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const modelDownloaded = localStorage.getItem(STORAGE_KEYS.MODEL_DOWNLOADED) === 'true';
+        const setupSkipped = localStorage.getItem(STORAGE_KEYS.SETUP_SKIPPED) === 'true';
+
+        setUserSkippedSetup(setupSkipped);
+
+        // If model was previously downloaded, it should still be in browser cache
+        // We'll verify this when worker responds to 'check' command
+        if (!modelDownloaded && !setupSkipped) {
+            // First access: show setup screen
+            setShowSetupScreen(true);
+        }
+    }, []);
+
+    // Initialize worker on mount
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -55,6 +86,9 @@ export function AIProvider({ children }) {
                 case 'ready':
                     setStatus('ready');
                     setDownloadProgress(100);
+                    setShowSetupScreen(false);
+                    // Mark as downloaded in localStorage
+                    localStorage.setItem(STORAGE_KEYS.MODEL_DOWNLOADED, 'true');
                     // Show completion toast
                     if (!hasShownToast) {
                         showToast('✅ IA de voz pronta para uso offline!', 'success');
@@ -73,26 +107,44 @@ export function AIProvider({ children }) {
                     setStatus('error');
                     break;
                 case 'status':
-                    if (loaded) setStatus('ready');
+                    if (loaded) {
+                        setStatus('ready');
+                        setShowSetupScreen(false);
+                        localStorage.setItem(STORAGE_KEYS.MODEL_DOWNLOADED, 'true');
+                    }
                     break;
             }
         };
 
-        // Check if model is already cached, then start preloading
+        // Check if model is already cached in IndexedDB/browser cache
         workerRef.current.postMessage({ type: 'check' });
-
-        // Start preloading immediately
-        setTimeout(() => {
-            if (status === 'idle') {
-                console.log('[AIContext] Starting background model preload...');
-                showToast('📥 Baixando IA de voz em 2º plano...', 'info');
-                workerRef.current?.postMessage({ type: 'load' });
-            }
-        }, 2000); // Wait 2s after app mount to not block initial render
 
         return () => {
             workerRef.current?.terminate();
         };
+    }, []);
+
+    /**
+     * Manually trigger model download (called from UI button)
+     */
+    const triggerDownload = useCallback(() => {
+        if (!isOnline) {
+            showToast('❌ Você precisa estar online para baixar o modelo.', 'error');
+            return;
+        }
+
+        setShowSetupScreen(false);
+        showToast('📥 Baixando IA de voz...', 'info');
+        workerRef.current?.postMessage({ type: 'load' });
+    }, [isOnline]);
+
+    /**
+     * Skip setup and use text-only mode
+     */
+    const skipSetup = useCallback(() => {
+        setUserSkippedSetup(true);
+        setShowSetupScreen(false);
+        localStorage.setItem(STORAGE_KEYS.SETUP_SKIPPED, 'true');
     }, []);
 
     // Simple toast implementation (can be replaced with react-hot-toast)
@@ -251,9 +303,12 @@ export function AIProvider({ children }) {
         downloadProgress,
         error,
         isModelReady: status === 'ready' || status === 'recording' || status === 'processing',
+        showSetupScreen,
         startRecording,
         stopRecording,
         cancelRecording,
+        triggerDownload,
+        skipSetup,
         transcript,
     };
 

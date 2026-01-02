@@ -22,7 +22,7 @@ const THEMES = {
     DARK: 'dark'
 };
 
-export default function ChatInterface({ onClose }) {
+export default function ChatInterface({ onClose, isOfflineMode = false }) {
     const { isOnline } = useNetworkStatus();
     const ai = useAI(); // Global AI context for offline speech
     const [messages, setMessages] = useState([]);
@@ -237,6 +237,9 @@ export default function ChatInterface({ onClose }) {
             }
         }
     }, [ai.transcript, ai.status, handleSendMessage]);
+
+    // AI Setup is now handled globally by AIContext
+    // Just use ai.showSetupScreen, ai.triggerDownload(), ai.skipSetup() from context
 
     const handleTouchStart = (e) => {
         startYRef.current = e.touches[0].clientY;
@@ -654,6 +657,38 @@ export default function ChatInterface({ onClose }) {
 
     return (
         <div id="chat-container" className={`${styles.chatContainer} ${getThemeClass()}`}>
+            {/* AI Setup Screen - Apple-style Onboarding (from global context) */}
+            {ai.showSetupScreen && (
+                <div className={styles.aiSetupOverlay}>
+                    <div className={styles.aiSetupContent}>
+                        <div className={styles.aiSetupIcon}>
+                            🎙️
+                        </div>
+                        <h2 className={styles.aiSetupTitle}>
+                            Ativar Modo de Voz Offline
+                        </h2>
+                        <p className={styles.aiSetupDescription}>
+                            Baixe a inteligência artificial para registrar gastos por voz mesmo sem internet.
+                        </p>
+                        <div className={styles.aiSetupButtons}>
+                            <button
+                                className={styles.aiSetupPrimaryBtn}
+                                onClick={ai.triggerDownload}
+                            >
+                                <FiDownload size={20} />
+                                Baixar Agora (40MB)
+                            </button>
+                            <button
+                                className={styles.aiSetupSecondaryBtn}
+                                onClick={ai.skipSetup}
+                            >
+                                Usar apenas Texto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* AI Model Download Modal */}
             {showDownloadModal && (
                 <div className={styles.downloadModal}>

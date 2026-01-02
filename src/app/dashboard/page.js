@@ -14,6 +14,9 @@ import AppShell from '@/components/AppShell';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfiles } from '@/contexts/ProfileContext';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useAI } from '@/contexts/AIContext';
+import ChatInterface from '@/components/chat/ChatInterface';
 import { formatDate } from '@/utils/formatters';
 import { reportsAPI, openFinanceAPI, transactionsAPI, authAPI, dashboardAPI, budgetsAPI, brokersAPI } from '@/services/api';
 import bankAccountService from '@/services/bankAccountService';
@@ -45,6 +48,9 @@ const dateFilters = [
 export default function DashboardPage() {
     const { user, updateUser } = useAuth();
     const { currentProfile } = useProfiles();
+    const { isOnline } = useNetworkStatus();
+    const ai = useAI();
+
     const [activeTab, setActiveTab] = useState('geral');
     const [dateFilter, setDateFilter] = useState('month');
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -68,6 +74,13 @@ export default function DashboardPage() {
     // Broker filter for investments tab
     const [brokersList, setBrokersList] = useState([]);
     const [selectedBrokerFilter, setSelectedBrokerFilter] = useState(null);
+
+    // =============================================
+    // OFFLINE MODE: Render Chat instead of Dashboard
+    // =============================================
+    if (!isOnline) {
+        return <ChatInterface onClose={() => { }} isOfflineMode={true} />;
+    }
 
     useEffect(() => {
         loadDashboardData();
