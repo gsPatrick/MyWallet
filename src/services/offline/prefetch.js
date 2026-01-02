@@ -11,7 +11,6 @@
 
 import { openFinanceAPI, transactionsAPI, budgetsAPI, dashboardAPI } from '../api';
 import bankAccountService from '../bankAccountService';
-import { manualCardAPI } from '../api';
 
 const CACHE_KEYS = {
     BANKS: 'mywallet_banks_cache',
@@ -33,11 +32,27 @@ const safeJsonParse = (data, fallback = null) => {
     }
 };
 
+// SSR-safe localStorage access
+const safeLocalStorage = {
+    getItem: (key) => {
+        if (typeof window === 'undefined') return null;
+        return localStorage.getItem(key);
+    },
+    setItem: (key, value) => {
+        if (typeof window === 'undefined') return;
+        localStorage.setItem(key, value);
+    },
+    removeItem: (key) => {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(key);
+    }
+};
+
 /**
  * Check if prefetch has been done
  */
 export const isPrefetchComplete = () => {
-    return localStorage.getItem(CACHE_KEYS.PREFETCH_COMPLETE) === 'true';
+    return safeLocalStorage.getItem(CACHE_KEYS.PREFETCH_COMPLETE) === 'true';
 };
 
 /**
@@ -46,7 +61,7 @@ export const isPrefetchComplete = () => {
 export const getCachedData = (key) => {
     const cacheKey = CACHE_KEYS[key.toUpperCase()];
     if (!cacheKey) return null;
-    return safeJsonParse(localStorage.getItem(cacheKey));
+    return safeJsonParse(safeLocalStorage.getItem(cacheKey));
 };
 
 /**
@@ -57,8 +72,8 @@ export const saveToCache = (key, data) => {
     if (!cacheKey || !data) return;
 
     try {
-        localStorage.setItem(cacheKey, JSON.stringify(data));
-        localStorage.setItem(CACHE_KEYS.LAST_SYNC, new Date().toISOString());
+        safeLocalStorage.setItem(cacheKey, JSON.stringify(data));
+        safeLocalStorage.setItem(CACHE_KEYS.LAST_SYNC, new Date().toISOString());
     } catch (e) {
         console.error('[OfflinePrefetch] Error saving to cache:', e);
     }
@@ -69,6 +84,9 @@ export const saveToCache = (key, data) => {
  * Should be called on first access or when user explicitly syncs
  */
 export const prefetchAllData = async (onProgress) => {
+    // SSR guard
+    if (typeof window === 'undefined') return { success: false, errors: ['SSR'], cached: [] };
+
     const results = {
         success: true,
         errors: [],
@@ -103,7 +121,7 @@ export const prefetchAllData = async (onProgress) => {
     }
 
     // Mark prefetch as complete
-    localStorage.setItem(CACHE_KEYS.PREFETCH_COMPLETE, 'true');
+    safeLocalStorage.setItem(CACHE_KEYS.PREFETCH_COMPLETE, 'true');
     results.success = results.errors.length === 0;
 
     console.log('[OfflinePrefetch] Complete:', results);
@@ -139,9 +157,10 @@ async function fetchAndCacheBanks() {
 async function fetchAndCacheCards() {
     const cards = [];
 
-    // Get manual cards
+    // Get manual cards dynamically
     try {
-        const manualCards = await manualCardAPI.list();
+        const { cardsAPI } = await import('../api');
+        const manualCards = await cardsAPI.list();
         const manualData = manualCards?.data || manualCards || [];
         cards.push(...manualData.map(c => ({ ...c, source: 'manual' })));
     } catch (e) { }
@@ -197,6 +216,8 @@ async function fetchAndCacheDashboard() {
  * Update specific cache (call this after user actions)
  */
 export const updateCache = async (type) => {
+    if (typeof window === 'undefined') return null;
+
     switch (type.toLowerCase()) {
         case 'banks':
             return fetchAndCacheBanks();
@@ -217,15 +238,16 @@ export const updateCache = async (type) => {
  * Get last sync time
  */
 export const getLastSyncTime = () => {
-    return localStorage.getItem(CACHE_KEYS.LAST_SYNC);
+    return safeLocalStorage.getItem(CACHE_KEYS.LAST_SYNC);
 };
 
 /**
  * Clear all cached data
  */
 export const clearAllCache = () => {
+    if (typeof window === 'undefined') return;
     Object.values(CACHE_KEYS).forEach(key => {
-        localStorage.removeItem(key);
+        safeLocalStorage.removeItem(key);
     });
 };
 
@@ -238,3 +260,4 @@ export default {
     getLastSyncTime,
     clearAllCache
 };
+
