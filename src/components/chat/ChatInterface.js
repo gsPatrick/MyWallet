@@ -366,6 +366,21 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
         };
     }, []);
 
+    // Reload images when coming back online
+    useEffect(() => {
+        if (isOnline && typeof window !== 'undefined') {
+            // Force reload all images in the chat that might have failed offline
+            const images = document.querySelectorAll(`.${styles.messagesArea} img`);
+            images.forEach(img => {
+                if (!img.complete || img.naturalHeight === 0) {
+                    // Image failed to load, try reloading
+                    const originalSrc = img.src.split('?')[0]; // Remove old cache buster
+                    img.src = `${originalSrc}?t=${Date.now()}`;
+                }
+            });
+        }
+    }, [isOnline]);
+
     // Change theme
     const handleThemeChange = (newTheme) => {
         setTheme(newTheme);
