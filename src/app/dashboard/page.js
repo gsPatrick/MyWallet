@@ -78,13 +78,15 @@ export default function DashboardPage() {
     // =============================================
     // OFFLINE MODE: Render Chat instead of Dashboard
     // =============================================
-    if (!isOnline) {
-        return <ChatInterface onClose={() => { }} isOfflineMode={true} />;
-    }
+    // NOTE: This check MUST come AFTER all hooks to comply with Rules of Hooks
+    // The actual conditional render happens in the return statement below
 
     useEffect(() => {
-        loadDashboardData();
-    }, [currentProfile?.id]); // Reload when profile changes
+        // Only load data if online
+        if (isOnline) {
+            loadDashboardData();
+        }
+    }, [currentProfile?.id, isOnline]); // Reload when profile changes or comes back online
 
     const loadDashboardData = async () => {
         setIsLoading(true);
@@ -254,6 +256,11 @@ export default function DashboardPage() {
             ))}
         </div>
     );
+
+    // OFFLINE MODE: Render Chat instead of Dashboard
+    if (!isOnline) {
+        return <ChatInterface onClose={() => { }} isOfflineMode={true} />;
+    }
 
     return (
         <AppShell>

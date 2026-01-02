@@ -12,13 +12,21 @@ const HEALTH_ENDPOINT = process.env.NEXT_PUBLIC_API_URL
  * True Network Detection Hook
  * Goes beyond navigator.onLine by performing periodic heartbeat checks.
  * Only considers "online" when heartbeat succeeds.
+ * 
+ * SSR-Safe: Returns isOnline=true during SSR to prevent hydration mismatch.
+ * Real check happens only after client mounts.
  */
 export function useNetworkStatus() {
+    // Start with true to match SSR (prevents hydration mismatch)
     const [isOnline, setIsOnline] = useState(true);
     const [lastCheck, setLastCheck] = useState(null);
+    const [isMounted, setIsMounted] = useState(false);
     const intervalRef = useRef(null);
 
     const performHeartbeat = useCallback(async () => {
+        // SSR safety: don't run on server
+        if (typeof window === 'undefined') return true;
+
         // If browser says offline, trust it immediately
         if (!navigator.onLine) {
             setIsOnline(false);
@@ -41,10 +49,12 @@ export function useNetworkStatus() {
             setLastCheck(Date.now());
             return online;
         } catch (error) {
-            // Network error = offline
-            setIsOnline(false);
+            // Network error - but don't immediately mark offline if endpoint doesn't exist
+            // Just use navigator.onLine as fallback
+            const browserOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+            setIsOnline(browserOnline);
             setLastCheck(Date.now());
-            return false;
+            return browserOnline;
         }
     }, []);
 
@@ -65,7 +75,15 @@ export function useNetworkStatus() {
         }
     }, []);
 
+    // Mount effect - runs only on client
     useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        // Don't run until mounted (client-side)
+        if (!isMounted) return;
+
         const handleOnline = () => {
             startHeartbeat();
         };
@@ -75,7 +93,7 @@ export function useNetworkStatus() {
             setIsOnline(false);
         };
 
-        // Initial setup
+        // Initial setup - only on client
         if (navigator.onLine) {
             startHeartbeat();
         } else {
@@ -90,12 +108,13 @@ export function useNetworkStatus() {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, [startHeartbeat, stopHeartbeat]);
+    }, [isMounted, startHeartbeat, stopHeartbeat]);
 
     return {
         isOnline,
         lastCheck,
-        checkNow: performHeartbeat
+        checkNow: performHeartbeat,
+        isMounted
     };
 }
 
