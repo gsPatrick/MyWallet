@@ -1,28 +1,30 @@
 'use client';
 
 /**
- * OfflineStatusBanner - Smart Capsule Version
+ * OfflineStatusBanner - Smart Capsule Design
  * =============================================
- * Mobile-only floating pill that shows download and offline status.
+ * Mobile-only floating pill that shows sync and offline status.
  * Positioned below iPhone notch using safe-area-inset-top.
- * Desktop: Hidden (returns null)
+ * 
+ * States:
+ * - Offline: Shows FiWifiOff + "Modo Offline" (fixed/minimized)
+ * - Syncing: Shows FiRefreshCw spinning + "Sincronizando..."
+ * - Success: Shows FiCheck + "Sincronizado" (auto-dismiss after 3s)
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { FiWifiOff, FiDownload, FiCheck, FiMic, FiDatabase, FiLoader } from 'react-icons/fi';
-import { useOfflinePrefetch } from '@/hooks/useOfflinePrefetch';
+import React, { useState, useEffect } from 'react';
+import { FiWifiOff, FiRefreshCw, FiCheck } from 'react-icons/fi';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import { useAI } from '@/contexts/AIContext';
+import { useSync } from '@/hooks/useSync';
 import styles from './OfflineStatusBanner.module.css';
 
 export default function OfflineStatusBanner() {
     const { isOnline, isMounted } = useNetworkStatus();
-    const { isPrefetching, prefetchProgress, isOfflineReady, lastSync } = useOfflinePrefetch();
-    const ai = useAI();
+    const { isSyncing, syncedCount } = useSync();
 
     const [isMobile, setIsMobile] = useState(false);
-    const [showCompleteBadge, setShowCompleteBadge] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
+    const [showSuccessCapsule, setShowSuccessCapsule] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
 
     // Check if mobile viewport
     useEffect(() => {
@@ -37,116 +39,77 @@ export default function OfflineStatusBanner() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Determine visibility based on state
+    // Handle sync success - show capsule then auto-dismiss
     useEffect(() => {
-        const shouldShow = isPrefetching || ai.status === 'downloading' || !isOnline || showCompleteBadge;
-        setIsVisible(shouldShow);
-    }, [isPrefetching, ai.status, isOnline, showCompleteBadge]);
+        if (syncedCount > 0 && !isSyncing && isOnline) {
+            setShowSuccessCapsule(true);
+            setIsExiting(false);
 
-    // Handle completion badge
-    useEffect(() => {
-        if (isOfflineReady && lastSync) {
-            const syncDate = new Date(lastSync);
-            const now = new Date();
-            const minutesAgo = Math.floor((now - syncDate) / (1000 * 60));
+            // Start exit animation after 2.5s
+            const exitTimer = setTimeout(() => {
+                setIsExiting(true);
+            }, 2500);
 
-            if (minutesAgo < 2) {
-                setShowCompleteBadge(true);
-                const timer = setTimeout(() => setShowCompleteBadge(false), 3000);
-                return () => clearTimeout(timer);
-            }
+            // Fully hide after exit animation
+            const hideTimer = setTimeout(() => {
+                setShowSuccessCapsule(false);
+                setIsExiting(false);
+            }, 3000);
+
+            return () => {
+                clearTimeout(exitTimer);
+                clearTimeout(hideTimer);
+            };
         }
-    }, [isOfflineReady, lastSync]);
+    }, [syncedCount, isSyncing, isOnline]);
 
-    // Handle AI download complete
-    useEffect(() => {
-        if (ai.status === 'ready' && ai.downloadProgress === 100) {
-            setShowCompleteBadge(true);
-            const timer = setTimeout(() => setShowCompleteBadge(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [ai.status, ai.downloadProgress]);
+    // Don't render on SSR or desktop
+    if (!isMounted || !isMobile) return null;
 
-    // Don't render on SSR, desktop, or if nothing to show
-    if (!isMounted || !isMobile || !isVisible) return null;
-
-    // Determine content
-    const getContent = () => {
-        // Show completion state
-        if (showCompleteBadge && !isPrefetching && ai.status !== 'downloading') {
+    // Determine what to show
+    const getCapsuleState = () => {
+        // Priority 1: Success state (recently synced)
+        if (showSuccessCapsule) {
             return {
+                type: 'success',
                 icon: <FiCheck className={styles.iconSuccess} />,
-                text: 'Pronto para offline',
-                isComplete: true
+                text: `${syncedCount} sincronizado${syncedCount > 1 ? 's' : ''}`,
+                className: styles.capsuleSuccess
             };
         }
 
-        // Show AI download progress
-        if (ai.status === 'downloading') {
+        // Priority 2: Syncing
+        if (isSyncing) {
             return {
-                icon: <FiLoader className={styles.iconSpinner} />,
-                text: `Baixando IA... ${Math.round(ai.downloadProgress)}%`,
-                progress: ai.downloadProgress
+                type: 'syncing',
+                icon: <FiRefreshCw className={styles.iconSpin} />,
+                text: 'Sincronizando...',
+                className: styles.capsuleSyncing
             };
         }
 
-        // Show data prefetching
-        if (isPrefetching && prefetchProgress) {
-            return {
-                icon: <FiDownload className={styles.iconPulse} />,
-                text: `${prefetchProgress.name}`,
-                progress: prefetchProgress.percent
-            };
-        }
-
-        // Show offline status
+        // Priority 3: Offline
         if (!isOnline) {
-            const hasData = isOfflineReady;
-            const hasVoice = ai.isModelReady;
-
             return {
-                icon: <FiWifiOff className={styles.iconWarning} />,
+                type: 'offline',
+                icon: <FiWifiOff className={styles.iconOffline} />,
                 text: 'Modo Offline',
-                badges: [
-                    hasData && { icon: <FiDatabase size={12} />, label: 'Dados' },
-                    hasVoice && { icon: <FiMic size={12} />, label: 'Voz' }
-                ].filter(Boolean)
+                className: styles.capsuleOffline
             };
         }
 
         return null;
     };
 
-    const content = getContent();
-    if (!content) return null;
+    const state = getCapsuleState();
+    if (!state) return null;
 
     return (
-        <div className={`${styles.capsule} ${content.isComplete ? styles.capsuleComplete : ''}`}>
-            <div className={styles.capsuleContent}>
-                {content.icon}
-                <span className={styles.capsuleText}>{content.text}</span>
-
-                {/* Progress bar */}
-                {content.progress !== undefined && (
-                    <div className={styles.miniProgress}>
-                        <div
-                            className={styles.miniProgressFill}
-                            style={{ width: `${content.progress}%` }}
-                        />
-                    </div>
-                )}
-
-                {/* Badges for offline mode */}
-                {content.badges && (
-                    <div className={styles.capsuleBadges}>
-                        {content.badges.map((badge, i) => (
-                            <span key={i} className={styles.miniBadge}>
-                                {badge.icon}
-                            </span>
-                        ))}
-                    </div>
-                )}
-            </div>
+        <div
+            className={`${styles.capsule} ${state.className} ${isExiting ? styles.capsuleExit : ''}`}
+        >
+            {state.icon}
+            <span className={styles.capsuleText}>{state.text}</span>
         </div>
     );
 }

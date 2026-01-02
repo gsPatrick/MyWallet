@@ -722,77 +722,11 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
 
     return (
         <div id="chat-container" className={`${styles.chatContainer} ${getThemeClass()}`}>
-            {/* AI Setup Screen - Apple-style Onboarding (from global context) */}
-            {ai.showSetupScreen && (
-                <div className={styles.aiSetupOverlay}>
-                    <div className={styles.aiSetupContent}>
-                        <div className={styles.aiSetupIcon}>
-                            <FiMic size={48} />
-                        </div>
-                        <h2 className={styles.aiSetupTitle}>
-                            Ativar Modo de Voz Offline
-                        </h2>
-                        <p className={styles.aiSetupDescription}>
-                            Baixe a inteligência artificial para registrar gastos por voz mesmo sem internet.
-                        </p>
-                        <div className={styles.aiSetupButtons}>
-                            <button
-                                className={styles.aiSetupPrimaryBtn}
-                                onClick={ai.triggerDownload}
-                            >
-                                <FiDownload size={20} />
-                                Baixar Agora (40MB)
-                            </button>
-                            <button
-                                className={styles.aiSetupSecondaryBtn}
-                                onClick={ai.skipSetup}
-                            >
-                                Usar apenas Texto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* AI Voice Setup - DISABLED for stability (text-only mode) */}
 
-            {/* AI Model Download Modal */}
-            {showDownloadModal && (
-                <div className={styles.downloadModal}>
-                    <div className={styles.downloadContent}>
-                        <FiDownload size={32} className={styles.downloadIcon} />
-                        <h3>Baixando IA de Voz</h3>
-                        <p>Modelo Whisper (~40MB) para transcrição offline</p>
-                        <div className={styles.progressBar}>
-                            <div
-                                className={styles.progressFill}
-                                style={{ width: `${ai.downloadProgress}%` }}
-                            />
-                        </div>
-                        <span className={styles.progressText}>
-                            {ai.status === 'downloading'
-                                ? `${ai.downloadProgress}%`
-                                : ai.status === 'ready'
-                                    ? 'Pronto! Toque no microfone novamente.'
-                                    : 'Iniciando...'}
-                        </span>
-                        {ai.status === 'ready' && (
-                            <button
-                                className={styles.downloadCloseBtn}
-                                onClick={() => setShowDownloadModal(false)}
-                            >
-                                Fechar
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
+            {/* AI Download Modal - DISABLED for stability */}
 
-            {/* Offline Processing Indicator */}
-            {ai.status === 'processing' && (
-                <div className={styles.processingBanner}>
-                    <FiCpu size={16} style={{ marginRight: '8px' }} />
-                    Processando áudio localmente...
-                </div>
-            )}
+            {/* AI Processing - DISABLED for stability */}
 
             {/* Header */}
             <div className={styles.header}>
@@ -904,50 +838,16 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
                     )}
                 </div>
 
-                {/* Right Side: Action Button (Send or Mic) */}
-                {inputValue && !isRecording ? (
-                    <button
-                        type="button"
-                        className={styles.actionButton}
-                        onClick={() => handleSendMessage()}
-                        onTouchEnd={(e) => {
-                            e.preventDefault();
-                            handleSendMessage();
-                        }}
-                    >
-                        <FiSend size={20} />
-                    </button>
-                ) : (
-                    <div
-                        className={`${styles.micButtonWrapper} ${isLocked ? styles.lockedMic : ''}`}
-                        onMouseDown={startRecording}
-                        onMouseUp={() => {
-                            if (isRecording && !isLocked) stopAndSend();
-                        }}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                    >
-                        {isLocked ? (
-                            <button
-                                className={styles.actionButton}
-                                onClick={() => stopAndSend()}
-                            >
-                                <FiSend size={20} />
-                            </button>
-                        ) : (
-                            <button className={`${styles.actionButton} ${isRecording ? styles.micActive : ''}`}>
-                                <FiMic size={20} />
-                            </button>
-                        )}
-
-                        {isRecording && !isLocked && (
-                            <div className={styles.lockIndicator}>
-                                <div className={styles.lockArrow}>▲</div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                {/* Send Button - Always visible (text-only mode) */}
+                <button
+                    type="button"
+                    className={styles.actionButton}
+                    onClick={() => handleSendMessage()}
+                    disabled={!inputValue.trim()}
+                    style={{ opacity: inputValue.trim() ? 1 : 0.5 }}
+                >
+                    <FiSend size={20} />
+                </button>
             </div>
         </div>
     );

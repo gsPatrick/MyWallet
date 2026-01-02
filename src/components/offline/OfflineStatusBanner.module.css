@@ -11,31 +11,23 @@
     left: 50%;
     transform: translateX(-50%);
 
-    /* Premium dark glass effect */
-    background: rgba(10, 10, 15, 0.95);
+    /* Pill shape */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 50px;
+
+    /* Premium glass effect */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-
-    /* Pill shape */
-    border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-
-    /* Size */
-    width: fit-content;
-    min-width: 180px;
-    max-width: calc(100vw - 40px);
-    padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 
     z-index: 99999;
 
     /* Entry animation */
-    animation: slideDown 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.capsuleComplete {
-    background: rgba(34, 197, 94, 0.95);
-    border-color: rgba(255, 255, 255, 0.2);
+    animation: slideDown 0.35s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* Hide on desktop */
@@ -43,6 +35,30 @@
     .capsule {
         display: none !important;
     }
+}
+
+/* ============================================
+   CAPSULE STATES
+   ============================================ */
+
+.capsuleOffline {
+    background: rgba(10, 10, 15, 0.92);
+}
+
+.capsuleSyncing {
+    background: rgba(99, 102, 241, 0.92);
+}
+
+.capsuleSuccess {
+    background: rgba(34, 197, 94, 0.92);
+}
+
+/* ============================================
+   CAPSULE EXIT ANIMATION
+   ============================================ */
+
+.capsuleExit {
+    animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
 @keyframes slideDown {
@@ -70,64 +86,26 @@
 }
 
 /* ============================================
-   CAPSULE CONTENT
-   ============================================ */
-
-.capsuleContent {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: center;
-}
-
-.capsuleText {
-    font-size: 13px;
-    font-weight: 600;
-    color: white;
-    white-space: nowrap;
-    letter-spacing: -0.01em;
-}
-
-/* ============================================
    ICONS
    ============================================ */
 
-.iconSuccess {
-    color: white;
-    font-size: 16px;
-    flex-shrink: 0;
-}
-
-.iconWarning {
+.iconOffline {
     color: #f59e0b;
     font-size: 16px;
     flex-shrink: 0;
 }
 
-.iconPulse {
-    color: #8b5cf6;
-    font-size: 16px;
-    flex-shrink: 0;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-.iconSpinner {
-    color: #8b5cf6;
+.iconSpin {
+    color: white;
     font-size: 16px;
     flex-shrink: 0;
     animation: spin 1s linear infinite;
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+.iconSuccess {
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
 }
 
 @keyframes spin {
@@ -141,46 +119,13 @@
 }
 
 /* ============================================
-   MINI PROGRESS BAR
+   TEXT
    ============================================ */
 
-.miniProgress {
-    width: 50px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.miniProgressFill {
-    height: 100%;
-    background: linear-gradient(90deg, #8b5cf6, #a855f7);
-    border-radius: 2px;
-    transition: width 0.3s ease;
-}
-
-/* ============================================
-   MINI BADGES
-   ============================================ */
-
-.capsuleBadges {
-    display: flex;
-    gap: 6px;
-    margin-left: 4px;
-}
-
-.miniBadge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
+.capsuleText {
+    font-size: 13px;
+    font-weight: 600;
     color: white;
-}
-
-.miniBadge svg {
-    font-size: 12px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
 }

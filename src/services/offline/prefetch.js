@@ -18,6 +18,7 @@ const CACHE_KEYS = {
     CATEGORIES: 'mywallet_categories_cache',
     TRANSACTIONS: 'mywallet_transactions_cache',
     BUDGETS: 'mywallet_budgets_cache',
+    SUBSCRIPTIONS: 'mywallet_subscriptions_cache',
     USER_PROFILE: 'mywallet_user_profile_cache',
     DASHBOARD_SUMMARY: 'mywallet_dashboard_cache',
     LAST_SYNC: 'mywallet_last_sync',
@@ -97,6 +98,7 @@ export const prefetchAllData = async (onProgress) => {
         { name: 'banks', fn: fetchAndCacheBanks },
         { name: 'cards', fn: fetchAndCacheCards },
         { name: 'categories', fn: fetchAndCacheCategories },
+        { name: 'subscriptions', fn: fetchAndCacheSubscriptions },
         { name: 'transactions', fn: fetchAndCacheTransactions },
         { name: 'budgets', fn: fetchAndCacheBudgets },
         { name: 'dashboard', fn: fetchAndCacheDashboard }
@@ -182,6 +184,22 @@ async function fetchAndCacheCategories() {
     const categories = response?.data || response || [];
     saveToCache('CATEGORIES', categories);
     return categories;
+}
+
+async function fetchAndCacheSubscriptions() {
+    try {
+        // Import subscriptions/recurring expenses API
+        const { recurringAPI } = await import('../api');
+        const response = await recurringAPI?.list?.() || { data: [] };
+        const subscriptions = response?.data || response || [];
+        saveToCache('SUBSCRIPTIONS', subscriptions);
+        return subscriptions;
+    } catch (e) {
+        // Subscriptions might not exist, save empty array
+        console.warn('[OfflinePrefetch] Subscriptions not available:', e);
+        saveToCache('SUBSCRIPTIONS', []);
+        return [];
+    }
 }
 
 async function fetchAndCacheTransactions() {
