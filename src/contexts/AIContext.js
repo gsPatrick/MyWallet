@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 /**
  * AI Context - Global Background Preloading for Whisper Model
@@ -32,7 +31,6 @@ const AIContext = createContext({
 });
 
 export function AIProvider({ children }) {
-    const { isOnline } = useNetworkStatus();
     const [status, setStatus] = useState('idle');
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [error, setError] = useState(null);
@@ -128,7 +126,8 @@ export function AIProvider({ children }) {
      * Manually trigger model download (called from UI button)
      */
     const triggerDownload = useCallback(() => {
-        if (!isOnline) {
+        // Use navigator.onLine for simple check (no external hook dependency)
+        if (typeof window !== 'undefined' && !navigator.onLine) {
             showToast('❌ Você precisa estar online para baixar o modelo.', 'error');
             return;
         }
@@ -136,7 +135,7 @@ export function AIProvider({ children }) {
         setShowSetupScreen(false);
         showToast('📥 Baixando IA de voz...', 'info');
         workerRef.current?.postMessage({ type: 'load' });
-    }, [isOnline]);
+    }, []);
 
     /**
      * Skip setup and use text-only mode
