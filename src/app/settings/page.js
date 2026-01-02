@@ -15,6 +15,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAI } from '@/contexts/AIContext';
 import { authAPI, whatsappAPI, settingsAPI } from '@/services/api';
 import styles from './page.module.css';
 
@@ -70,7 +71,9 @@ const PLAN_PRICES = {
 export default function SettingsPage() {
     const { theme, setTheme, accentColor, setAccentColor } = useTheme();
     const { user: authUser, logout } = useAuth();
+    const ai = useAI();
     const [activeTab, setActiveTab] = useState('account');
+    const [isMobile, setIsMobile] = useState(false);
 
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -115,6 +118,10 @@ export default function SettingsPage() {
 
     useEffect(() => {
         loadAllData();
+        // Check if mobile
+        if (typeof window !== 'undefined') {
+            setIsMobile(window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window);
+        }
     }, []);
 
     const loadAllData = async () => {
@@ -613,6 +620,86 @@ export default function SettingsPage() {
                                 <Button variant="secondary" leftIcon={<FiLink />}>Conectar Instituição</Button>
                             </Card>
                         </motion.section>
+
+                        {/* AI Offline - Mobile Only */}
+                        {isMobile && (
+                            <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                                <h2 className={styles.sectionTitle}>Inteligência Artificial Offline</h2>
+                                <p className={styles.sectionDesc}>Baixe o modelo de IA para usar reconhecimento de voz sem internet</p>
+                                <Card className={styles.settingCard}>
+                                    <div className={styles.dataItem}>
+                                        <div className={styles.aiIconWrapper} style={{
+                                            width: 48,
+                                            height: 48,
+                                            borderRadius: '50%',
+                                            background: ai.isModelReady ? 'linear-gradient(135deg, #22c55e, #16a34a)' :
+                                                ai.status === 'downloading' ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' :
+                                                    'linear-gradient(135deg, #64748b, #475569)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: 20
+                                        }}>
+                                            🎙️
+                                        </div>
+                                        <div className={styles.dataInfo}>
+                                            <span className={styles.settingLabel}>
+                                                Modelo Whisper
+                                                {ai.isModelReady && <span style={{ color: '#22c55e', marginLeft: 8 }}>✓ Instalado</span>}
+                                            </span>
+                                            <span className={styles.settingDesc}>
+                                                {ai.status === 'downloading' && `Baixando... ${Math.round(ai.downloadProgress * 100)}%`}
+                                                {ai.status === 'loading' && 'Carregando modelo...'}
+                                                {ai.status === 'ready' && 'Pronto para uso offline'}
+                                                {ai.status === 'idle' && !ai.isModelReady && 'Não instalado (~50MB)'}
+                                                {ai.status === 'error' && 'Erro no download'}
+                                            </span>
+                                            {ai.status === 'downloading' && (
+                                                <div style={{
+                                                    marginTop: 8,
+                                                    width: '100%',
+                                                    height: 6,
+                                                    background: 'var(--bg-tertiary)',
+                                                    borderRadius: 3,
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    <div style={{
+                                                        height: '100%',
+                                                        width: `${ai.downloadProgress * 100}%`,
+                                                        background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                                                        borderRadius: 3,
+                                                        transition: 'width 0.3s ease'
+                                                    }} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            {!ai.isModelReady && ai.status !== 'downloading' && ai.status !== 'loading' && (
+                                                <Button
+                                                    variant="primary"
+                                                    size="sm"
+                                                    leftIcon={<FiDownload />}
+                                                    onClick={() => ai.triggerDownload?.()}
+                                                >
+                                                    Baixar
+                                                </Button>
+                                            )}
+                                            {ai.isModelReady && (
+                                                <span style={{
+                                                    padding: '6px 12px',
+                                                    background: 'rgba(34, 197, 94, 0.1)',
+                                                    color: '#22c55e',
+                                                    borderRadius: 8,
+                                                    fontSize: 12,
+                                                    fontWeight: 600
+                                                }}>Ativo</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.section>
+                        )}
                     </>
                 );
 
