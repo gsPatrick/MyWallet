@@ -54,10 +54,16 @@ export function AIProvider({ children }) {
 
         setUserSkippedSetup(setupSkipped);
 
+        // Check if device is mobile (AI voice model only makes sense for mobile)
+        const isMobile = window.matchMedia('(max-width: 768px)').matches ||
+            'ontouchstart' in window ||
+            navigator.maxTouchPoints > 0;
+
         // If model was previously downloaded, it should still be in browser cache
         // We'll verify this when worker responds to 'check' command
-        if (!modelDownloaded && !setupSkipped) {
-            // First access: show setup screen
+        // Only show setup screen on MOBILE devices
+        if (!modelDownloaded && !setupSkipped && isMobile) {
+            // First access on mobile: show setup screen
             setShowSetupScreen(true);
         }
     }, []);
