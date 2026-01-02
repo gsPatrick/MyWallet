@@ -1,5 +1,6 @@
 // Service Worker for MyWallet PWA
-const CACHE_NAME = 'mywallet-v1';
+const CACHE_NAME = 'mywallet-v2';
+const IMAGE_CACHE_NAME = 'mywallet-images-v1';
 const STATIC_ASSETS = [
     '/',
     '/dashboard',
@@ -8,6 +9,17 @@ const STATIC_ASSETS = [
     '/goals',
     '/offline.html'
 ];
+
+// Image extensions to cache
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'];
+
+// Check if request is for an image
+const isImageRequest = (request) => {
+    const url = request.url.toLowerCase();
+    return IMAGE_EXTENSIONS.some(ext => url.includes(ext)) ||
+        request.destination === 'image' ||
+        request.headers.get('accept')?.includes('image/');
+};
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
@@ -26,7 +38,7 @@ self.addEventListener('activate', (event) => {
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames
-                    .filter((name) => name !== CACHE_NAME)
+                    .filter((name) => name !== CACHE_NAME && name !== IMAGE_CACHE_NAME)
                     .map((name) => caches.delete(name))
             );
         })
@@ -42,6 +54,13 @@ self.addEventListener('fetch', (event) => {
     // Skip API requests (let them fail normally)
     if (event.request.url.includes('/api/')) return;
 
+    // Handle image requests with cache-first strategy
+    if (isImageRequest(event.request)) {
+        event.respondWith(handleImageRequest(event.request));
+        return;
+    }
+
+    // Handle other requests with network-first strategy
     event.respondWith(
         fetch(event.request)
             .then((response) => {
@@ -70,6 +89,51 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
+// Cache-first strategy for images
+async function handleImageRequest(request) {
+    // Try cache first
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+        // Update cache in background (stale-while-revalidate)
+        fetchAndCacheImage(request);
+        return cachedResponse;
+    }
+
+    // Not in cache, fetch and cache
+    return fetchAndCacheImage(request);
+}
+
+// Fetch image and cache it
+async function fetchAndCacheImage(request) {
+    try {
+        // For cross-origin images, we need to use no-cors mode
+        const fetchRequest = request.mode === 'no-cors' ? request : new Request(request.url, {
+            mode: 'cors',
+            credentials: 'omit'
+        });
+
+        const response = await fetch(fetchRequest);
+
+        // Only cache successful responses
+        if (response.ok || response.type === 'opaque') {
+            const cache = await caches.open(IMAGE_CACHE_NAME);
+            cache.put(request, response.clone());
+        }
+
+        return response;
+    } catch (error) {
+        // Return cached version if available, otherwise placeholder
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        // Return a 1x1 transparent GIF as placeholder
+        return new Response(
+            Uint8Array.from(atob('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), c => c.charCodeAt(0)),
+            { headers: { 'Content-Type': 'image/gif' } }
+        );
+    }
+}
+
 // Push notifications
 self.addEventListener('push', (event) => {
     const data = event.data?.json() || {};
@@ -94,3 +158,4 @@ self.addEventListener('notificationclick', (event) => {
         clients.openWindow(event.notification.data)
     );
 });
+

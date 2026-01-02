@@ -1,25 +1,26 @@
-/* ChatInterface.module.css - Multi-theme support */
+/* ChatInterface.module.css - WhatsApp-like fluidity */
 
 .chatContainer {
     display: flex;
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
-    /* Mobile viewport fix */
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: 2147483647;
-    /* Max z-index */
     overscroll-behavior: contain;
     touch-action: pan-y;
-    /* Allow vertical scroll inside */
     background-color: #efe7dd;
-    /* Default solid background to prevent see-through */
+    /* GPU acceleration for the entire container */
     transform: translateZ(0);
-    /* Hardware acceleration to separate layer */
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Prevent layout shifts on keyboard open */
+    will-change: transform;
 }
 
 /* ========================================
@@ -164,6 +165,7 @@
     gap: 12px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     min-height: 60px;
+    flex-shrink: 0;
 }
 
 .backButton {
@@ -173,6 +175,7 @@
     cursor: pointer;
     padding: 4px;
     display: flex;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .logoWrapper {
@@ -223,11 +226,11 @@
     padding: 8px;
     border-radius: 50%;
     display: flex;
-    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.menuButton:hover {
-    background: rgba(255, 255, 255, 0.1);
+.menuButton:active {
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .dropdown {
@@ -265,11 +268,11 @@
     cursor: pointer;
     font-size: 0.95rem;
     color: #333;
-    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.dropdownItem:hover {
-    background: #f5f5f5;
+.dropdownItem:active {
+    background: #f0f0f0;
 }
 
 .dropdownItem.active {
@@ -279,15 +282,21 @@
 }
 
 /* ========================================
-   MESSAGES
+   MESSAGES - Optimized scroll
    ======================================== */
 .messagesArea {
     flex: 1;
     padding: 16px;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* Smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* GPU layer */
+    transform: translateZ(0);
 }
 
 .messageBubble {
@@ -300,6 +309,8 @@
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     word-wrap: break-word;
     white-space: pre-wrap;
+    /* Prevent jank */
+    contain: layout style paint;
 }
 
 .sent {
@@ -328,7 +339,7 @@
 }
 
 /* ========================================
-   INPUT AREA
+   INPUT AREA - Keyboard optimized
    ======================================== */
 .inputArea {
     padding: 8px 12px;
@@ -336,6 +347,10 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+    /* Prevent keyboard push issues */
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 .inputField {
@@ -343,13 +358,20 @@
     border: none;
     border-radius: 20px;
     padding: 10px 16px;
-    font-size: 1rem;
+    font-size: 16px;
+    /* Prevents iOS zoom on focus */
     outline: none;
+    -webkit-tap-highlight-color: transparent;
+    /* Smooth typing */
+    will-change: contents;
 }
 
+/* ========================================
+   ACTION BUTTON - Clean states
+   ======================================== */
 .actionButton {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: none;
     color: white;
@@ -357,37 +379,125 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.1s;
+    flex-shrink: 0;
+    /* Remove all highlight/selection effects */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    outline: none;
+    /* Fast feedback */
+    transition: transform 0.1s ease-out;
+    transform: translateZ(0);
 }
 
 .actionButton:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
 }
 
+/* Mic recording state - red pulsing */
 .micActive {
     background-color: #ef4444 !important;
-    animation: pulse 1.5s infinite;
+    animation: micPulse 1s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-    }
+@keyframes micPulse {
 
-    70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-    }
-
+    0%,
     100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+
+    50% {
+        transform: scale(1.08);
     }
 }
 
 /* ========================================
-   AUDIO RECORDER UI
+   MIC BUTTON WRAPPER - Touch handling
+   ======================================== */
+.micButtonWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
+/* LOCKED MIC STATE - Same mic button, no accent color */
+.lockedMic .actionButton {
+    background-color: #ef4444 !important;
+    transform: scale(1.05);
+}
+
+/* Send button INSIDE locked mic - NO accent color, just white bg */
+.lockedMic .actionButton[data-send="true"] {
+    background-color: #00897b !important;
+    /* Same as regular send */
+}
+
+/* ========================================
+   LOCK INDICATOR - Slide up hint
+   ======================================== */
+.lockIndicator {
+    position: absolute;
+    bottom: 55px;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.75rem;
+    color: #666;
+    z-index: 10;
+    /* Smooth appear */
+    animation: slideUpQuick 0.2s ease-out;
+    pointer-events: none;
+}
+
+.lockArrow {
+    font-size: 0.8rem;
+    animation: arrowBounce 0.8s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes slideUpQuick {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.themeDark .lockIndicator {
+    background: #21262d;
+    color: #ccc;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   RECORDING INTERFACE - Clean layout
    ======================================== */
 .recordingInterface {
     flex: 1;
@@ -395,7 +505,17 @@
     align-items: center;
     justify-content: space-between;
     padding-left: 8px;
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeInQuick 0.15s ease-out;
+}
+
+@keyframes fadeInQuick {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .recordingTimer {
@@ -408,26 +528,33 @@
 }
 
 .recordingDot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     background-color: #ef4444;
     border-radius: 50%;
-    animation: blink 1s infinite;
+    animation: dotBlink 1s infinite;
 }
 
-@keyframes blink {
+@keyframes dotBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
     50% {
-        opacity: 0.4;
+        opacity: 0.3;
     }
 }
 
 .slideToCancel {
-    color: #666;
-    font-size: 0.9rem;
+    color: #999;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     gap: 4px;
-    animation: slideHint 1.5s infinite;
+    /* Subtle slide hint */
+    animation: slideHint 2s ease-in-out infinite;
 }
 
 @keyframes slideHint {
@@ -435,82 +562,13 @@
     0%,
     100% {
         transform: translateX(0);
-        opacity: 0.8;
+        opacity: 0.7;
     }
 
     50% {
-        transform: translateX(-5px);
-        opacity: 0.5;
+        transform: translateX(-8px);
+        opacity: 0.4;
     }
-}
-
-.micButtonWrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    touch-action: none;
-    /* Critical for custom touch handling */
-    user-select: none;
-    cursor: pointer;
-}
-
-.lockedMic {
-    background-color: #ef4444 !important;
-    transform: scale(1.1);
-}
-
-.lockIndicator {
-    position: absolute;
-    bottom: 50px;
-    background: white;
-    padding: 8px 12px;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.75rem;
-    color: #666;
-    animation: slideUpFade 0.3s ease-out;
-    z-index: 10;
-}
-
-.lockArrow {
-    animation: bounceUp 1s infinite;
-}
-
-@keyframes bounceUp {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-3px);
-    }
-}
-
-@keyframes slideUpFade {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.themeDark .lockIndicator {
-    background: #21262d;
-    color: #ccc;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .themeDark .slideToCancel {
@@ -528,7 +586,7 @@
     justify-content: center;
     color: #ef4444;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity 0.15s;
 }
 
 .deleteZoneActive {
@@ -579,7 +637,6 @@
 
 .downloadIcon {
     color: #8b5cf6;
-    animation: pulse 1.5s ease-in-out infinite;
 }
 
 .progressBar {
@@ -595,7 +652,7 @@
     height: 100%;
     background: linear-gradient(90deg, #6366f1, #8b5cf6);
     border-radius: 4px;
-    transition: width 0.3s ease;
+    transition: width 0.2s ease-out;
 }
 
 .progressText {
@@ -613,11 +670,11 @@
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.downloadCloseBtn:hover {
-    transform: scale(1.05);
+.downloadCloseBtn:active {
+    transform: scale(0.97);
 }
 
 /* Processing Banner */
@@ -633,13 +690,13 @@
     font-size: 0.85rem;
     z-index: 100;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    animation: slideDown 0.3s ease;
+    animation: slideDownQuick 0.2s ease-out;
 }
 
-@keyframes slideDown {
+@keyframes slideDownQuick {
     from {
         opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
+        transform: translateX(-50%) translateY(-8px);
     }
 
     to {
@@ -649,7 +706,7 @@
 }
 
 /* ========================================
-   AI Setup Screen - Apple-style Onboarding
+   AI Setup Screen
    ======================================== */
 .aiSetupOverlay {
     position: fixed;
@@ -663,7 +720,7 @@
     justify-content: center;
     z-index: 9999999;
     padding: 24px;
-    animation: fadeIn 0.3s ease;
+    animation: fadeInQuick 0.2s ease-out;
 }
 
 .aiSetupContent {
@@ -675,7 +732,6 @@
 .aiSetupIcon {
     font-size: 64px;
     margin-bottom: 24px;
-    animation: pulse 2s ease-in-out infinite;
 }
 
 .aiSetupTitle {
@@ -712,13 +768,8 @@
     font-size: 1.05rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
     box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-}
-
-.aiSetupPrimaryBtn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 30px rgba(99, 102, 241, 0.5);
+    -webkit-tap-highlight-color: transparent;
 }
 
 .aiSetupPrimaryBtn:active {
@@ -734,20 +785,10 @@
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.aiSetupSecondaryBtn:hover {
+.aiSetupSecondaryBtn:active {
     color: rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.05);
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
 }

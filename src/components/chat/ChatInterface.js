@@ -402,41 +402,69 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
         const parsedTransaction = parseMessageToTransaction(message.text);
 
         if (parsedTransaction) {
-            // Immediate local confirmation for offline mode
+            // Generate local short ID for offline transaction
+            const offlineShortId = `OFF${Date.now().toString(36).toUpperCase().slice(-4)}`;
+
+            // Same rich confirmation as online mode
             const offlineRichResponse = {
                 id: generateId(),
                 sender: 'bot',
                 timestamp: Date.now(),
-                status: 'offline_saved', // Custom status for offline
+                status: 'read', // Show as read immediately (same UX as online)
                 isRich: true,
                 richData: {
-                    ...parsedTransaction,
-                    confirmationText: `📱 Salvo offline! Sincronizará quando voltar online.`
+                    type: parsedTransaction.type,
+                    description: parsedTransaction.description,
+                    amount: parsedTransaction.amount,
+                    category: parsedTransaction.category,
+                    // Same confirmation message format as online
+                    confirmationText: `✅ ${parsedTransaction.type === 'INCOME' ? 'Receita' : 'Despesa'} #${offlineShortId} registrada!`,
+                    isOffline: true // Flag to show sync indicator if needed
                 }
             };
 
             setMessages(prev => [...prev, offlineRichResponse]);
             await saveChatMessage(offlineRichResponse);
-        } else {
-            // Generic response for non-transaction messages
-            const offlineResponse = {
-                id: generateId(),
-                text: '📱 Mensagem salva! Será processada quando você voltar online.',
-                sender: 'bot',
-                timestamp: Date.now(),
-                status: 'offline_saved'
-            };
-            setMessages(prev => [...prev, offlineResponse]);
-            await saveChatMessage(offlineResponse);
-        }
 
-        // Add to sync queue for later processing
-        await addToQueue({
-            url: '/api/whatsapp/process-text',
-            method: 'POST',
-            body: { text: message.text, messageId: message.id },
-            type: 'CHAT'
-        });
+            // Store the offline transaction for later sync
+            await addToQueue({
+                url: '/api/whatsapp/process-text',
+                method: 'POST',
+                body: {
+                    text: message.text,
+                    messageId: message.id,
+                    offlineId: offlineShortId
+                },
+                type: 'CHAT'
+            });
+        } else {
+            // For queries like "meu saldo", use cached data
+            const cachedResponse = await handleOfflineCommand(message.text);
+
+            if (cachedResponse) {
+                const richResponse = {
+                    id: generateId(),
+                    sender: 'bot',
+                    timestamp: Date.now(),
+                    status: 'read',
+                    isRich: true,
+                    richData: cachedResponse
+                };
+                setMessages(prev => [...prev, richResponse]);
+                await saveChatMessage(richResponse);
+            } else {
+                // Generic helpful response for unrecognized commands
+                const helpResponse = {
+                    id: generateId(),
+                    text: '💡 No modo offline você pode:\n• Registrar gastos: "gastei 50 no ifood"\n• Registrar receitas: "recebi 1000 de freela"\n\nDados serão salvos e sincronizarão automaticamente.',
+                    sender: 'bot',
+                    timestamp: Date.now(),
+                    status: 'read'
+                };
+                setMessages(prev => [...prev, helpResponse]);
+                await saveChatMessage(helpResponse);
+            }
+        }
     };
 
     const processMessageOnline = async (message) => {
@@ -856,7 +884,15 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
 
                 {/* Right Side: Action Button (Send or Mic) */}
                 {inputValue && !isRecording ? (
-                    <button className={styles.actionButton} onClick={handleSendMessage}>
+                    <button
+                        type="button"
+                        className={styles.actionButton}
+                        onClick={() => handleSendMessage()}
+                        onTouchEnd={(e) => {
+                            e.preventDefault();
+                            handleSendMessage();
+                        }}
+                    >
                         <FiSend size={20} />
                     </button>
                 ) : (

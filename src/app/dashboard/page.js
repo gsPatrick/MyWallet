@@ -15,6 +15,7 @@ import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfiles } from '@/contexts/ProfileContext';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useOfflinePrefetch } from '@/hooks/useOfflinePrefetch';
 import { useAI } from '@/contexts/AIContext';
 import ChatInterface from '@/components/chat/ChatInterface';
 import { formatDate } from '@/utils/formatters';
@@ -49,6 +50,7 @@ export default function DashboardPage() {
     const { user, updateUser } = useAuth();
     const { currentProfile } = useProfiles();
     const { isOnline } = useNetworkStatus();
+    const { isPrefetching, prefetchProgress, isOfflineReady } = useOfflinePrefetch(); // Auto-prefetch for offline
     const ai = useAI();
 
     const [activeTab, setActiveTab] = useState('geral');
