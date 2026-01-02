@@ -402,19 +402,35 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
         const parsedTransaction = parseMessageToTransaction(message.text);
 
         if (parsedTransaction) {
-            const pendingRichResponse = {
+            // Immediate local confirmation for offline mode
+            const offlineRichResponse = {
                 id: generateId(),
                 sender: 'bot',
                 timestamp: Date.now(),
-                status: 'pending',
+                status: 'offline_saved', // Custom status for offline
                 isRich: true,
-                richData: parsedTransaction
+                richData: {
+                    ...parsedTransaction,
+                    confirmationText: `📱 Salvo offline! Sincronizará quando voltar online.`
+                }
             };
 
-            setMessages(prev => [...prev, pendingRichResponse]);
-            await saveChatMessage(pendingRichResponse);
+            setMessages(prev => [...prev, offlineRichResponse]);
+            await saveChatMessage(offlineRichResponse);
+        } else {
+            // Generic response for non-transaction messages
+            const offlineResponse = {
+                id: generateId(),
+                text: '📱 Mensagem salva! Será processada quando você voltar online.',
+                sender: 'bot',
+                timestamp: Date.now(),
+                status: 'offline_saved'
+            };
+            setMessages(prev => [...prev, offlineResponse]);
+            await saveChatMessage(offlineResponse);
         }
 
+        // Add to sync queue for later processing
         await addToQueue({
             url: '/api/whatsapp/process-text',
             method: 'POST',
@@ -746,7 +762,7 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
                 <div className={styles.headerInfo}>
                     <span className={styles.headerName}>MyWallet AI</span>
                     <span className={styles.headerStatus}>
-                        {isOnline ? 'Online' : 'Aguardando rede...'}
+                        {isOnline ? 'Online' : 'Modo Offline ✓'}
                     </span>
                 </div>
 

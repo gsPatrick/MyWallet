@@ -273,6 +273,87 @@ export default function DashboardPage() {
                         onClose={() => setShowFutureModal(false)}
                     />
 
+                    {/* AI Setup Modal - Mobile Only */}
+                    {ai.showSetupScreen && (
+                        <div style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0,0,0,0.85)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 9999,
+                            padding: '20px'
+                        }}>
+                            <div style={{
+                                background: 'linear-gradient(145deg, #1a1a2e, #16213e)',
+                                borderRadius: '24px',
+                                padding: '40px 30px',
+                                textAlign: 'center',
+                                maxWidth: '360px',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
+                            }}>
+                                <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎙️</div>
+                                <h2 style={{
+                                    color: '#fff',
+                                    fontSize: '22px',
+                                    fontWeight: 600,
+                                    marginBottom: '12px'
+                                }}>
+                                    Ativar Modo de Voz Offline
+                                </h2>
+                                <p style={{
+                                    color: 'rgba(255,255,255,0.7)',
+                                    fontSize: '15px',
+                                    lineHeight: 1.5,
+                                    marginBottom: '28px'
+                                }}>
+                                    Baixe a IA para registrar gastos por voz mesmo sem internet.
+                                </p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <button
+                                        onClick={ai.triggerDownload}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                            color: '#fff',
+                                            border: 'none',
+                                            borderRadius: '14px',
+                                            padding: '16px 24px',
+                                            fontSize: '16px',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px'
+                                        }}
+                                    >
+                                        <FiTrendingDown size={20} style={{ transform: 'rotate(180deg)' }} />
+                                        Baixar Agora (40MB)
+                                    </button>
+                                    <button
+                                        onClick={ai.skipSetup}
+                                        style={{
+                                            background: 'transparent',
+                                            color: 'rgba(255,255,255,0.6)',
+                                            border: '1px solid rgba(255,255,255,0.2)',
+                                            borderRadius: '14px',
+                                            padding: '14px 24px',
+                                            fontSize: '15px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Usar Apenas Texto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Top Controls - Mobile Only */}
                     <div className={`${styles.topControls} ${styles.mobileOnly}`}>
                         {TabsComponent}
