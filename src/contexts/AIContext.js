@@ -121,7 +121,9 @@ export function AIProvider({ children }) {
         };
 
         // Check if model is already cached in IndexedDB/browser cache
-        workerRef.current.postMessage({ type: 'check' });
+        // Pass the flag so worker can auto-load from cache if previously downloaded
+        const wasDownloaded = localStorage.getItem(STORAGE_KEYS.MODEL_DOWNLOADED) === 'true';
+        workerRef.current.postMessage({ type: 'check', wasDownloaded });
 
         return () => {
             workerRef.current?.terminate();

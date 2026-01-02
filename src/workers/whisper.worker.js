@@ -35,10 +35,14 @@ async function loadModel(progressCallback) {
                 if (progress.status === 'progress') {
                     const percent = Math.round((progress.loaded / progress.total) * 100);
                     progressCallback({ type: 'progress', percent: percent });
+                } else if (progress.status === 'ready') {
+                    // Model already cached, loading from cache
+                    progressCallback({ type: 'progress', percent: 100 });
                 }
             }
         });
 
+        isLoading = false;
         progressCallback({ type: 'ready' });
         return transcriber;
     } catch (error) {
@@ -87,10 +91,32 @@ self.onmessage = async function (event) {
             self.postMessage({ type: 'error', error: error.message });
         }
     } else if (type === 'check') {
-        self.postMessage({
-            type: 'status',
-            loaded: transcriber !== null,
-            loading: isLoading
-        });
+        // If model is in memory, return ready
+        if (transcriber !== null) {
+            self.postMessage({ type: 'status', loaded: true, loading: false });
+            return;
+        }
+
+        // If already loading, report that
+        if (isLoading) {
+            self.postMessage({ type: 'status', loaded: false, loading: true });
+            return;
+        }
+
+        // Check if model was previously downloaded (from main thread localStorage flag)
+        // If so, try to load it from cache silently
+        if (event.data.wasDownloaded) {
+            self.postMessage({ type: 'status', loaded: false, loading: true });
+            try {
+                await loadModel(function (progress) {
+                    self.postMessage(progress);
+                });
+            } catch (error) {
+                self.postMessage({ type: 'status', loaded: false, loading: false });
+            }
+        } else {
+            self.postMessage({ type: 'status', loaded: false, loading: false });
+        }
     }
 };
+
