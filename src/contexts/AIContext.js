@@ -54,18 +54,9 @@ export function AIProvider({ children }) {
 
         setUserSkippedSetup(setupSkipped);
 
-        // Check if device is mobile (AI voice model only makes sense for mobile)
-        const isMobile = window.matchMedia('(max-width: 768px)').matches ||
-            'ontouchstart' in window ||
-            navigator.maxTouchPoints > 0;
-
-        // If model was previously downloaded, it should still be in browser cache
-        // We'll verify this when worker responds to 'check' command
-        // Only show setup screen on MOBILE devices
-        if (!modelDownloaded && !setupSkipped && isMobile) {
-            // First access on mobile: show setup screen
-            setShowSetupScreen(true);
-        }
+        // DISABLED: Automatic setup screen for AI voice model
+        // We now force privacy/text-only mode by default for stability
+        setShowSetupScreen(false);
     }, []);
 
     // Initialize worker on mount
@@ -134,15 +125,8 @@ export function AIProvider({ children }) {
      * Manually trigger model download (called from UI button)
      */
     const triggerDownload = useCallback(() => {
-        // Use navigator.onLine for simple check (no external hook dependency)
-        if (typeof window !== 'undefined' && !navigator.onLine) {
-            showToast('Você precisa estar online para baixar o modelo.', 'error');
-            return;
-        }
-
         setShowSetupScreen(false);
-        showToast('Baixando IA de voz...', 'info');
-        workerRef.current?.postMessage({ type: 'load' });
+        showToast('Funcionalidade de voz desabilitada temporariamente.', 'info');
     }, []);
 
     /**

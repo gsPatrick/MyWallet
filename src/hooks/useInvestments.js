@@ -1,89 +1,139 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { mockPortfolio, mockFinancialProducts } from '@/utils/mockData';
+import { useState, useCallback, useEffect } from 'react';
+import { investmentsAPI, financialProductsAPI } from '@/services/api';
 
 export function useInvestments() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [data, setData] = useState({
+        summary: null,
+        positions: [],
+        allocation: { byType: [], bySector: [] },
+        financialProducts: [],
+    });
 
-    // Combine B3 assets and financial products
-    const portfolio = useMemo(() => mockPortfolio, []);
-    const financialProducts = useMemo(() => mockFinancialProducts, []);
+    // Fetch all investment data
+    const fetchData = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            // Parallel fetch for B3 portfolio and Manual Financial Products
+            const [portfolioRes, productsRes] = await Promise.all([
+                investmentsAPI.getPortfolio(),
+                financialProductsAPI.list()
+            ]);
 
-    const summary = useMemo(() => portfolio.summary, [portfolio]);
-    const positions = useMemo(() => portfolio.positions, [portfolio]);
-    const allocation = useMemo(() => portfolio.allocation, [portfolio]);
+            const portfolioData = portfolioRes.data || portfolioRes;
+            const productsData = productsRes.data || productsRes;
 
-    // Calculate total patrimony including financial products
-    const totalPatrimony = useMemo(() => {
-        const b3Total = positions.reduce((sum, p) => sum + p.currentValue, 0);
-        const productsTotal = financialProducts.reduce((sum, p) => sum + p.currentValue, 0);
-        return b3Total + productsTotal;
-    }, [positions, financialProducts]);
+            // Normalize B3 positions
+            const positions = portfolioData.positions || [];
+
+            // Normalize Financial Products
+            const financialProducts = Array.isArray(productsData) ? productsData : [];
+
+            setData({
+                summary: portfolioData.summary,
+                positions: positions,
+                allocation: portfolioData.allocation || { byType: [], bySector: [] },
+                financialProducts: financialProducts,
+                // Pass through other useful metrics if needed by InvestorSummary
+                dividends: portfolioData.dividends,
+                concentration: portfolioData.concentration,
+                rankings: portfolioData.rankings,
+                indicators: portfolioData.indicators
+            });
+
+        } catch (err) {
+            console.error('Error fetching investments:', err);
+            setError(err.message || 'Failed to load investments');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Initial load
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Calculate total patrimony
+    const totalPatrimony = (data.summary?.totalCurrentBalance || 0) +
+        data.financialProducts.reduce((sum, p) => sum + (Number(p.currentValue) || 0), 0);
 
     // Get position by ticker
     const getPosition = useCallback((ticker) => {
-        return positions.find(p => p.ticker === ticker);
-    }, [positions]);
+        return data.positions.find(p => p.ticker === ticker);
+    }, [data.positions]);
 
-    // Register buy operation (mock)
+    // Register buy operation
     const registerBuy = useCallback(async (ticker, quantity, price, date) => {
         setIsLoading(true);
-        setError(null);
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log('Buy registered:', { ticker, quantity, price, date });
+            await investmentsAPI.registerOperation({
+                ticker,
+                type: 'BUY',
+                quantity: Number(quantity),
+                price: Number(price),
+                date
+            });
+            await fetchData(); // Refresh data
             return { success: true };
         } catch (err) {
-            setError(err.message);
             return { success: false, error: err.message };
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [fetchData]);
 
-    // Register sell operation (mock)
+    // Register sell operation
     const registerSell = useCallback(async (ticker, quantity, price, date) => {
         setIsLoading(true);
-        setError(null);
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log('Sell registered:', { ticker, quantity, price, date });
+            await investmentsAPI.registerOperation({
+                ticker,
+                type: 'SELL',
+                quantity: Number(quantity),
+                price: Number(price),
+                date
+            });
+            await fetchData(); // Refresh data
             return { success: true };
         } catch (err) {
-            setError(err.message);
             return { success: false, error: err.message };
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [fetchData]);
 
-    // Add financial product (mock)
+    // Add financial product
     const addFinancialProduct = useCallback(async (productData) => {
         setIsLoading(true);
-        setError(null);
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log('Financial product added:', productData);
+            await financialProductsAPI.create(productData);
+            await fetchData(); // Refresh data
             return { success: true };
         } catch (err) {
-            setError(err.message);
             return { success: false, error: err.message };
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [fetchData]);
 
     return {
         isLoading,
         error,
-        summary,
-        positions,
-        allocation,
-        financialProducts,
+        summary: data.summary,
+        positions: data.positions,
+        allocation: data.allocation,
+        financialProducts: data.financialProducts,
         totalPatrimony,
+        dividends: data.dividends,
+        concentration: data.concentration,
+        rankings: data.rankings,
+        indicators: data.indicators,
+        refresh: fetchData, // Expose refresh method
         getPosition,
         registerBuy,
         registerSell,

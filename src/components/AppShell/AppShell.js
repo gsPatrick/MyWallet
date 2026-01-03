@@ -3,16 +3,17 @@
 /**
  * AppShell - Client Component Wrapper
  * ========================================
- * Wraps protected pages with ProfileGate
- * Shows ProfileWizard AFTER Tour is complete (when user has no profiles)
- * OFFLINE FLOW:
- * 1. Detect offline → Show OfflineTransition (2.5s)
- * 2. After transition → Show ChatInterface (offline mode)
- * 3. Back online → Show normal children
+ * OFFLINE FLOW (strict sequence):
+ * 1. Online → Normal app (children)
+ * 2. Goes Offline → OfflineTransition (2.5s animation)
+ * 3. After animation → ChatInterface (offline mode)
+ * 4. Goes Online → Back to normal app (children)
+ * 
+ * DEBUG: Press Ctrl+Shift+O to simulate offline
  * ========================================
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useProfiles } from '@/contexts/ProfileContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOnboarding } from '@/contexts/OnboardingContext';
@@ -21,50 +22,85 @@ import ProfileWizard from '@/components/Onboarding/ProfileWizard';
 import OfflineTransition from '@/components/ui/OfflineTransition';
 import ChatInterface from '@/components/chat/ChatInterface';
 
+// Offline states
+const OFFLINE_STATE = {
+    ONLINE: 'ONLINE',
+    TRANSITIONING: 'TRANSITIONING',
+    OFFLINE_CHAT: 'OFFLINE_CHAT'
+};
+
 export default function AppShell({ children }) {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const { profiles, loading: profilesLoading, hasProfiles, refreshProfiles } = useProfiles();
     const { phase } = useOnboarding();
-    const { isOnline, isMounted } = useNetworkStatus();
+    const { isOnline: networkIsOnline, isMounted } = useNetworkStatus();
 
-    // Track previous online state to detect transitions
-    const prevOnlineRef = useRef(true);
+    // Allow manual override for testing
+    const [forceOffline, setForceOffline] = useState(false);
+    const isOnline = forceOffline ? false : networkIsOnline;
 
-    // State for offline transition animation
-    const [isTransitioningToOffline, setIsTransitioningToOffline] = useState(false);
+    // Simple state machine for offline flow
+    const [offlineState, setOfflineState] = useState(OFFLINE_STATE.ONLINE);
+    const transitionTimerRef = useRef(null);
+    const wasOnlineRef = useRef(true);
 
-    // Track if we've been offline (to show ChatInterface after transition)
-    const [hasTransitionedOffline, setHasTransitionedOffline] = useState(false);
+    // Keyboard shortcut to simulate offline (Ctrl+Shift+O)
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+                e.preventDefault();
+                console.log('[AppShell] DEBUG: Simulating offline toggle');
+                setForceOffline(prev => !prev);
+            }
+        };
 
-    // Detect offline transition
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Trigger offline transition
+    const triggerOfflineTransition = useCallback(() => {
+        console.log('[AppShell] Triggering offline transition...');
+        setOfflineState(OFFLINE_STATE.TRANSITIONING);
+
+        if (transitionTimerRef.current) {
+            clearTimeout(transitionTimerRef.current);
+        }
+
+        transitionTimerRef.current = setTimeout(() => {
+            console.log('[AppShell] Transition complete - showing ChatInterface');
+            setOfflineState(OFFLINE_STATE.OFFLINE_CHAT);
+        }, 2500);
+    }, []);
+
+    // Main offline detection logic
     useEffect(() => {
         if (!isMounted) return;
 
-        // Going OFFLINE: Trigger transition animation
-        if (prevOnlineRef.current && !isOnline) {
-            console.log('[AppShell] Going offline - starting transition');
-            setIsTransitioningToOffline(true);
+        console.log('[AppShell] Network:', isOnline, '| State:', offlineState, '| wasOnline:', wasOnlineRef.current);
 
-            // After 2.5s, end transition and show ChatInterface
-            const timer = setTimeout(() => {
-                console.log('[AppShell] Transition complete - showing ChatInterface');
-                setIsTransitioningToOffline(false);
-                setHasTransitionedOffline(true);
-            }, 2500);
-
-            prevOnlineRef.current = isOnline;
-            return () => clearTimeout(timer);
+        // CASE 1: Going OFFLINE (from online to offline)
+        if (wasOnlineRef.current === true && isOnline === false) {
+            triggerOfflineTransition();
         }
 
-        // Going ONLINE: Reset offline state
-        if (!prevOnlineRef.current && isOnline) {
+        // CASE 2: Going ONLINE (from offline to online)
+        if (wasOnlineRef.current === false && isOnline === true) {
             console.log('[AppShell] Back online - returning to normal');
-            setIsTransitioningToOffline(false);
-            setHasTransitionedOffline(false);
+            if (transitionTimerRef.current) {
+                clearTimeout(transitionTimerRef.current);
+            }
+            setOfflineState(OFFLINE_STATE.ONLINE);
         }
 
-        prevOnlineRef.current = isOnline;
-    }, [isOnline, isMounted]);
+        wasOnlineRef.current = isOnline;
+
+        return () => {
+            if (transitionTimerRef.current) {
+                clearTimeout(transitionTimerRef.current);
+            }
+        };
+    }, [isOnline, isMounted, triggerOfflineTransition, offlineState]);
 
     // Handle wizard completion
     const handleWizardComplete = async () => {
@@ -72,27 +108,24 @@ export default function AppShell({ children }) {
         window.location.reload();
     };
 
-    // Handle closing ChatInterface while offline
+    // Handle closing offline chat
     const handleOfflineChatClose = () => {
-        // If still offline, can't really close - just log
-        if (!isOnline) {
-            console.log('[AppShell] Cannot close offline chat while offline');
-            return;
+        if (isOnline) {
+            setOfflineState(OFFLINE_STATE.ONLINE);
         }
-        setHasTransitionedOffline(false);
     };
 
     // ========================================
-    // RENDER PRIORITY (strict order)
+    // RENDER BASED ON OFFLINE STATE
     // ========================================
 
-    // 1. TRANSITIONING TO OFFLINE: Full-screen animation
-    if (isTransitioningToOffline) {
+    // PRIORITY 1: Showing transition animation
+    if (offlineState === OFFLINE_STATE.TRANSITIONING) {
         return <OfflineTransition isVisible={true} />;
     }
 
-    // 2. OFFLINE MODE (after transition): Show ChatInterface
-    if (!isOnline && hasTransitionedOffline) {
+    // PRIORITY 2: Showing offline chat
+    if (offlineState === OFFLINE_STATE.OFFLINE_CHAT) {
         return (
             <ChatInterface
                 isOfflineMode={true}
@@ -101,38 +134,18 @@ export default function AppShell({ children }) {
         );
     }
 
-    // 3. OFFLINE but first load (no transition yet): Trigger transition
-    if (!isOnline && !hasTransitionedOffline && isMounted) {
-        // This handles the case where app loads while already offline
-        // Trigger the transition on next tick
-        if (!isTransitioningToOffline) {
-            setTimeout(() => {
-                setIsTransitioningToOffline(true);
-                setTimeout(() => {
-                    setIsTransitioningToOffline(false);
-                    setHasTransitionedOffline(true);
-                }, 2500);
-            }, 0);
-        }
-        // Show loading state briefly
-        return <OfflineTransition isVisible={true} />;
-    }
-
     // ========================================
     // ONLINE MODE: Normal app rendering
     // ========================================
 
-    // Still loading
     if (authLoading || profilesLoading) {
         return <>{children}</>;
     }
 
-    // Not authenticated - show children normally
     if (!isAuthenticated) {
         return <>{children}</>;
     }
 
-    // User is authenticated but has no profiles
     if (!hasProfiles || profiles.length === 0) {
         if (phase === 'profile_config') {
             return (
@@ -145,6 +158,5 @@ export default function AppShell({ children }) {
         return <>{children}</>;
     }
 
-    // User has profiles - show normal app
     return <>{children}</>;
 }
