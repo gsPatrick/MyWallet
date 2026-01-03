@@ -40,7 +40,6 @@ import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import { cardsAPI } from '@/services/api';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import ChatInterface from '@/components/chat/ChatInterface';
-import OfflineBanner from '@/components/ui/OfflineBanner';
 import styles from './Dock.module.css';
 import { FiMessageSquare } from 'react-icons/fi';
 
@@ -204,11 +203,6 @@ export default function Dock() {
                     >
                         {hideData ? <FiEyeOff className={styles.icon} /> : <FiEye className={styles.icon} />}
                     </motion.button>
-
-                    {/* Offline Banner Integration (can be placed elsewhere, but Dock is always present) */}
-                    <div style={{ position: 'absolute', top: '-40px', left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-                        <OfflineBanner />
-                    </div>
 
                     {/* Divider */}
                     <div className={styles.dockDivider} />

@@ -13,32 +13,61 @@ export function useInvestments() {
         financialProducts: [],
     });
 
-    // Fetch all investment data
-    const fetchData = useCallback(async () => {
+    // CACHE BUSTER: Force fresh fetch on mount
+    const fetchFreshData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            // Parallel fetch for B3 portfolio and Manual Financial Products
+            console.log('[useInvestments] Fetching FRESH data...');
+
+            // Add timestamp to bypass api.js cache
+            const timestamp = Date.now();
+
+            // Parallel fetch
             const [portfolioRes, productsRes] = await Promise.all([
-                investmentsAPI.getPortfolio(),
+                investmentsAPI.getPortfolio({ _t: timestamp }),
                 financialProductsAPI.list()
             ]);
 
             const portfolioData = portfolioRes.data || portfolioRes;
             const productsData = productsRes.data || productsRes;
 
-            // Normalize B3 positions
-            const positions = portfolioData.positions || [];
+            console.log('[useInvestments] Portfolio Data:', portfolioData);
+
+            // Handle different response structures
+            // Option 1: Standard { summary, positions: [...] }
+            // Option 2: Array only [ ... ] (if API changed to return just positions)
+
+            let positions = [];
+            let summary = null;
+            let allocation = { byType: [], bySector: [] };
+
+            if (Array.isArray(portfolioData)) {
+                // Formatting for "just array" response
+                positions = portfolioData;
+                // Calculate summary manually if missing
+                const total = positions.reduce((sum, p) => sum + (p.totalValue || (p.quantity * p.price) || 0), 0);
+                summary = {
+                    totalInvested: total, // Approximate
+                    totalCurrentBalance: total,
+                    totalProfit: 0,
+                    totalProfitPercent: 0
+                };
+            } else if (portfolioData && typeof portfolioData === 'object') {
+                // Standard structure
+                positions = portfolioData.positions || portfolioData.data || [];
+                summary = portfolioData.summary;
+                allocation = portfolioData.allocation || allocation;
+            }
 
             // Normalize Financial Products
             const financialProducts = Array.isArray(productsData) ? productsData : [];
 
             setData({
-                summary: portfolioData.summary,
-                positions: positions,
-                allocation: portfolioData.allocation || { byType: [], bySector: [] },
-                financialProducts: financialProducts,
-                // Pass through other useful metrics if needed by InvestorSummary
+                summary,
+                positions,
+                allocation,
+                financialProducts,
                 dividends: portfolioData.dividends,
                 concentration: portfolioData.concentration,
                 rankings: portfolioData.rankings,
@@ -55,8 +84,17 @@ export function useInvestments() {
 
     // Initial load
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        // Clear old localStorage cache for investments just in case
+        try {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('cache_/investments/portfolio');
+            }
+        } catch (e) {
+            console.warn('Failed to clear cache', e);
+        }
+
+        fetchFreshData();
+    }, [fetchFreshData]);
 
     // Calculate total patrimony
     const totalPatrimony = (data.summary?.totalCurrentBalance || 0) +
@@ -78,14 +116,14 @@ export function useInvestments() {
                 price: Number(price),
                 date
             });
-            await fetchData(); // Refresh data
+            await fetchFreshData();
             return { success: true };
         } catch (err) {
             return { success: false, error: err.message };
         } finally {
             setIsLoading(false);
         }
-    }, [fetchData]);
+    }, [fetchFreshData]);
 
     // Register sell operation
     const registerSell = useCallback(async (ticker, quantity, price, date) => {
@@ -98,28 +136,28 @@ export function useInvestments() {
                 price: Number(price),
                 date
             });
-            await fetchData(); // Refresh data
+            await fetchFreshData();
             return { success: true };
         } catch (err) {
             return { success: false, error: err.message };
         } finally {
             setIsLoading(false);
         }
-    }, [fetchData]);
+    }, [fetchFreshData]);
 
     // Add financial product
     const addFinancialProduct = useCallback(async (productData) => {
         setIsLoading(true);
         try {
             await financialProductsAPI.create(productData);
-            await fetchData(); // Refresh data
+            await fetchFreshData();
             return { success: true };
         } catch (err) {
             return { success: false, error: err.message };
         } finally {
             setIsLoading(false);
         }
-    }, [fetchData]);
+    }, [fetchFreshData]);
 
     return {
         isLoading,
@@ -133,7 +171,7 @@ export function useInvestments() {
         concentration: data.concentration,
         rankings: data.rankings,
         indicators: data.indicators,
-        refresh: fetchData, // Expose refresh method
+        refresh: fetchFreshData,
         getPosition,
         registerBuy,
         registerSell,
