@@ -921,10 +921,11 @@ function TransactionsContent() {
                                                     </div>
                                                     <div className={styles.transactionMeta}>
                                                         <span className={styles.transactionCategory}>{tx.category}</span>
-                                                        {(tx.subscriptionId || tx.source === 'SUBSCRIPTION') ? (
-                                                            <span className={styles.recurringBadge}><FiRepeat /> Assinatura</span>
-                                                        ) : (
-                                                            tx.isRecurring && <span className={styles.recurringBadge}><FiRepeat /> Recorrente</span>
+                                                        {tx.isRecurring && (
+                                                            <span className={styles.recurringBadge}><FiRepeat /> Recorrente</span>
+                                                        )}
+                                                        {(tx.subscriptionId || tx.source === 'SUBSCRIPTION') && (
+                                                            <span className={styles.recurringBadge}><FiCheck /> Assinatura</span>
                                                         )}
                                                         {/* Show card name for card transactions */}
                                                         {tx.source === 'CARD' && tx.sourceType && (
