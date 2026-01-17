@@ -42,42 +42,42 @@
         },
         "bb": {
             "name": "Banco do Brasil",
-            "icon": "https://yt3.googleusercontent.com/YoY6PQUzk6UXJEW8sTYs8zf_TfPLHNLSim65mswp_w5CX0jYgtl_le41QPRwoI1Hyj4OM2q_=s900-c-k-c0x00ffffff-no-rj",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/fa/fa/Banco_do_Brasil_logo.svg",
             "color": "#FFCC00"
         },
         "caixa": {
             "name": "Caixa",
-            "icon": "https://yt3.googleusercontent.com/YoY6PQUzk6UXJEW8sTYs8zf_TfPLHNLSim65mswp_w5CX0jYgtl_le41QPRwoI1Hyj4OM2q_=s900-c-k-c0x00ffffff-no-rj",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Caixa_Econ%C3%B4mica_Federal_logo.svg/1200px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png",
             "color": "#005CA9"
         },
         "inter": {
             "name": "Banco Inter",
-            "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIgsBVZLc-3vFUjstseoM0Cg9j3jP_OCsIzg&s",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Banco_Inter_logo.svg",
             "color": "#FF7A00"
         },
         "c6": {
             "name": "C6 Bank",
-            "icon": "https://yt3.googleusercontent.com/DCP_24vUEA5Hgci9YDsLDHEkzEuZp1TnXh5LDrUhFZFIj-F-80PM8UsCidZw6l-wYQlH-FAw1w=s900-c-k-c0x00ffffff-no-rj",
+            "icon": "https://logo.clearbit.com/c6bank.com.br",
             "color": "#242424"
         },
         "xp": {
             "name": "XP",
-            "icon": "https://www.xpinc.com/wp-content/uploads/sites/6/2023/08/XP.png",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/4/4f/XP_Investimentos_logo.svg",
             "color": "#FECB00"
         },
         "picpay": {
             "name": "PicPay",
-            "icon": "https://play-lh.googleusercontent.com/pTvc9kCumx_24eJDwGUpvcBwljcIBkrsL3qHwhBW2NalMQ-XxTtHRV9YAJanBxkV0Rw",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/80/PicPay_Logo.svg",
             "color": "#21C25E"
         },
         "mercadopago": {
             "name": "Mercado Pago",
-            "icon": "https://play-lh.googleusercontent.com/4Znye9QMuQvEx8n9KS-g_KtT_mSUdUOWuaAj96359de5eJnDDnYR0x6AYXxA_6vrsh8",
+            "icon": "https://logo.clearbit.com/mercadopago.com.br",
             "color": "#009EE3"
         },
         "will": {
             "name": "Will Bank",
-            "icon": "https://play-lh.googleusercontent.com/fazUU0h6BiMpjSxgq1son0-VRhBhkimr6kzCLw6T1Y3ZGZj1Nrnvi-ETM2je3-miRQ",
+            "icon": "https://logo.clearbit.com/willbank.com.br",
             "color": "#FFDE59"
         },
         "next": {
@@ -92,12 +92,12 @@
         },
         "neon": {
             "name": "Neon",
-            "icon": "https://margens.com.br/wp-content/uploads/2025/04/telefone-neon-800x416.webp",
+            "icon": "https://logo.clearbit.com/neon.com.br",
             "color": "#00D4AA"
         },
         "pan": {
             "name": "Banco Pan",
-            "icon": "https://yt3.googleusercontent.com/mGZ4gt6MHCDkp3rn2ZRYb8glF2yX4QphOpZtcuoAF0KaAEyNa9tFqffAQQqyKQBsrJYxmQrQKg=s900-c-k-c0x00ffffff-no-rj",
+            "icon": "https://logo.clearbit.com/bancopan.com.br",
             "color": "#00529B"
         },
         "safra": {
