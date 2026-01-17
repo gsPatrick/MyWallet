@@ -601,6 +601,79 @@
     top: calc(var(--header-height) + 24px);
 }
 
+@media (max-width: 1024px) {
+    .portfolioGrid {
+        grid-template-columns: 280px 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .portfolioGrid {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .allocationSection {
+        position: static;
+        /* Remove sticky on mobile */
+        order: 2;
+        /* Chart after positions or as desired */
+    }
+
+    .positionsSection {
+        order: 1;
+        /* Form/Positions first? User asked: Header -> Form -> Chart -> Book */
+        /* Currently positionsSection contains PortfolioTable which might be "Book". 
+           The "Form" (Trade Modal) is a modal, so it's always accessible. 
+           User asked: 
+           1. Header
+           2. Boleta (Trade Form - usually a modal here, or maybe I should check if there is an inline one?)
+           3. Chart (RentabilityChart is at top of page, Allocation is here)
+           4. Book (PortfolioTable)
+           
+           In the current layout: 
+           - Header
+           - EconomicTicker
+           - RentabilityChart
+           - SummaryRow
+           - Tabs
+           - ContentArea (PortfolioGrid with AllocationChart + PortfolioTable)
+
+           So "RentabilityChart" is already near top.
+           "AllocationChart" is inside PortfolioGrid.
+           "PortfolioTable" is inside PortfolioGrid.
+           
+           I will stack them column.
+        */
+    }
+
+    .summaryRow {
+        grid-template-columns: 1fr;
+        /* Stack summary cards */
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .headerActions {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .modernTabsContainer {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
 /* ============================================
    ALLOCATION CHART - DONUT STYLE
    ============================================ */

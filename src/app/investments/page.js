@@ -152,8 +152,10 @@ function InvestmentsContent() {
 
     // Carga Inicial do Portfólio e Histórico
     useEffect(() => {
-        loadPortfolioData();
-    }, []);
+        // Se tiver param na URL, usa ele preferencialmente na primeira carga
+        const brokerParam = searchParams.get('broker');
+        loadPortfolioData(brokerParam || selectedBrokerId);
+    }, [searchParams]); // Recarrega se a URL mudar
 
     // Carga do Mercado (Debounce na busca)
     useEffect(() => {
@@ -166,12 +168,16 @@ function InvestmentsContent() {
         return () => clearTimeout(timer);
     }, [searchQuery, activeTab, marketCategory]);
 
-    const loadPortfolioData = async () => {
+    const loadPortfolioData = async (brokerIdOverride = null) => {
+        // Use override if provided, otherwise current state (or null)
+        // Cuidado: selectedBrokerId pode estar desatualizado no closure se não usar args ou refs
+        const targetBrokerId = brokerIdOverride !== undefined ? brokerIdOverride : selectedBrokerId;
+
         setIsLoadingPortfolio(true);
         try {
             const [pfData, opsData, brokersData, dividendsData, bankAccountsData] = await Promise.all([
-                investmentsAPI.getPortfolio(),
-                investmentsAPI.list(),
+                investmentsAPI.getPortfolio(targetBrokerId), // Passa o ID para a API
+                investmentsAPI.list(targetBrokerId ? { brokerId: targetBrokerId } : {}),
                 brokersAPI.list().catch(() => ({ data: [] })),
                 investmentsAPI.getDividends().catch(() => ({ data: [] })),
                 bankAccountsAPI.list().catch(() => ({ data: [] })),

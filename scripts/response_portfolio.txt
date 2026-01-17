@@ -1,0 +1,595 @@
+{
+  "data": {
+    "summary": {
+      "totalInvested": 1064.33,
+      "totalCurrentBalance": 1064.33,
+      "totalProfit": 0,
+      "totalProfitPercent": 0
+    },
+    "positions": [
+      {
+        "source": "VARIABLE_INCOME",
+        "ticker": "AAZQ11",
+        "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "type": "FII",
+        "quantity": 18,
+        "averagePrice": 8.71,
+        "currentPrice": 8.71,
+        "totalCost": 156.78000000000003,
+        "currentBalance": 156.78000000000003,
+        "profit": 0,
+        "profitPercent": 0,
+        "dayChange": 0,
+        "hasDividends": true,
+        "dy": 6.78,
+        "dividendRate": 0.58,
+        "lastDividendPerShare": 0.13,
+        "dividendMessage": null,
+        "fiiAnalytics": {
+          "segment": "Indefinido",
+          "pvp": 1.01,
+          "pvpStatus": "FAIR",
+          "netWorth": 207.8,
+          "dailyLiquidity": 463.6,
+          "shareholders": 30064,
+          "dividendYieldMonth": 1.52,
+          "dividendTrend": "UNKNOWN",
+          "paymentConsistency": 41.67,
+          "riskLevel": "MEDIUM",
+          "dividendHistory": [
+            {
+              "date": "2025-12-30",
+              "amount": 0.13,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-11-28",
+              "amount": 0.12,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-10-31",
+              "amount": 0.12,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-09-30",
+              "amount": 0.11,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-08-29",
+              "amount": 0.1,
+              "type": "RENDIMENTO"
+            }
+          ],
+          "lastSyncAt": "2026-01-02T21:30:02.926Z"
+        },
+        "stockAnalytics": null,
+        "rentability": {
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 156.78000000000003,
+            "currentValue": 156.78000000000003,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          },
+          "capitalGainPercent": 0,
+          "dividendsPercent": 0,
+          "totalReturn": 0
+        },
+        "concentration": {
+          "percentage": 14.73039376884989
+        },
+        "risk": {
+          "level": "HIGH",
+          "reasons": [
+            "Baixa liquidez diária (R$ 0K)",
+            "Dividendos inconsistentes (42% consistência)"
+          ],
+          "score": 30
+        }
+      },
+      {
+        "source": "VARIABLE_INCOME",
+        "ticker": "ACWI11",
+        "name": "Trend ETF Bloomberg All Countries Classe De indice R LTD A",
+        "logoUrl": "https://icons.brapi.dev/icons/ACWI11.svg",
+        "type": "FII",
+        "quantity": 45,
+        "averagePrice": 16.66,
+        "currentPrice": 16.66,
+        "totalCost": 749.7,
+        "currentBalance": 749.7,
+        "profit": 0,
+        "profitPercent": 0,
+        "dayChange": 0,
+        "hasDividends": true,
+        "dy": 0,
+        "dividendRate": 0,
+        "lastDividendPerShare": 0,
+        "dividendMessage": null,
+        "fiiAnalytics": null,
+        "stockAnalytics": null,
+        "rentability": {
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 749.7,
+            "currentValue": 749.7,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          },
+          "capitalGainPercent": 0,
+          "dividendsPercent": 0,
+          "totalReturn": 0
+        },
+        "concentration": {
+          "percentage": 70.43867973278965
+        },
+        "risk": {
+          "level": "HIGH",
+          "reasons": [
+            "Concentração acima de 25% (70.4%)"
+          ],
+          "score": 30
+        }
+      },
+      {
+        "source": "VARIABLE_INCOME",
+        "ticker": "HGLG11",
+        "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "type": "FII",
+        "quantity": 1,
+        "averagePrice": 157.85,
+        "currentPrice": 157.85,
+        "totalCost": 157.85,
+        "currentBalance": 157.85,
+        "profit": 0,
+        "profitPercent": 0,
+        "dayChange": 0,
+        "hasDividends": true,
+        "dy": 3.5,
+        "dividendRate": 5.5,
+        "lastDividendPerShare": 1.1,
+        "dividendMessage": null,
+        "fiiAnalytics": {
+          "segment": "Imóveis Industriais e Logísticos",
+          "pvp": 0.95,
+          "pvpStatus": "FAIR",
+          "netWorth": 7,
+          "dailyLiquidity": 17200000,
+          "shareholders": 516205,
+          "dividendYieldMonth": 0.7,
+          "dividendTrend": "UNKNOWN",
+          "paymentConsistency": 41.67,
+          "riskLevel": "MEDIUM",
+          "dividendHistory": [
+            {
+              "date": "2025-12-30",
+              "amount": 1.1,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-11-28",
+              "amount": 1.1,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-10-31",
+              "amount": 1.1,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-09-30",
+              "amount": 1.1,
+              "type": "RENDIMENTO"
+            },
+            {
+              "date": "2025-08-29",
+              "amount": 1.1,
+              "type": "RENDIMENTO"
+            }
+          ],
+          "lastSyncAt": "2026-01-02T21:30:32.013Z"
+        },
+        "stockAnalytics": null,
+        "rentability": {
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 157.85,
+            "currentValue": 157.85,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          },
+          "capitalGainPercent": 0,
+          "dividendsPercent": 0,
+          "totalReturn": 0
+        },
+        "concentration": {
+          "percentage": 14.830926498360473
+        },
+        "risk": {
+          "level": "HIGH",
+          "reasons": [
+            "Dividendos inconsistentes (42% consistência)"
+          ],
+          "score": 30
+        }
+      }
+    ],
+    "allocation": {
+      "FII": 100
+    },
+    "dividends": {
+      "month": {
+        "total": 0,
+        "count": 0,
+        "breakdown": {
+          "period": "2026-01-01 a 2026-01-03",
+          "dividendsList": []
+        }
+      },
+      "year": {
+        "total": 0,
+        "count": 0,
+        "breakdown": {
+          "period": "2026-01-01 a 2026-01-03",
+          "byMonth": {
+            "2025-12": {
+              "total": 0,
+              "count": 2
+            }
+          }
+        }
+      },
+      "allTime": {
+        "total": 0,
+        "count": 2,
+        "breakdown": {
+          "byAsset": [
+            {
+              "ticker": "AAZQ11",
+              "total": 0,
+              "count": 1
+            },
+            {
+              "ticker": "HGLG11",
+              "total": 0,
+              "count": 1
+            }
+          ]
+        }
+      },
+      "trends": {
+        "threeMonths": {
+          "value": 0,
+          "previous": 0,
+          "changePercent": 0,
+          "status": "STABLE"
+        },
+        "sixMonths": {
+          "value": 0,
+          "previous": 0,
+          "changePercent": 0,
+          "status": "STABLE"
+        },
+        "ytd": {
+          "value": 0,
+          "daysElapsed": 2,
+          "averagePerDay": 0
+        },
+        "twelveMonths": {
+          "value": 0,
+          "monthlyAverage": 0
+        }
+      },
+      "recent": [
+        {
+          "ticker": "AAZQ11",
+          "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+          "type": "FII",
+          "amount": 0,
+          "amountPerUnit": 0.13,
+          "paymentDate": "2025-12-30"
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+          "type": "FII",
+          "amount": 0,
+          "amountPerUnit": 1.1,
+          "paymentDate": "2025-12-30"
+        }
+      ],
+      "projectedMonthlyIncome": 3.44
+    },
+    "concentration": {
+      "byType": [
+        {
+          "type": "FII",
+          "value": 1064.33,
+          "count": 3,
+          "percentage": 100
+        }
+      ],
+      "bySegment": [
+        {
+          "segment": "Não classificado",
+          "value": 749.7,
+          "count": 1,
+          "percentage": 70.43867973278965
+        },
+        {
+          "segment": "Imóveis Industriais e Logísticos",
+          "value": 157.85,
+          "count": 1,
+          "percentage": 14.830926498360473
+        },
+        {
+          "segment": "Indefinido",
+          "value": 156.78000000000003,
+          "count": 1,
+          "percentage": 14.73039376884989
+        }
+      ],
+      "topAssets": [
+        {
+          "ticker": "ACWI11",
+          "name": "Trend ETF Bloomberg All Countries Classe De indice R LTD A",
+          "type": "FII",
+          "value": 749.7,
+          "percentage": 70.43867973278965
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+          "type": "FII",
+          "value": 157.85,
+          "percentage": 14.830926498360473
+        },
+        {
+          "ticker": "AAZQ11",
+          "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+          "type": "FII",
+          "value": 156.78000000000003,
+          "percentage": 14.73039376884989
+        }
+      ],
+      "indicators": {
+        "topAssetConcentration": 70.43867973278965,
+        "top3Concentration": 100.00000000000001,
+        "isOverConcentrated": true,
+        "numberOfAssets": 3
+      }
+    },
+    "rankings": {
+      "topDividendPayers": [
+        {
+          "ticker": "AAZQ11",
+          "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+          "dy": 6.78,
+          "lastDividend": 0.13
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+          "dy": 3.5,
+          "lastDividend": 1.1
+        }
+      ],
+      "topByWeight": [
+        {
+          "ticker": "ACWI11",
+          "name": "Trend ETF Bloomberg All Countries Classe De indice R LTD A",
+          "value": 749.7,
+          "percentage": 70.43867973278965
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+          "value": 157.85,
+          "percentage": 14.830926498360473
+        },
+        {
+          "ticker": "AAZQ11",
+          "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+          "value": 156.78000000000003,
+          "percentage": 14.73039376884989
+        }
+      ],
+      "mostProfitable": [
+        {
+          "ticker": "AAZQ11",
+          "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 156.78000000000003,
+            "currentValue": 156.78000000000003,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          }
+        },
+        {
+          "ticker": "ACWI11",
+          "name": "Trend ETF Bloomberg All Countries Classe De indice R LTD A",
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 749.7,
+            "currentValue": 749.7,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          }
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 157.85,
+            "currentValue": 157.85,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          }
+        }
+      ],
+      "leastProfitable": [
+        {
+          "ticker": "AAZQ11",
+          "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 156.78000000000003,
+            "currentValue": 156.78000000000003,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          }
+        },
+        {
+          "ticker": "ACWI11",
+          "name": "Trend ETF Bloomberg All Countries Classe De indice R LTD A",
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 749.7,
+            "currentValue": 749.7,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          }
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "Patria Log - Fundo de Investimento Imobiliario - Responsabilidade Limitada Cotas",
+          "totalReturnPercent": 0,
+          "breakdown": {
+            "investedCapital": 157.85,
+            "currentValue": 157.85,
+            "dividendsReceived": 0,
+            "capitalGain": 0,
+            "formula": "totalReturn = capitalGain + dividendsReceived",
+            "calculation": "0.00 + 0.00 = 0.00"
+          }
+        }
+      ],
+      "byRiskLevel": {
+        "low": 0,
+        "medium": 0,
+        "high": 3
+      }
+    },
+    "indicators": {
+      "mostProfitable": {
+        "ticker": "AAZQ11",
+        "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+        "totalReturnPercent": 0,
+        "breakdown": {
+          "investedCapital": 156.78000000000003,
+          "currentValue": 156.78000000000003,
+          "dividendsReceived": 0,
+          "capitalGain": 0,
+          "formula": "totalReturn = capitalGain + dividendsReceived",
+          "calculation": "0.00 + 0.00 = 0.00"
+        }
+      },
+      "highRiskCount": 3,
+      "highRiskAssets": [
+        {
+          "ticker": "AAZQ11",
+          "riskLevel": "HIGH",
+          "reasons": [
+            "Baixa liquidez diária (R$ 0K)",
+            "Dividendos inconsistentes (42% consistência)"
+          ]
+        },
+        {
+          "ticker": "ACWI11",
+          "riskLevel": "HIGH",
+          "reasons": [
+            "Concentração acima de 25% (70.4%)"
+          ]
+        },
+        {
+          "ticker": "HGLG11",
+          "riskLevel": "HIGH",
+          "reasons": [
+            "Dividendos inconsistentes (42% consistência)"
+          ]
+        }
+      ],
+      "topConcentration": {
+        "ticker": "ACWI11",
+        "percentage": 70.43867973278965
+      },
+      "topSegment": {
+        "segment": "Não classificado",
+        "percentage": 70.43867973278965
+      },
+      "portfolioHealth": {
+        "score": 40,
+        "status": "POOR",
+        "issues": [
+          "Concentração excessiva em um único ativo",
+          "Top 3 ativos representam mais de 60% da carteira",
+          "3 ativos classificados como alto risco",
+          "Baixa diversificação (menos de 5 ativos)"
+        ],
+        "breakdown": {
+          "baseScore": 100,
+          "adjustments": [
+            {
+              "factor": "Concentração > 30%",
+              "impact": -20
+            },
+            {
+              "factor": "Top 3 > 60%",
+              "impact": -15
+            },
+            {
+              "factor": "3 ativos alto risco",
+              "impact": -15
+            },
+            {
+              "factor": "Menos de 5 ativos",
+              "impact": -10
+            }
+          ],
+          "finalScore": 40,
+          "formula": "score = 100 + sum(adjustments)"
+        }
+      }
+    },
+    "portfolioMetrics": {
+      "totalReturnPercent": 0,
+      "breakdown": {
+        "investedCapital": 1064.33,
+        "currentValue": 1064.33,
+        "dividendsReceived": 0,
+        "capitalGain": 0,
+        "totalReturn": 0,
+        "formula": "totalReturn = capitalGain + dividendsReceived",
+        "calculation": "(1064.33 - 1064.33) + 0.00 = 0.00"
+      },
+      "capitalGainPercent": 0,
+      "dividendsPercent": 0,
+      "averageDY": 3.426666666666667,
+      "projectedMonthlyIncome": 3.44,
+      "numberOfAssets": 3
+    }
+  }
+}

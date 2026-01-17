@@ -28,7 +28,6 @@ import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import BrokersWidget from '@/components/dashboard/BrokersWidget';
 import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import PortfolioTable from '@/components/investments/PortfolioTable';
-import OfflineStatusBanner from '@/components/offline/OfflineStatusBanner';
 import styles from './page.module.css';
 
 const mockAllocation = [
@@ -267,7 +266,6 @@ export default function DashboardPage() {
 
     return (
         <AppShell>
-            <OfflineStatusBanner />
             <div className={styles.page}>
                 <Header leftContent={TabsComponent} rightContent={DateFilterComponent} />
 

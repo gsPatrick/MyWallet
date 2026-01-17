@@ -1,0 +1,112 @@
+{
+  "data": {
+    "assets": [
+      {
+        "id": "fe44eae4-79d6-45e4-9d98-f189dd43b125",
+        "ticker": "AAGR11",
+        "name": "Asset Bank Agronegocios Fundo de Investimento nas Cadeias Produtivas Agroindustriais Direitos Creditorios",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/AAGR11.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "196797f2-35a3-4c4a-b372-ac99621607bd",
+        "ticker": "AAZQ11",
+        "name": "AZ Quest Sole Fundo de Investimento Nas Cadeias Produtivas do Agronegocio - Fiagro - Imobiliario",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "f24a7ce5-b92d-4640-8680-10088a84ebeb",
+        "ticker": "ABCP11",
+        "name": "Fundo de Investimento Imobiliario Grand Plaza Shopping Cotas",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/ABCP11.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "1e09c2d3-6934-4930-a22c-d69e38c603d1",
+        "ticker": "ACWI11",
+        "name": "Trend ETF Bloomberg All Countries Classe De indice R LTD A",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/ACWI11.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "6e681df3-9ad4-44fe-bb65-bb38e65f76da",
+        "ticker": "AFHF11",
+        "name": "AF Invest Real Estate Multiestrategia Fundo de Investimento Imobiliario Responsabilidade Limitada",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "fc9b111f-6dd7-456b-a2ec-603a979c4e9b",
+        "ticker": "AFHI11",
+        "name": "AF Invest CRI Fundo de Investimento Imobiliario Recebiveis Imobiliarios",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "8800990a-b152-4e87-96f6-dcfb4c7c91e3",
+        "ticker": "AGRI11",
+        "name": "Agri BB ETF Iagro FFS B3 Fundo de Indice ETF",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/AGRI11.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "c906d894-142c-4a38-8906-f09a478ebb64",
+        "ticker": "AGRX11",
+        "name": "Fundo de Investimento nas Cadeias Produtivas Agroindustriais Exes Araguaia Fiagro Imobiliario",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "b20a761c-e023-4bb9-88f2-8dc765d7acb1",
+        "ticker": "AIEC11",
+        "name": "Autonomy Edificios Corporativos Fundo de Investimento Imobiliario",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/BRAPI.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      },
+      {
+        "id": "fb93c243-dec7-4547-b1d0-96259ca6c1d4",
+        "ticker": "AJFI11",
+        "name": "AJ Malls Fundo de Investimento Imobiliario",
+        "type": "FII",
+        "logoUrl": "https://icons.brapi.dev/icons/AJFI11.svg",
+        "sector": null,
+        "price": 0,
+        "change": 0
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 596,
+      "totalPages": 60
+    }
+  }
+}

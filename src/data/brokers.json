@@ -1,18 +1,98 @@
 [
     {
+        "code": "XP",
+        "name": "XP Investimentos",
+        "color": "#F7B500",
+        "logoUrl": "https://logo.clearbit.com/xpi.com.br",
+        "icon": "trending-up",
+        "type": "FULL_SERVICE"
+    },
+    {
+        "code": "NUINVEST",
+        "name": "NuInvest",
+        "color": "#820AD1",
+        "logoUrl": "https://logo.clearbit.com/nuinvest.com.br",
+        "icon": "trending-up",
+        "type": "DIGITAL"
+    },
+    {
+        "code": "BTG",
+        "name": "BTG Pactual",
+        "color": "#001B48",
+        "logoUrl": "https://logo.clearbit.com/btgpactual.com",
+        "icon": "trending-up",
+        "type": "FULL_SERVICE"
+    },
+    {
+        "code": "RICO",
+        "name": "Rico Investimentos",
+        "color": "#FF6600",
+        "logoUrl": "https://i.imgur.com/uSxEe0t.jpeg",
+        "icon": "trending-up",
+        "type": "DIGITAL"
+    },
+    {
+        "code": "CLEAR",
+        "name": "Clear",
+        "color": "#00A3E0",
+        "logoUrl": "https://logo.clearbit.com/clear.com.br",
+        "icon": "trending-up",
+        "type": "DIGITAL"
+    },
+    {
+        "code": "INTER",
+        "name": "Inter Invest",
+        "color": "#FF7A00",
+        "logoUrl": "https://logo.clearbit.com/bancointer.com.br",
+        "icon": "trending-up",
+        "type": "DIGITAL"
+    },
+    {
+        "code": "AVENUE",
+        "name": "Avenue",
+        "color": "#5B21B6",
+        "logoUrl": "https://logo.clearbit.com/avenue.us",
+        "icon": "globe",
+        "type": "INTERNATIONAL"
+    },
+    {
+        "code": "BINANCE",
+        "name": "Binance",
+        "color": "#F0B90B",
+        "logoUrl": "https://logo.clearbit.com/binance.com",
+        "icon": "dollar-sign",
+        "type": "CRYPTO"
+    },
+    {
+        "code": "MERCADO_BITCOIN",
+        "name": "Mercado Bitcoin",
+        "color": "#00D4A1",
+        "logoUrl": "https://logo.clearbit.com/mercadobitcoin.com.br",
+        "icon": "dollar-sign",
+        "type": "CRYPTO"
+    },
+    {
+        "code": "ATIVA",
+        "name": "Ativa Investimentos",
+        "color": "#003366",
+        "logoUrl": "https://logo.clearbit.com/ativainvestimentos.com.br",
+        "icon": "trending-up",
+        "type": "FULL_SERVICE"
+    },
+    {
         "code": "GENIAL",
         "name": "Genial Investimentos",
-        "color": "#00A859",
-        "logoUrl": "https://raichu-uploads.s3.amazonaws.com/logo_banco-genial_YofsI8.png",
+        "color": "#00B4D8",
+        "logoUrl": "https://logo.clearbit.com/genialinvestimentos.com.br",
         "icon": "trending-up",
         "type": "FULL_SERVICE"
     },
     {
         "code": "MODAL",
         "name": "Modal Mais",
-        "color": "#E91E63",
-        "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYOxlqPWabAhmkDIwtne8yoOA2xd6HtyQzZw&s",
+        "color": "#6C2BD9",
+        "logoUrl": "https://logo.clearbit.com/modal.com.br",
         "icon": "trending-up",
-        "type": "DIGITAL"
+        "type": "FULL_SERVICE"
     }
 ]

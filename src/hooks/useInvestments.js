@@ -42,20 +42,32 @@ export function useInvestments() {
             let summary = null;
             let allocation = { byType: [], bySector: [] };
 
+            // Handle various API response structures
+            // Case 1: Direct Array [ ... ]
             if (Array.isArray(portfolioData)) {
-                // Formatting for "just array" response
                 positions = portfolioData;
-                // Calculate summary manually if missing
-                const total = positions.reduce((sum, p) => sum + (p.totalValue || (p.quantity * p.price) || 0), 0);
-                summary = {
-                    totalInvested: total, // Approximate
-                    totalCurrentBalance: total,
-                    totalProfit: 0,
-                    totalProfitPercent: 0
-                };
-            } else if (portfolioData && typeof portfolioData === 'object') {
-                // Standard structure
-                positions = portfolioData.positions || portfolioData.data || [];
+            }
+            // Case 2: Nested { data: { assets: [...] } } (User's JSON case)
+            else if (portfolioData?.data?.assets && Array.isArray(portfolioData.data.assets)) {
+                positions = portfolioData.data.assets;
+                // If summary is missing, calculate it
+                if (!summary) {
+                    const total = positions.reduce((sum, p) => sum + (p.totalValue || (p.quantity * p.price) || 0), 0);
+                    summary = {
+                        totalInvested: total,
+                        totalCurrentBalance: total,
+                        totalProfit: 0,
+                        totalProfitPercent: 0
+                    };
+                }
+            }
+            // Case 3: Nested { data: [...] }
+            else if (Array.isArray(portfolioData?.data)) {
+                positions = portfolioData.data;
+            }
+            // Case 4: Standard { positions: [...], summary: ... }
+            else if (portfolioData && typeof portfolioData === 'object') {
+                positions = portfolioData.positions || [];
                 summary = portfolioData.summary;
                 allocation = portfolioData.allocation || allocation;
             }

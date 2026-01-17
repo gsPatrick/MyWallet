@@ -746,7 +746,7 @@ export default function ChatInterface({ onClose, isOfflineMode = false }) {
                 <div className={styles.headerInfo}>
                     <span className={styles.headerName}>MyWallet AI</span>
                     <span className={styles.headerStatus}>
-                        {isOnline ? 'Online' : 'Modo Offline ✓'}
+                        {isOnline ? 'Online' : ''}
                     </span>
                 </div>
 

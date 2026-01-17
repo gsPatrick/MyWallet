@@ -59,66 +59,11 @@ export function AIProvider({ children }) {
         setShowSetupScreen(false);
     }, []);
 
-    // Initialize worker on mount
+    // Initialize worker on mount - DISABLED per user request (remove AI voice UI)
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        // Create worker
-        workerRef.current = new Worker(
-            new URL('../workers/whisper.worker.js', import.meta.url),
-            { type: 'module' }
-        );
-
-        // Handle worker messages
-        workerRef.current.onmessage = (event) => {
-            const { type, percent, text, error: workerError, loaded } = event.data;
-
-            switch (type) {
-                case 'progress':
-                    setStatus('downloading');
-                    setDownloadProgress(percent);
-                    break;
-                case 'ready':
-                    setStatus('ready');
-                    setDownloadProgress(100);
-                    setShowSetupScreen(false);
-                    // Mark as downloaded in localStorage
-                    localStorage.setItem(STORAGE_KEYS.MODEL_DOWNLOADED, 'true');
-                    // Show completion toast
-                    if (!hasShownToast) {
-                        showToast('IA de voz pronta para uso offline!', 'success');
-                        setHasShownToast(true);
-                    }
-                    break;
-                case 'processing':
-                    setStatus('processing');
-                    break;
-                case 'result':
-                    setTranscript(text);
-                    setStatus('ready');
-                    break;
-                case 'error':
-                    setError(workerError);
-                    setStatus('error');
-                    break;
-                case 'status':
-                    if (loaded) {
-                        setStatus('ready');
-                        setShowSetupScreen(false);
-                        localStorage.setItem(STORAGE_KEYS.MODEL_DOWNLOADED, 'true');
-                    }
-                    break;
-            }
-        };
-
-        // Check if model is already cached in IndexedDB/browser cache
-        // Pass the flag so worker can auto-load from cache if previously downloaded
-        const wasDownloaded = localStorage.getItem(STORAGE_KEYS.MODEL_DOWNLOADED) === 'true';
-        workerRef.current.postMessage({ type: 'check', wasDownloaded });
-
-        return () => {
-            workerRef.current?.terminate();
-        };
+        // AI Voice feature disabled.
+        // We do not initialize the worker to save resources and prevent messages.
+        setStatus('idle');
     }, []);
 
     /**
@@ -126,7 +71,8 @@ export function AIProvider({ children }) {
      */
     const triggerDownload = useCallback(() => {
         setShowSetupScreen(false);
-        showToast('Funcionalidade de voz desabilitada temporariamente.', 'info');
+        // Silently ignore or just log
+        console.log('[AIContext] Voice feature disabled.');
     }, []);
 
     /**
@@ -138,43 +84,9 @@ export function AIProvider({ children }) {
         localStorage.setItem(STORAGE_KEYS.SETUP_SKIPPED, 'true');
     }, []);
 
-    // Simple toast implementation (can be replaced with react-hot-toast)
+    // Toast disabled globally for AI
     const showToast = (message, type = 'info') => {
-        if (typeof window === 'undefined') return;
-
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6366f1'};
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 9999999;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease;
-        `;
-        toast.textContent = message;
-
-        // Add animation keyframes
-        if (!document.getElementById('toast-keyframes')) {
-            const style = document.createElement('style');
-            style.id = 'toast-keyframes';
-            style.textContent = `
-                @keyframes slideUp {
-                    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
+        // console.log('[AI Toast]', message); 
     };
 
     /**
