@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiWifi, FiCreditCard } from 'react-icons/fi';
 import styles from './CreditCard.module.css';
@@ -19,6 +20,8 @@ export default function CreditCard({
     icon = null, // New prop for bank logo
     onClick,
 }) {
+    const [iconError, setIconError] = useState(false);
+
     const usedAmount = creditLimit - availableLimit - blockedLimit;
     const usedPercent = creditLimit > 0
         ? (usedAmount / creditLimit) * 100
@@ -70,6 +73,9 @@ export default function CreditCard({
         }
     };
 
+    // Determine if we should show the icon image or fallback to text
+    const showIconImage = icon && (icon.startsWith('http') || icon.startsWith('/')) && !iconError;
+
     return (
         <motion.div
             className={styles.cardWrapper}
@@ -86,7 +92,7 @@ export default function CreditCard({
 
                 {/* Header */}
                 <div className={styles.header}>
-                    {icon && (icon.startsWith('http') || icon.startsWith('/')) ? (
+                    {showIconImage ? (
                         <img
                             src={icon}
                             alt={name}
@@ -96,6 +102,7 @@ export default function CreditCard({
                                 objectFit: 'contain',
                                 filter: textColor === 'white' ? 'brightness(0) invert(1)' : 'none'
                             }}
+                            onError={() => setIconError(true)}
                         />
                     ) : (
                         <span className={styles.bankName}>{name}</span>
