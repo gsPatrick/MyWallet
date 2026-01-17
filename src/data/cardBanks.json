@@ -7,18 +7,38 @@
         },
         "itau": {
             "name": "Itaú",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banco_Ita%C3%BA_logo.svg",
-            "color": "#EC7000"
+            "icon": "https://logo.clearbit.com/itau.com.br",
+            "color": "#EC7000",
+            "keywords": [
+                "itau",
+                "itaú",
+                "click",
+                "personnalité",
+                "personnalite"
+            ]
         },
         "bradesco": {
             "name": "Bradesco",
-            "icon": "https://pbs.twimg.com/profile_images/1737158472225927168/zyASghk-.jpg",
-            "color": "#CC092F"
+            "icon": "https://logo.clearbit.com/bradesco.com.br",
+            "color": "#CC092F",
+            "keywords": [
+                "bradesco",
+                "neo",
+                "next"
+            ]
         },
         "santander": {
             "name": "Santander",
-            "icon": "https://yt3.googleusercontent.com/2zcKPq4-lOXeh8_moIMZjHu_ntKBoLuPAwaXs7VhUWFU_o1HBJNQm83QsRGGyEcn48NoTbRzQ_c=s900-c-k-c0x00ffffff-no-rj",
-            "color": "#EC0000"
+            "icon": "https://logo.clearbit.com/santander.com.br",
+            "color": "#EC0000",
+            "keywords": [
+                "santander",
+                "sx",
+                "unique",
+                "aa",
+                "unlimited",
+                "free"
+            ]
         },
         "bb": {
             "name": "Banco do Brasil",
