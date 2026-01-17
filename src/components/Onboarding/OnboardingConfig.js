@@ -6,7 +6,7 @@ import {
     FiArrowRight, FiArrowLeft, FiCheck, FiDollarSign,
     FiCreditCard, FiRepeat, FiCheckCircle, FiPlus, FiTrash2, FiEdit2, FiTrendingUp
 } from 'react-icons/fi';
-import api, { brokersAPI } from '@/services/api';
+import api, { brokersAPI, bankAccountsAPI } from '@/services/api';
 import { cardsAPI, subscriptionsAPI } from '@/services/api';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
@@ -60,6 +60,7 @@ export default function OnboardingConfig({ onComplete }) {
     // Cards & Subscriptions
     const [cards, setCards] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
+    const [bankAccounts, setBankAccounts] = useState([]); // NEW: Store bank accounts
 
     // Modal states
     const [showCardModal, setShowCardModal] = useState(false);
@@ -88,11 +89,32 @@ export default function OnboardingConfig({ onComplete }) {
         } else if (step === 'salary') {
             setLoading(true);
             try {
-                await api.put('/auth/onboarding-config', {
+                const response = await api.put('/auth/onboarding-config', {
                     initialBalance: parseCurrencyValue(initialBalance),
                     salary: parseCurrencyValue(salary),
                     salaryDay: parseInt(salaryDay) || 5
                 });
+
+                // ✅ Capture Profile ID and save for subsequent requests
+                if (response && response.data && response.data.profileId) {
+                    console.log('✅ [ONBOARDING] Profile ID received:', response.data.profileId);
+                    localStorage.setItem('investpro_profile_id', response.data.profileId);
+                } else if (response && response.profileId) {
+                    // In case interceptor unwraps it differently
+                    console.log('✅ [ONBOARDING] Profile ID received (root):', response.profileId);
+                    localStorage.setItem('investpro_profile_id', response.profileId);
+                }
+
+                // Fetch bank accounts immediately to ensure Wallet is available for Cards step
+                try {
+                    const accountsResponse = await bankAccountsAPI.list();
+                    if (accountsResponse && accountsResponse.data) {
+                        setBankAccounts(accountsResponse.data);
+                    }
+                } catch (err) {
+                    console.error('⚠️ [ONBOARDING] Failed to fetch bank accounts:', err);
+                }
+
             } catch (e) {
                 console.error('Error saving config:', e);
             }
@@ -101,19 +123,29 @@ export default function OnboardingConfig({ onComplete }) {
         } else if (step === 'cards') {
             setLoading(true);
             try {
-                console.log('🃏 [ONBOARDING] Creating cards...', cards);
-                const createdCards = [];
+                console.log('🃏 [ONBOARDING] Processing cards...', cards);
+                const processedCards = [];
+
                 for (const card of cards) {
-                    console.log('🃏 [ONBOARDING] Sending card to API:', card);
-                    const response = await cardsAPI.create(card);
-                    console.log('🃏 [ONBOARDING] Card API response:', response);
-                    if (response && response.data) {
-                        console.log('🃏 [ONBOARDING] Card created with ID:', response.data.id);
-                        createdCards.push(response.data);
+                    // Only create if it doesn't have an ID yet
+                    if (!card.id) {
+                        console.log('🃏 [ONBOARDING] Creating new card:', card);
+                        const response = await cardsAPI.create(card);
+                        console.log('🃏 [ONBOARDING] Card API response:', response);
+
+                        if (response && response.data) {
+                            console.log('✅ [ONBOARDING] Card created:', response.data.id);
+                            processedCards.push(response.data);
+                        }
+                    } else {
+                        // Keep existing card
+                        console.log('ℹ️ [ONBOARDING] Card already exists:', card.id);
+                        processedCards.push(card);
                     }
                 }
-                console.log('🃏 [ONBOARDING] All created cards:', createdCards);
-                setCards(createdCards);
+
+                console.log('🃏 [ONBOARDING] Final cards list:', processedCards);
+                setCards(processedCards);
             } catch (e) {
                 console.error('❌ [ONBOARDING] Error saving cards:', e);
             }
@@ -539,6 +571,7 @@ export default function OnboardingConfig({ onComplete }) {
                 onClose={() => { setShowCardModal(false); setEditingCard(null); }}
                 onSave={handleSaveCard}
                 editingCard={editingCard}
+                bankAccounts={bankAccounts} // Pass fetched accounts
             />
 
             {/* Subscription Modal */}
