@@ -651,7 +651,7 @@ export default function SettingsPage() {
                                             <span className={styles.settingDesc}>
                                                 {ai.status === 'downloading' && `Baixando... ${Math.round(ai.downloadProgress * 100)}%`}
                                                 {ai.status === 'loading' && 'Carregando modelo...'}
-                                                {ai.status === 'ready' && 'Pronto para uso offline'}
+                                                {ai.status === 'ready' && ''}
                                                 {ai.status === 'idle' && !ai.isModelReady && 'Não instalado (~50MB)'}
                                                 {ai.status === 'error' && 'Erro no download'}
                                             </span>
