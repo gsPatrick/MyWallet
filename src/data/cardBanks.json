@@ -7,7 +7,7 @@
         },
         "itau": {
             "name": "Itaú",
-            "icon": "https://logo.clearbit.com/itau.com.br",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banco_Ita%C3%BA_logo.svg",
             "color": "#EC7000",
             "keywords": [
                 "itau",
@@ -19,7 +19,7 @@
         },
         "bradesco": {
             "name": "Bradesco",
-            "icon": "https://logo.clearbit.com/bradesco.com.br",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Banco_Bradesco_logo_%282021%29.svg",
             "color": "#CC092F",
             "keywords": [
                 "bradesco",
@@ -29,7 +29,7 @@
         },
         "santander": {
             "name": "Santander",
-            "icon": "https://logo.clearbit.com/santander.com.br",
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/98/Santander_Bank_logo.svg",
             "color": "#EC0000",
             "keywords": [
                 "santander",
