@@ -1075,11 +1075,23 @@ export default function CardsPage() {
 
                                     // 2. Try matching card name/bankName
                                     if (!dictionaryEntry) {
-                                        const searchName = (card.bankName || card.name || '').toLowerCase();
-                                        dictionaryEntry = Object.values(cardBanks.banks).find(b =>
-                                            searchName.includes(b.name.toLowerCase()) ||
-                                            (b.keywords && b.keywords.some(k => searchName.includes(k)))
-                                        );
+                                        const findEntry = (text) => {
+                                            if (!text) return null;
+                                            const normalized = text.toLowerCase();
+                                            return Object.values(cardBanks.banks).find(b =>
+                                                normalized.includes(b.name.toLowerCase()) ||
+                                                (b.keywords && b.keywords.some(k => normalized.includes(k)))
+                                            );
+                                        };
+
+                                        // Try bankName first
+                                        dictionaryEntry = findEntry(card.bankName);
+
+                                        // If generic 'Outro' or not found, try card nickname (e.g. user named card "Santander")
+                                        if (!dictionaryEntry || dictionaryEntry.name === 'Outro') {
+                                            const entryByName = findEntry(card.name);
+                                            if (entryByName) dictionaryEntry = entryByName;
+                                        }
                                     }
 
                                     const displayIcon = dictionaryEntry?.icon;
