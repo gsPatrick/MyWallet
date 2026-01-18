@@ -270,6 +270,12 @@ export const openFinanceAPI = {
     listCards: () => api.get('/open-finance/cards'),
 };
 
+// Import API (Files)
+export const importAPI = {
+    previewOFX: (content) => api.post('/import/ofx/preview', { content }),
+    confirmImport: (data) => api.post('/import/ofx/confirm', { data })
+};
+
 // Goals API
 export const goalsAPI = {
     list: () => api.get('/goals'),

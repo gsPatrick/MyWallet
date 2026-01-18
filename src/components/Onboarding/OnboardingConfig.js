@@ -8,9 +8,11 @@ import {
 } from 'react-icons/fi';
 import api, { brokersAPI, bankAccountsAPI } from '@/services/api';
 import { cardsAPI, subscriptionsAPI } from '@/services/api';
+import Link from 'next/link';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import BROKERS_LIST from '@/data/brokers.json';
+import ImportStep from './steps/ImportStep';
 import styles from './OnboardingConfig.module.css';
 
 // Currency input helper - allows free typing with comma/period
@@ -119,6 +121,20 @@ export default function OnboardingConfig({ onComplete }) {
                 console.error('Error saving config:', e);
             }
             setLoading(false);
+            setLoading(false);
+            setStep('import'); // Go to import step instead of cards directly
+        } else if (step === 'import') {
+            // Refresh bank accounts/cards after import
+            try {
+                const [accountsRes, cardsRes] = await Promise.all([
+                    bankAccountsAPI.list(),
+                    cardsAPI.list()
+                ]);
+                if (accountsRes?.data) setBankAccounts(accountsRes.data);
+                if (cardsRes?.data) setCards(prev => [...prev, ...cardsRes.data]);
+            } catch (e) {
+                console.error('Error refreshing data after import:', e);
+            }
             setStep('cards');
         } else if (step === 'cards') {
             setLoading(true);
@@ -183,7 +199,8 @@ export default function OnboardingConfig({ onComplete }) {
 
     const handleBack = () => {
         if (step === 'salary') setStep('balance');
-        else if (step === 'cards') setStep('salary');
+        else if (step === 'import') setStep('salary');
+        else if (step === 'cards') setStep('import');
         else if (step === 'subscriptions') setStep('cards');
         else if (step === 'brokers') setStep('subscriptions');
     };
@@ -256,11 +273,12 @@ export default function OnboardingConfig({ onComplete }) {
                         <div
                             className={styles.progressFill}
                             style={{
-                                width: step === 'balance' ? '16%' :
-                                    step === 'salary' ? '33%' :
-                                        step === 'cards' ? '50%' :
-                                            step === 'subscriptions' ? '66%' :
-                                                step === 'brokers' ? '83%' : '100%'
+                                width: step === 'balance' ? '14%' :
+                                    step === 'salary' ? '28%' :
+                                        step === 'import' ? '42%' :
+                                            step === 'cards' ? '57%' :
+                                                step === 'subscriptions' ? '71%' :
+                                                    step === 'brokers' ? '85%' : '100%'
                             }}
                         />
                     </div>
@@ -347,6 +365,19 @@ export default function OnboardingConfig({ onComplete }) {
                                 <p className={styles.hint}>
                                     💰 Seu salário aparecerá como "Salário" nas transações
                                 </p>
+                            </motion.div>
+                        )}
+
+                        {/* STEP: Import */}
+                        {step === 'import' && (
+                            <motion.div
+                                key="import"
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className={styles.stepContent}
+                            >
+                                <ImportStep onNext={handleNext} onSkip={handleNext} />
                             </motion.div>
                         )}
 
@@ -541,8 +572,8 @@ export default function OnboardingConfig({ onComplete }) {
                         )}
                     </AnimatePresence>
 
-                    {/* Navigation */}
-                    <div className={styles.navigation}>
+                    {/* Navigation - Hide for Import step as it has its own buttons */}
+                    <div className={styles.navigation} style={{ display: step === 'import' ? 'none' : 'flex' }}>
                         {step !== 'balance' && step !== 'complete' && (
                             <button className={styles.backBtn} onClick={handleBack}>
                                 <FiArrowLeft /> Voltar
