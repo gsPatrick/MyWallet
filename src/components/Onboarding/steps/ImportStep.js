@@ -358,30 +358,80 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
 
     // RENDER: Preview
     if (step === 'preview') {
+        // Calculate Totals
+        const transactions = previewData?.transactions || [];
+        const totalCredits = transactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
+        const totalDebits = transactions.filter(t => t.amount < 0).reduce((acc, t) => acc + t.amount, 0);
+        const monthName = MONTHS[(previewData?.referenceMonth || 1) - 1];
+
         return (
             <div style={{ padding: '1rem' }}>
-                <h3>Confirmar Importação</h3>
-                <div style={{ background: '#222', padding: '1rem', borderRadius: '8px', margin: '1rem 0' }}>
-                    <div style={{ marginBottom: '0.5rem' }}>
-                        <span style={{ color: '#888' }}>Arquivo:</span> <strong style={{ color: '#fff' }}>{previewData?.fileName}</strong>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <h3>Confirmar do {importType === 'CARD' ? 'Fatura' : 'Extrato'}</h3>
+                    <p style={{ color: '#888' }}>
+                        Referência: <strong style={{ color: '#fff' }}>{monthName} de {previewData?.referenceYear}</strong>
+                    </p>
+                </div>
+
+                <div style={{ background: '#222', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #333' }}>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #333' }}>
+                        <div style={{
+                            width: '48px', height: '48px', borderRadius: '50%', background: '#fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '4px'
+                        }}>
+                            {selectedBank?.logo ?
+                                <img src={selectedBank.logo} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                : <FiFileText color="#333" size={24} />
+                            }
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff' }}>{previewData?.bankName}</div>
+                            <div style={{ color: '#888', fontSize: '0.9rem' }}>
+                                {previewData?.accountNumber} • {importType === 'CARD' ? 'Cartão de Crédito' : 'Conta Corrente'}
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ marginBottom: '0.5rem' }}>
-                        <span style={{ color: '#888' }}>Período:</span> <strong style={{ color: '#fff' }}>{previewData?.referenceMonth}/{previewData?.referenceYear}</strong>
-                    </div>
-                    <div style={{ marginBottom: '0.5rem' }}>
-                        <span style={{ color: '#888' }}>Transações:</span> <strong style={{ color: '#fff' }}>{previewData?.totalTransactions}</strong>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '12px' }}>
+                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#10B981', marginBottom: '4px' }}>Entradas</span>
+                            <strong style={{ fontSize: '1.1rem', color: '#10B981', display: 'block' }}>
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalCredits)}
+                            </strong>
+                            <span style={{ fontSize: '0.7rem', color: '#10B981', opacity: 0.8 }}>
+                                {transactions.filter(t => t.amount > 0).length} lançamentos
+                            </span>
+                        </div>
+                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '12px' }}>
+                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#ef4444', marginBottom: '4px' }}>Saídas</span>
+                            <strong style={{ fontSize: '1.1rem', color: '#ef4444', display: 'block' }}>
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalDebits)}
+                            </strong>
+                            <span style={{ fontSize: '0.7rem', color: '#ef4444', opacity: 0.8 }}>
+                                {transactions.filter(t => t.amount < 0).length} lançamentos
+                            </span>
+                        </div>
                     </div>
 
                     {/* Type Override Only For Account Mode (Investments) */}
                     {importType === 'ACCOUNT' && (
-                        <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <input type="checkbox" checked={isInvestment} onChange={e => setIsInvestment(e.target.checked)} id="invest-check" />
-                            <label htmlFor="invest-check" style={{ color: '#fff' }}>É conta de investimentos?</label>
+                        <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '1rem', borderTop: '1px solid #333' }}>
+                            <input
+                                type="checkbox"
+                                checked={isInvestment}
+                                onChange={e => setIsInvestment(e.target.checked)}
+                                id="invest-check"
+                                style={{ transform: 'scale(1.2)', cursor: 'pointer', accentColor: '#6366F1' }}
+                            />
+                            <label htmlFor="invest-check" style={{ color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                Marcar como conta de <strong>Investimentos</strong>
+                            </label>
                         </div>
                     )}
                 </div>
 
-                {error && <div style={{ color: '#f87171', marginBottom: '1rem' }}>{error}</div>}
+                {error && <div style={{ color: '#f87171', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
                 <Button onClick={handleConfirmImport} disabled={loading} style={{ width: '100%', marginBottom: '1rem' }}>
                     {loading ? 'Processando...' : 'Confirmar Importação'}
