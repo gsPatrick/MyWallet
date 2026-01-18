@@ -14,7 +14,7 @@ import {
     FiArrowRight, FiArrowLeft, FiCheck, FiCheckCircle,
     FiUser, FiBriefcase, FiLayers, FiDollarSign, FiCalendar,
     FiFileText, FiCreditCard, FiRepeat, FiPlus, FiEdit2, FiTrash2,
-    FiTool, FiHome, FiTrendingUp
+    FiTool, FiHome, FiTrendingUp, FiUpload
 } from 'react-icons/fi';
 import { BiWallet } from 'react-icons/bi';
 import { profilesAPI, cardsAPI, subscriptionsAPI, brokersAPI } from '@/services/api';
@@ -22,7 +22,7 @@ import bankAccountService from '@/services/bankAccountService';
 import { useProfiles } from '@/contexts/ProfileContext';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
-import BankAccountsStep from './steps/BankAccountsStep'; // NEW IMPORT
+import ImportStep from './steps/ImportStep'; // NEW IMPORT
 import BankAccountModal from './BankAccountModal';
 import BrokerModal from './BrokerModal';
 import cardBanksData from '@/data/cardBanks.json';
@@ -223,6 +223,25 @@ export default function ProfileWizard({ onComplete }) {
     const [editingBank, setEditingBank] = useState(null);
     const [currentProfileContext, setCurrentProfileContext] = useState('personal'); // 'personal' or 'business'
     const [reopenCardModal, setReopenCardModal] = useState(false); // Flag to reopen CardModal after adding bank
+    const [showImport, setShowImport] = useState(false);
+    const [importContext, setImportContext] = useState(null); // 'personal' or 'business'
+
+    const handleImportFinish = (result) => {
+        // result = { success, bankAccount, detectedSubscriptions }
+        if (result?.success && result?.bankAccount) {
+            const context = importContext || 'personal';
+            const setBanks = context === 'personal' ? setPersonalBanks : setBusinessBanks;
+            setBanks(prev => {
+                const isFirst = prev.length === 0;
+                return [...prev, { ...result.bankAccount, isDefault: isFirst }];
+            });
+
+            if (result.detectedSubscriptions?.length > 0) {
+                const setSubs = context === 'personal' ? setPersonalSubs : setBusinessSubs;
+                setSubs(prev => [...prev, ...result.detectedSubscriptions]);
+            }
+        }
+    };
 
     // Bank Accounts - Personal (array of banks)
     const [personalBanks, setPersonalBanks] = useState(savedState?.personalBanks || [
@@ -1155,22 +1174,99 @@ export default function ProfileWizard({ onComplete }) {
                                 exit={{ opacity: 0, x: -50 }}
                                 className={styles.stepContent}
                             >
-                                <BankAccountsStep
-                                    accounts={personalBanks}
-                                    setAccounts={setPersonalBanks}
-                                    onNext={handleNext}
-                                    onBack={handleBack}
-                                    loading={loading}
-                                    title="Suas Contas Bancárias (Pessoal)"
-                                    subtitle="Configure suas contas e carteiras para controlar suas finanças pessoais"
-                                    onSetDefault={(idx) => setDefaultBank('personal', idx)}
-                                    // Handle detected subscriptions by adding to personalSubs
-                                    onImportSuccess={(newSubs) => {
-                                        if (newSubs && newSubs.length > 0) {
-                                            setPersonalSubs(prev => [...prev, ...newSubs]);
-                                        }
-                                    }}
-                                />
+                                {/* STEP: Banks - Personal (Restored + Import) */}
+                                {step === 'banks_personal' && (
+                                    <motion.div
+                                        key="banks_personal"
+                                        initial={{ opacity: 0, x: 50 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -50 }}
+                                        className={styles.stepContent}
+                                    >
+                                        {showImport && importContext === 'personal' ? (
+                                            <ImportStep
+                                                isSubComponent={true}
+                                                onSkip={() => setShowImport(false)}
+                                                onConfirmHelper={handleImportFinish}
+                                            />
+                                        ) : (
+                                            <>
+                                                <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, #6366F1, #8b5cf6)' }}>
+                                                    <BiWallet />
+                                                </div>
+                                                <h2>Suas Contas Bancárias (Pessoal)</h2>
+                                                <p className={styles.description}>
+                                                    Configure suas contas e carteiras para controlar suas finanças pessoais
+                                                </p>
+
+                                                {/* Bank List */}
+                                                <div className={styles.itemsList}>
+                                                    {personalBanks.map((bank, idx) => (
+                                                        <div key={idx} className={styles.itemRow}>
+                                                            {bank.icon ? (
+                                                                <div className={styles.bankLogoIcon}>
+                                                                    <img src={bank.icon} alt={bank.bankName} />
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className={styles.subIcon}
+                                                                    style={{ background: bank.color || '#6366F1' }}
+                                                                >
+                                                                    <BiWallet />
+                                                                </div>
+                                                            )}
+                                                            <div className={styles.itemInfo}>
+                                                                <strong>{bank.nickname}</strong>
+                                                                <span>
+                                                                    {bank.bankName} • {formatCurrency(bank.balance)}
+                                                                    {bank.isDefault && ' (Padrão)'}
+                                                                </span>
+                                                            </div>
+                                                            <div className={styles.itemActions}>
+                                                                {!bank.isDefault && (
+                                                                    <button
+                                                                        onClick={() => setDefaultBank('personal', idx)}
+                                                                        title="Definir como padrão"
+                                                                        className={styles.setDefaultBtn}
+                                                                    >
+                                                                        <FiCheck />
+                                                                    </button>
+                                                                )}
+                                                                <button onClick={() => openBankModal('personal', bank, idx)}>
+                                                                    <FiEdit2 />
+                                                                </button>
+                                                                {personalBanks.length > 1 && (
+                                                                    <button onClick={() => removeBank('personal', idx)}>
+                                                                        <FiTrash2 />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <button
+                                                    className={styles.addButton}
+                                                    onClick={() => openBankModal('personal')}
+                                                >
+                                                    <FiPlus /> Adicionar Banco/Carteira
+                                                </button>
+
+                                                <button
+                                                    className={styles.addButton}
+                                                    onClick={() => { setImportContext('personal'); setShowImport(true); }}
+                                                    style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #555' }}
+                                                >
+                                                    <FiUpload /> Importar (OFX)
+                                                </button>
+
+                                                <p className={styles.hint}>
+                                                    💡 Você já tem a carteira padrão "MyWallet". Adicione outros bancos se desejar.
+                                                </p>
+                                            </>
+                                        )}
+                                    </motion.div>
+                                )}
                             </motion.div>
                         )}
 
@@ -1375,22 +1471,99 @@ export default function ProfileWizard({ onComplete }) {
                                 exit={{ opacity: 0, x: -50 }}
                                 className={styles.stepContent}
                             >
-                                <BankAccountsStep
-                                    accounts={businessBanks}
-                                    setAccounts={setBusinessBanks}
-                                    onNext={handleNext}
-                                    onBack={handleBack}
-                                    loading={loading}
-                                    title="Suas Contas Bancárias (Empresa)"
-                                    subtitle="Configure as contas da sua empresa para controlar as finanças PJ"
-                                    onSetDefault={(idx) => setDefaultBank('business', idx)}
-                                    // Handle detected subscriptions by adding to businessSubs
-                                    onImportSuccess={(newSubs) => {
-                                        if (newSubs && newSubs.length > 0) {
-                                            setBusinessSubs(prev => [...prev, ...newSubs]);
-                                        }
-                                    }}
-                                />
+                                {/* STEP: Banks - Business (Restored + Import) */}
+                                {step === 'banks_business' && (
+                                    <motion.div
+                                        key="banks_business"
+                                        initial={{ opacity: 0, x: 50 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -50 }}
+                                        className={styles.stepContent}
+                                    >
+                                        {showImport && importContext === 'business' ? (
+                                            <ImportStep
+                                                isSubComponent={true}
+                                                onSkip={() => setShowImport(false)}
+                                                onConfirmHelper={handleImportFinish}
+                                            />
+                                        ) : (
+                                            <>
+                                                <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+                                                    <BiWallet />
+                                                </div>
+                                                <h2>Suas Contas Bancárias (Empresa)</h2>
+                                                <p className={styles.description}>
+                                                    Configure as contas da sua empresa para controlar as finanças PJ
+                                                </p>
+
+                                                {/* Bank List */}
+                                                <div className={styles.itemsList}>
+                                                    {businessBanks.map((bank, idx) => (
+                                                        <div key={idx} className={styles.itemRow}>
+                                                            {bank.icon ? (
+                                                                <div className={styles.bankLogoIcon}>
+                                                                    <img src={bank.icon} alt={bank.bankName} />
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className={styles.subIcon}
+                                                                    style={{ background: bank.color || '#10B981' }}
+                                                                >
+                                                                    <BiWallet />
+                                                                </div>
+                                                            )}
+                                                            <div className={styles.itemInfo}>
+                                                                <strong>{bank.nickname}</strong>
+                                                                <span>
+                                                                    {bank.bankName} • {formatCurrency(bank.balance)}
+                                                                    {bank.isDefault && ' (Padrão)'}
+                                                                </span>
+                                                            </div>
+                                                            <div className={styles.itemActions}>
+                                                                {!bank.isDefault && (
+                                                                    <button
+                                                                        onClick={() => setDefaultBank('business', idx)}
+                                                                        title="Definir como padrão"
+                                                                        className={styles.setDefaultBtn}
+                                                                    >
+                                                                        <FiCheck />
+                                                                    </button>
+                                                                )}
+                                                                <button onClick={() => openBankModal('business', bank, idx)}>
+                                                                    <FiEdit2 />
+                                                                </button>
+                                                                {businessBanks.length > 1 && (
+                                                                    <button onClick={() => removeBank('business', idx)}>
+                                                                        <FiTrash2 />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <button
+                                                    className={styles.addButton}
+                                                    onClick={() => openBankModal('business')}
+                                                >
+                                                    <FiPlus /> Adicionar Banco/Carteira
+                                                </button>
+
+                                                <button
+                                                    className={styles.addButton}
+                                                    onClick={() => { setImportContext('business'); setShowImport(true); }}
+                                                    style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #555' }}
+                                                >
+                                                    <FiUpload /> Importar (OFX)
+                                                </button>
+
+                                                <p className={styles.hint}>
+                                                    💡 Você já tem a carteira padrão "MyWallet (Empresa)". Adicione outros bancos se desejar.
+                                                </p>
+                                            </>
+                                        )}
+                                    </motion.div>
+                                )}
                             </motion.div>
                         )}
 
