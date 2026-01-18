@@ -417,8 +417,28 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                     })}
                 </div>
 
-                <div style={{ textAlign: 'center' }}>
-                    <Button variant="secondary" onClick={() => setStep('select-type')} disabled={loading}>Voltar</Button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                    <Button
+                        onClick={() => {
+                            setImportType(null);
+                            setStep('select-type');
+                        }}
+                        disabled={loading}
+                        style={{ background: '#2a2a2a', border: '1px solid #444' }}
+                    >
+                        <FiCreditCard style={{ marginRight: '8px' }} />
+                        Importar Cartão / Outro Tipo
+                    </Button>
+
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <Button variant="secondary" onClick={() => setStep('select-bank')} disabled={loading} style={{ flex: 1 }}>
+                            Trocar Banco
+                        </Button>
+                        <Button variant="primary" onClick={onSkip} disabled={loading} style={{ flex: 1, background: '#10B981' }}>
+                            <FiCheckCircle style={{ marginRight: '8px' }} />
+                            Concluir
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
