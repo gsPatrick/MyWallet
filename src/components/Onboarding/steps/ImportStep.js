@@ -606,6 +606,45 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                                     />
                                 </div>
                             </div>
+
+                            {/* Additional Card Details */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#fff' }}>Bandeira</label>
+                                    <select
+                                        value={cardForm.brand}
+                                        onChange={e => setCardForm(prev => ({ ...prev, brand: e.target.value }))}
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #444', background: '#222', color: '#fff' }}
+                                    >
+                                        <option value="MASTERCARD">Mastercard</option>
+                                        <option value="VISA">Visa</option>
+                                        <option value="ELO">Elo</option>
+                                        <option value="AMEX">American Express</option>
+                                        <option value="HIPERCARD">Hipercard</option>
+                                        <option value="OTHER">Outra</option>
+                                    </select>
+                                </div>
+                                <Input
+                                    label="Limite Total (R$)"
+                                    value={cardForm.creditLimit}
+                                    onChange={e => setCardForm(prev => ({ ...prev, creditLimit: e.target.value }))}
+                                    placeholder="0,00"
+                                    type="number"
+                                />
+                            </div>
+
+                            <div style={{ marginTop: '1rem' }}>
+                                <Input
+                                    label="Limite Bloqueado (R$)"
+                                    value={cardForm.blockedLimit}
+                                    onChange={e => setCardForm(prev => ({ ...prev, blockedLimit: e.target.value }))}
+                                    placeholder="0,00 (Opcional)"
+                                    type="number"
+                                />
+                                <span style={{ fontSize: '0.8rem', color: '#888', marginTop: '4px', display: 'block' }}>
+                                    Valor do limite que você optou por bloquear no app do banco.
+                                </span>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -619,7 +658,7 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                 <Button variant="secondary" onClick={() => setStep(importType === 'CARD' ? 'upload-card' : 'upload-account')} disabled={loading} style={{ width: '100%' }}>
                     Cancelar
                 </Button>
-            </div>
+            </div >
         );
     }
 
