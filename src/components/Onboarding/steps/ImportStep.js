@@ -129,9 +129,8 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
 
         try {
             const response = await importAPI.confirmImport({
-                ...previewData,
+                data: previewData,
                 type: importType === 'CARD' ? 'CREDIT_CARD' : (isInvestment ? 'INVESTMENT' : 'CHECKING'),
-                // Ensure we send the Forced Dates
                 referenceMonth: previewData.referenceMonth,
                 referenceYear: previewData.referenceYear
             });
