@@ -227,19 +227,32 @@ export default function ProfileWizard({ onComplete }) {
     const [importContext, setImportContext] = useState(null); // 'personal' or 'business'
 
     const handleImportFinish = (result) => {
-        // result = { success, bankAccount, detectedSubscriptions }
-        if (result?.success && result?.bankAccount) {
+        // result = { success, entity, detectedSubscriptions }
+        // Note: Backend returns 'entity', older code might expect 'bankAccount'
+        const entity = result?.entity || result?.bankAccount;
+
+        if (result?.success && entity) {
             const context = importContext || 'personal';
-            const setBanks = context === 'personal' ? setPersonalBanks : setBusinessBanks;
-            setBanks(prev => {
-                const isFirst = prev.length === 0;
-                return [...prev, { ...result.bankAccount, isDefault: isFirst }];
-            });
+
+            // Distinguish between Card and Bank Account
+            if (entity.type === 'CREDIT_CARD') {
+                const setCards = context === 'personal' ? setPersonalCards : setBusinessCards;
+                setCards(prev => [...prev, entity]);
+            } else {
+                const setBanks = context === 'personal' ? setPersonalBanks : setBusinessBanks;
+                setBanks(prev => {
+                    const isFirst = prev.length === 0;
+                    return [...prev, { ...entity, isDefault: isFirst }];
+                });
+            }
 
             if (result.detectedSubscriptions?.length > 0) {
                 const setSubs = context === 'personal' ? setPersonalSubs : setBusinessSubs;
                 setSubs(prev => [...prev, ...result.detectedSubscriptions]);
             }
+
+            // Close the import view
+            setShowImport(false);
         }
     };
 
