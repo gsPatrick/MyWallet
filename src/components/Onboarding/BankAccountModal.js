@@ -94,7 +94,7 @@ export default function BankAccountModal({
         if (editingBank) {
             setSelectedBankKey(editingBank.bankKey || '');
             setNickname(editingBank.nickname || '');
-            setBalance(editingBank.balance ? applyCurrencyMask(String(editingBank.balance * 100)) : '');
+            setBalance(editingBank.balance ? editingBank.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '');
             setColor(editingBank.color || '#6366F1');
             setIsCustom(editingBank.isCustom || false);
         } else {
