@@ -281,6 +281,31 @@ export default function ProfileWizard({ onComplete }) {
             } else {
                 // It is a specific Bank Account (Checking/Investment) import
                 setBanks(prev => {
+                    const bankName = entity.bankName || entity.nickname || 'Banco Desconhecido';
+
+                    // Check if this bank already exists (e.g. created as a shell by a Card import)
+                    const existingIndex = prev.findIndex(b =>
+                        (b.bankName && b.bankName.toLowerCase() === bankName.toLowerCase()) ||
+                        (b.nickname && b.nickname.toLowerCase() === bankName.toLowerCase())
+                    );
+
+                    if (existingIndex >= 0) {
+                        // Update existing bank (Preserves the ID so any linked cards stay linked)
+                        const updated = [...prev];
+                        updated[existingIndex] = {
+                            ...updated[existingIndex],
+                            ...entity,
+                            // Ensure ID is preserved from the existing one, 
+                            // unless the existing one was a temp one and we want to allow replacing?
+                            // No, KEEP the existing ID because Cards reference it!
+                            id: updated[existingIndex].id || updated[existingIndex]._index,
+                            // Update balance/type if available
+                            balance: entity.balance ?? updated[existingIndex].balance,
+                            type: entity.type || updated[existingIndex].type
+                        };
+                        return updated;
+                    }
+
                     const isFirst = prev.length === 0;
                     return [...prev, { ...entity, isDefault: isFirst }];
                 });
