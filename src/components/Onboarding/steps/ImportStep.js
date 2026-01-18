@@ -50,7 +50,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         color: '#1a1a2e',
         brand: 'MASTERCARD', // Default guess
         creditLimit: '',
-        blockedLimit: ''
+        blockedLimit: '',
+        availableLimit: '',
+        holderName: ''
     });
 
     // Mock Banks List (Same as before)
@@ -213,7 +215,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                             dueDay: parseInt(cardForm.dueDay),
                             brand: cardForm.brand,
                             creditLimit: parseFloat(cardForm.creditLimit || 0),
-                            blockedLimit: parseFloat(cardForm.blockedLimit || 0)
+                            blockedLimit: parseFloat(cardForm.blockedLimit || 0),
+                            availableLimit: parseFloat(cardForm.availableLimit || 0),
+                            holderName: cardForm.holderName
                         };
                     }
                     onConfirmHelper(enhancedResponse);
@@ -550,6 +554,13 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                                     placeholder="Ex: Nubank Platinum"
                                     fullWidth
                                 />
+                                <Input
+                                    label="Nome do Titular"
+                                    value={cardForm.holderName}
+                                    onChange={e => setCardForm(prev => ({ ...prev, holderName: e.target.value }))}
+                                    placeholder="Como aparece no cartão"
+                                    fullWidth
+                                />
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <Input
@@ -633,23 +644,36 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                                 />
                             </div>
 
-                            <div style={{ marginTop: '1rem' }}>
-                                <Input
-                                    label="Limite Bloqueado (R$)"
-                                    value={cardForm.blockedLimit}
-                                    onChange={e => setCardForm(prev => ({ ...prev, blockedLimit: e.target.value }))}
-                                    placeholder="0,00 (Opcional)"
                                     type="number"
                                 />
-                                <span style={{ fontSize: '0.8rem', color: '#888', marginTop: '4px', display: 'block' }}>
-                                    Valor do limite que você optou por bloquear no app do banco.
-                                </span>
+                            </div>
+
+                            <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <Input
+                                    label="Limite Disponível (R$)"
+                                    value={cardForm.availableLimit}
+                                    onChange={e => setCardForm(prev => ({ ...prev, availableLimit: e.target.value }))}
+                                    placeholder="0,00"
+                                    type="number"
+                                />
+                                <div>
+                                    <Input
+                                        label="Limite Bloqueado (R$)"
+                                        value={cardForm.blockedLimit}
+                                        onChange={e => setCardForm(prev => ({ ...prev, blockedLimit: e.target.value }))}
+                                        placeholder="0,00 (Opcional)"
+                                        type="number"
+                                    />
+                                    <span style={{ fontSize: '0.7rem', color: '#888', marginTop: '4px', display: 'block' }}>
+                                        Opcional: Valor travado no app.
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     )}
-                </div>
+            </div>
 
-                {error && <div style={{ color: '#f87171', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
+                { error && <div style={{ color: '#f87171', marginBottom: '1rem', textAlign: 'center' }}>{error}</div> }
 
                 <Button onClick={handleConfirmImport} disabled={loading} style={{ width: '100%', marginBottom: '1rem' }}>
                     {loading ? 'Processando...' : 'Confirmar Importação'}
