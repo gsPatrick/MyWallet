@@ -644,9 +644,7 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                                 />
                             </div>
 
-                                    type="number"
-                                />
-                            </div>
+
 
                             <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <Input
@@ -671,9 +669,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                             </div>
                         </div>
                     )}
-            </div>
+                </div>
 
-                { error && <div style={{ color: '#f87171', marginBottom: '1rem', textAlign: 'center' }}>{error}</div> }
+                {error && <div style={{ color: '#f87171', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
                 <Button onClick={handleConfirmImport} disabled={loading} style={{ width: '100%', marginBottom: '1rem' }}>
                     {loading ? 'Processando...' : 'Confirmar Importação'}
