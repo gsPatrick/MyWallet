@@ -1146,9 +1146,7 @@ export default function ProfileWizard({ onComplete }) {
                             </motion.div>
                         )}
 
-                        {/* STEP: Banks - Personal */}
-                        {step === 'banks_personal' && (
-                            {/* STEP: Banks - Personal (Updated to use BankAccountsStep) */ }
+                        {/* STEP: Banks - Personal (Updated to use BankAccountsStep) */}
                         {step === 'banks_personal' && (
                             <motion.div
                                 key="banks_personal"
