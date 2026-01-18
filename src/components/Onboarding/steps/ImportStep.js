@@ -192,7 +192,16 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                     // Start with the backend response
                     const enhancedResponse = { ...response };
 
-                    // Override the entity details with our form state
+                    // Override the entity details with our form state AND selected bank metadata
+                    enhancedResponse.entity = {
+                        ...enhancedResponse.entity,
+                        // Inject Selected Bank Metadata (Icon/Color/Name) if not present or better
+                        icon: selectedBank?.logo || null,
+                        color: (cardForm.color !== '#1a1a2e' ? cardForm.color : null) || (selectedBank?.color || '#6366F1'),
+                        bankName: selectedBank?.name || enhancedResponse.entity.bankName,
+                        nickname: selectedBank?.name || enhancedResponse.entity.bankName,
+                    };
+
                     if (importType === 'CARD') {
                         enhancedResponse.entity = {
                             ...enhancedResponse.entity,
@@ -200,7 +209,6 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                             lastFourDigits: cardForm.lastFourDigits,
                             closingDay: parseInt(cardForm.closingDay),
                             dueDay: parseInt(cardForm.dueDay),
-                            color: cardForm.color,
                             brand: cardForm.brand
                         };
                     }
@@ -591,27 +599,25 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         );
     }
 
-    // RENDER: Complete (Final success screen, maybe not needed if we return to grid, but useful for Card flow)
+    // RENDER: Complete (Final success screen)
     if (step === 'complete') {
         return (
             <div style={{ padding: '2rem', textAlign: 'center' }}>
                 <FiCheckCircle size={48} color="#10B981" style={{ marginBottom: '1rem' }} />
                 <h3>Importação Concluída!</h3>
                 <p style={{ color: '#888', marginBottom: '2rem' }}>
-                    Seus dados foram importados com sucesso.
+                    {importType === 'CARD' ? 'Fatura importada com sucesso.' : 'Extrato bancário importado com sucesso.'}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <Button onClick={() => {
-                        // Reset to import more?
-                        if (importType === 'CARD') {
-                            setStep('upload-card'); // Process another month
-                            // Maybe reset file input if needed?
-                        } else {
-                            setStep('upload-account');
-                        }
-                    }}>Importar Outro Mês</Button>
+                        // Reset to Select Type to allow importing the other item (Card <-> Account)
+                        setStep('select-type');
+                        setPreviewData(null);
+                        setCardForm(prev => ({ ...prev, name: '', lastFourDigits: '' }));
+                        // Keep selectedBank!
+                    }}>Importar Outro Item (Cartão/Extrato)</Button>
 
-                    <Button variant="secondary" onClick={onSkip}>Finalizar</Button>
+                    <Button variant="secondary" onClick={onSkip}>Concluir e Fechar</Button>
                 </div>
             </div>
         );
