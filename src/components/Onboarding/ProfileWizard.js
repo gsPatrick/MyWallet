@@ -826,7 +826,12 @@ export default function ProfileWizard({ onComplete }) {
                     }
 
                     try {
-                        const result = await cardsAPI.create({ ...card, bankAccountId: realBankId });
+                        const result = await cardsAPI.create({
+                            ...card,
+                            bankAccountId: realBankId,
+                            source: 'MANUAL', // Force Manual Source
+                            isVirtual: false  // It is a real card, not a temporary wizard entity
+                        });
                         const createdCard = result?.card || result;
                         if (createdCard?.id) {
                             // Map by index and by name pattern
