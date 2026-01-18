@@ -57,9 +57,34 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
             try {
                 const response = await importAPI.previewOFX(content);
                 if (response.success) {
+                    const data = response.data;
+
+                    // Auto-detect Reference Date (Mode: Most frequent month in transactions)
+                    let refMonth = new Date().getMonth();
+                    let refYear = new Date().getFullYear();
+
+                    if (data.transactions && data.transactions.length > 0) {
+                        const monthCounts = {};
+                        data.transactions.forEach(t => {
+                            const d = new Date(t.date);
+                            const key = `${d.getFullYear()}-${d.getMonth()}`;
+                            monthCounts[key] = (monthCounts[key] || 0) + 1;
+                        });
+
+                        // Find max
+                        const bestKey = Object.keys(monthCounts).reduce((a, b) => monthCounts[a] > monthCounts[b] ? a : b);
+                        if (bestKey) {
+                            const [y, m] = bestKey.split('-');
+                            refYear = parseInt(y);
+                            refMonth = parseInt(m);
+                        }
+                    }
+
                     setPreviewData({
-                        ...response.data,
-                        fileName: file.name
+                        ...data,
+                        fileName: file.name,
+                        referenceMonth: refMonth,
+                        referenceYear: refYear
                     });
                 } else {
                     setError(`Não foi possível ler ${file.name}`);
@@ -81,7 +106,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         try {
             const response = await importAPI.confirmImport({
                 ...previewData,
-                type: isInvestment ? 'INVESTMENT' : 'CHECKING'
+                type: isInvestment ? 'INVESTMENT' : 'CHECKING',
+                referenceMonth: previewData.referenceMonth,
+                referenceYear: previewData.referenceYear
             });
 
             // Update queue item
