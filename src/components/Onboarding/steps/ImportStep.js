@@ -132,7 +132,8 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                 data: previewData,
                 type: importType === 'CARD' ? 'CREDIT_CARD' : (isInvestment ? 'INVESTMENT' : 'CHECKING'),
                 referenceMonth: previewData.referenceMonth,
-                referenceYear: previewData.referenceYear
+                referenceYear: previewData.referenceYear,
+                dryRun: !!isSubComponent // If in wizard, just parse/validate, don't save to DB yet
             });
 
             // Mark as success
@@ -385,9 +386,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                             }
                         </div>
                         <div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff' }}>{previewData?.bankName}</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff' }}>{previewData?.bank?.name}</div>
                             <div style={{ color: '#888', fontSize: '0.9rem' }}>
-                                {previewData?.accountNumber} • {importType === 'CARD' ? 'Cartão de Crédito' : 'Conta Corrente'}
+                                {previewData?.bank?.accountNumber} • {importType === 'CARD' ? 'Cartão de Crédito' : 'Conta Corrente'}
                             </div>
                         </div>
                     </div>
