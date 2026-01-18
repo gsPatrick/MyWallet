@@ -880,7 +880,12 @@ export default function ProfileWizard({ onComplete }) {
                     }
 
                     try {
-                        const result = await cardsAPI.create({ ...card, bankAccountId: realBankId });
+                        const result = await cardsAPI.create({
+                            ...card,
+                            bankAccountId: realBankId,
+                            source: 'MANUAL',
+                            isVirtual: false
+                        });
                         const createdCard = result?.card || result;
                         if (createdCard?.id) {
                             const oldRef = `${card.name} •••• ${card.lastFourDigits}`;
