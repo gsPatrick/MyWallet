@@ -220,7 +220,8 @@ export default function ProfileWizard({ onComplete }) {
     const [showBankModal, setShowBankModal] = useState(false);
     const [editingCard, setEditingCard] = useState(null);
     const [editingSub, setEditingSub] = useState(null);
-    const [editingBank, setEditingBank] = useState(null);
+    const [editingBank, setEditingBank] = useState(null); // Bank being edited
+    const [importedTransactions, setImportedTransactions] = useState(new Map());
     const [currentProfileContext, setCurrentProfileContext] = useState('personal'); // 'personal' or 'business'
     const [reopenCardModal, setReopenCardModal] = useState(false); // Flag to reopen CardModal after adding bank
     const [showImport, setShowImport] = useState(false);
@@ -278,40 +279,43 @@ export default function ProfileWizard({ onComplete }) {
                 // Add Card (linked to the bank)
                 setCards(prev => [...prev, { ...entity, bankAccountId: bankId }]);
 
-            } else {
-                // It is a specific Bank Account (Checking/Investment) import
-                setBanks(prev => {
-                    const bankName = entity.bankName || entity.nickname || 'Banco Desconhecido';
+                // Store transactions for later persistence
+                if (result.transactions && result.transactions.length > 0) {
+                    setImportedTransactions(prev => new Map(prev).set(entity.id || entity._index || `temp-card-${Date.now()}`, result.transactions));
+                }
 
-                    // Check if this bank already exists (e.g. created as a shell by a Card import)
+            } else {
+                // Bank Account (Checking/Investment) logic
+                let targetId = null;
+
+                setBanks(prev => {
+                    // Check update vs create
                     const existingIndex = prev.findIndex(b =>
-                        (b.bankName && b.bankName.toLowerCase() === bankName.toLowerCase()) ||
-                        (b.nickname && b.nickname.toLowerCase() === bankName.toLowerCase())
+                        (b.id && b.id === entity.id) ||
+                        (b.accountNumber && b.accountNumber === entity.accountNumber)
                     );
 
                     if (existingIndex >= 0) {
-                        // Update existing bank (Preserves the ID so any linked cards stay linked)
+                        // Update existing bank
                         const updated = [...prev];
-                        updated[existingIndex] = {
-                            ...updated[existingIndex],
-                            ...entity,
-                            // Ensure ID is preserved from the existing one, 
-                            // unless the existing one was a temp one and we want to allow replacing?
-                            // No, KEEP the existing ID because Cards reference it!
-                            id: updated[existingIndex].id || updated[existingIndex]._index,
-                            // Update balance/type if available
-                            balance: entity.balance ?? updated[existingIndex].balance,
-                            type: entity.type || updated[existingIndex].type
-                        };
+                        updated[existingIndex] = { ...updated[existingIndex], ...entity };
+                        targetId = updated[existingIndex].id;
                         return updated;
                     }
-
-                    const isFirst = prev.length === 0;
-                    return [...prev, { ...entity, isDefault: isFirst }];
+                    // Add new bank
+                    targetId = entity.id;
+                    return [...prev, entity];
                 });
+
+                // Store transactions
+                if (result.transactions && result.transactions.length > 0) {
+                    // We need to ensure we use the same ID that will be used during creation
+                    // Since 'entity.id' is what we just pushed/updated, use that.
+                    setImportedTransactions(prev => new Map(prev).set(entity.id, result.transactions));
+                }
             }
 
-            if (result.detectedSubscriptions?.length > 0) {
+            if (result.detectedSubscriptions && result.detectedSubscriptions.length > 0) {
                 setSubs(prev => [...prev, ...result.detectedSubscriptions]);
             }
 
@@ -753,6 +757,23 @@ export default function ProfileWizard({ onComplete }) {
                         }
 
                         console.log('🏦 [WIZARD] Created personal bank account:', bank.nickname);
+
+                        // Save Imported Transactions for this Bank
+                        if (bank.id && importedTransactions.has(bank.id) && bankResult?.id) {
+                            const txs = importedTransactions.get(bank.id);
+                            console.log(`💾 [WIZARD] Saving ${txs.length} transactions for Bank ${bank.nickname}...`);
+                            await importAPI.confirmImport({
+                                data: {
+                                    bank: { id: bankResult.id },
+                                    account: { number: bank.accountNumber },
+                                    transactions: txs
+                                },
+                                type: 'CHECKING', // Default to Checking, logic handles investments if needed
+                                dryRun: false,
+                                overrideTargetId: bankResult.id
+                            });
+                        }
+
                     } catch (bankError) {
                         console.error('⚠️ [WIZARD] Error creating bank account (non-blocking):', bankError);
                     }
@@ -814,6 +835,25 @@ export default function ProfileWizard({ onComplete }) {
                             personalCardIdMap.set(i.toString(), createdCard.id);
                         }
                         console.log('💳 [WIZARD] Created personal card:', card.name, '-> ID:', createdCard?.id);
+
+                        // Save Imported Transactions for this Card?
+                        // We need to look up if we have transactions for the TEMP ID of this card
+                        // The 'card' object here comes from 'personalCards' state, which has the temp ID
+                        if (card.id && importedTransactions.has(card.id) && createdCard?.id) {
+                            const txs = importedTransactions.get(card.id);
+                            console.log(`💾 [WIZARD] Saving ${txs.length} transactions for Card ${createdCard.name}...`);
+                            // We can use importAPI.confirmImport with dryRun=false to bulk save
+                            await importAPI.confirmImport({
+                                data: {
+                                    bank: { id: createdCard.id }, // Target Card ID
+                                    transactions: txs
+                                },
+                                type: 'CREDIT_CARD',
+                                dryRun: false,
+                                overrideTargetId: createdCard.id // Force target ID
+                            });
+                        }
+
                     } catch (e) {
                         console.error('Error creating personal card:', e);
                     }
