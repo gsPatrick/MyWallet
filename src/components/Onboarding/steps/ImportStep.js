@@ -48,7 +48,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         closingDay: 1,
         dueDay: 10,
         color: '#1a1a2e',
-        brand: 'MASTERCARD' // Default guess
+        brand: 'MASTERCARD', // Default guess
+        creditLimit: '',
+        blockedLimit: ''
     });
 
     // Mock Banks List (Same as before)
@@ -209,7 +211,9 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                             lastFourDigits: cardForm.lastFourDigits,
                             closingDay: parseInt(cardForm.closingDay),
                             dueDay: parseInt(cardForm.dueDay),
-                            brand: cardForm.brand
+                            brand: cardForm.brand,
+                            creditLimit: parseFloat(cardForm.creditLimit || 0),
+                            blockedLimit: parseFloat(cardForm.blockedLimit || 0)
                         };
                     }
                     onConfirmHelper(enhancedResponse);
