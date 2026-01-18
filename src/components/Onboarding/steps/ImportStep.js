@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
-import { FiUpload, FiCheckCircle, FiAlertCircle, FiX } from 'react-icons/fi';
+import { FiUpload, FiCheckCircle, FiAlertCircle, FiX, FiCalendar, FiCreditCard, FiFileText, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Button from '@/components/ui/Button';
 import { importAPI } from '@/services/api';
 
 export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubComponent }) {
-    const [step, setStep] = useState('select-bank'); // 'select-bank', 'upload', 'preview-queue', 'complete'
+    const [step, setStep] = useState('select-bank'); // 'select-bank', 'select-type', 'upload-card', 'upload-account', 'preview', 'complete'
     const [selectedBank, setSelectedBank] = useState(null);
-    const [filesQueue, setFilesQueue] = useState([]); // Array of { file, id, status, result, error }
-    const [currentFileIndex, setCurrentFileIndex] = useState(0);
+    const [importType, setImportType] = useState(null); // 'ACCOUNT' or 'CARD'
+
+    // Card Flow State
+    const [cardDate, setCardDate] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() }); // Month 0-11
+
+    // Account Flow State
+    const [accountYear, setAccountYear] = useState(new Date().getFullYear());
+    const [monthlyStatus, setMonthlyStatus] = useState({}); // { '2024-0': 'success' }
+
+    // Upload & Preview State
+    const [currentFile, setCurrentFile] = useState(null);
     const [previewData, setPreviewData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isInvestment, setIsInvestment] = useState(false);
+    const [targetMonthForUpload, setTargetMonthForUpload] = useState(null); // For Account Grid upload
 
-    // Mock Banks List
+    // Mock Banks List (Same as before)
     const BANKS = [
         { id: 'nubank', name: 'Nubank', color: '#820ad1', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Nubank_logo_2021.svg' },
         { id: 'itau', name: 'Itaú', color: '#ec7000', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2e/Ita%C3%fa_Unibanco_logo_%282023%29.svg' },
@@ -24,32 +34,51 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         { id: 'other', name: 'Outro', color: '#333333', logo: null }
     ];
 
+    const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
     const handleBankSelect = (bank) => {
         setSelectedBank(bank);
-        setStep('upload');
+        setStep('select-type');
     };
 
-    // Handle initial file selection (multiple)
-    const handleFileChange = (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length > 0) {
-            const queue = files.map((f, i) => ({
-                id: i,
-                file: f,
-                status: 'pending' // pending, processing, success, error
-            }));
-            setFilesQueue(queue);
-            setCurrentFileIndex(0);
-            setStep('preview-queue');
-            // Start first
-            loadPreview(queue[0].file);
+    const handleTypeSelect = (type) => {
+        setImportType(type);
+        if (type === 'CARD') setStep('upload-card');
+        if (type === 'ACCOUNT') setStep('upload-account');
+    };
+
+    // Card Date Helpers
+    const handleCardYearChange = (delta) => {
+        setCardDate(prev => ({ ...prev, year: prev.year + delta }));
+    };
+
+    const handleCardMonthChange = (e) => {
+        setCardDate(prev => ({ ...prev, month: parseInt(e.target.value) }));
+    };
+
+    // Account Year Helpers
+    const handleAccountYearChange = (delta) => {
+        setAccountYear(prev => prev + delta);
+    };
+
+    // File Handling
+    const handleFileSelect = (e, monthIndex = null) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (importType === 'ACCOUNT') {
+            setTargetMonthForUpload(monthIndex);
         }
+
+        setCurrentFile(file);
+        loadPreview(file, monthIndex); // Pass monthIndex for Account context
     };
 
-    const loadPreview = async (file) => {
+    const loadPreview = async (file, monthOverride = null) => {
         setLoading(true);
         setError(null);
         setPreviewData(null);
+        setStep('preview');
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -59,25 +88,20 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                 if (response.success) {
                     const data = response.data;
 
-                    // Auto-detect Reference Date (Mode: Most frequent month in transactions)
-                    let refMonth = new Date().getMonth();
-                    let refYear = new Date().getFullYear();
+                    // Determine Reference Date based on context
+                    let refMonth, refYear;
 
-                    if (data.transactions && data.transactions.length > 0) {
-                        const monthCounts = {};
-                        data.transactions.forEach(t => {
-                            const d = new Date(t.date);
-                            const key = `${d.getFullYear()}-${d.getMonth()}`;
-                            monthCounts[key] = (monthCounts[key] || 0) + 1;
-                        });
-
-                        // Find max
-                        const bestKey = Object.keys(monthCounts).reduce((a, b) => monthCounts[a] > monthCounts[b] ? a : b);
-                        if (bestKey) {
-                            const [y, m] = bestKey.split('-');
-                            refYear = parseInt(y);
-                            refMonth = parseInt(m);
-                        }
+                    if (importType === 'CARD') {
+                        refMonth = cardDate.month + 1; // API expects 1-12
+                        refYear = cardDate.year;
+                    } else if (importType === 'ACCOUNT' && monthOverride !== null) {
+                        refMonth = monthOverride + 1; // API expects 1-12
+                        refYear = accountYear;
+                    } else {
+                        // Fallback to auto-detect
+                        // (Use existing logic or just default to now)
+                        refMonth = new Date().getMonth() + 1;
+                        refYear = new Date().getFullYear();
                     }
 
                     setPreviewData({
@@ -106,53 +130,31 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         try {
             const response = await importAPI.confirmImport({
                 ...previewData,
-                type: isInvestment ? 'INVESTMENT' : 'CHECKING',
+                type: importType === 'CARD' ? 'CREDIT_CARD' : (isInvestment ? 'INVESTMENT' : 'CHECKING'),
+                // Ensure we send the Forced Dates
                 referenceMonth: previewData.referenceMonth,
                 referenceYear: previewData.referenceYear
             });
 
-            // Update queue item
-            const newQueue = [...filesQueue];
-            newQueue[currentFileIndex].status = 'success';
-            newQueue[currentFileIndex].result = response;
-            setFilesQueue(newQueue);
+            // Mark as success
+            if (importType === 'ACCOUNT' && targetMonthForUpload !== null) {
+                const key = `${accountYear}-${targetMonthForUpload}`;
+                setMonthlyStatus(prev => ({ ...prev, [key]: 'success' }));
+                setStep('upload-account'); // Go back to grid
+            } else {
+                setStep('complete'); // Card flow ends or single import
+            }
 
             // Notify parent
             if (onConfirmHelper) {
                 onConfirmHelper(response);
             }
 
-            // Move next
-            if (currentFileIndex < filesQueue.length - 1) {
-                const next = currentFileIndex + 1;
-                setCurrentFileIndex(next);
-                loadPreview(newQueue[next].file);
-            } else {
-                setStep('complete');
-            }
-
         } catch (err) {
             console.error('Import error:', err);
             setError('Falha na importação. Tente novamente.');
-            // Mark as error
-            const newQueue = [...filesQueue];
-            newQueue[currentFileIndex].status = 'error';
-            setFilesQueue(newQueue);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleSkipFile = () => {
-        // Mark as skipped? Or just remove?
-        // Let's just move next
-        if (currentFileIndex < filesQueue.length - 1) {
-            const next = currentFileIndex + 1;
-            setCurrentFileIndex(next);
-            loadPreview(filesQueue[next].file);
-        } else {
-            // If all skipped/done
-            setStep('complete');
         }
     };
 
@@ -160,10 +162,11 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
     if (step === 'select-bank') {
         return (
             <div style={{ padding: '1rem' }}>
-                <h3 style={{ textAlign: 'center', marginBottom: '0.5rem' }}>Qual é o seu banco?</h3>
-                <p style={{ textAlign: 'center', color: '#888', marginBottom: '2rem' }}>
-                    Escolha o banco para importar os arquivos
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ flex: 1, textAlign: 'center' }}>Qual é o seu banco?</h3>
+                    {isSubComponent && <button onClick={onSkip} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}><FiX size={20} /></button>}
+                </div>
+
                 <div style={{
                     display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '1rem',
                     marginBottom: '2rem'
@@ -188,151 +191,231 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                         </button>
                     ))}
                 </div>
-                {!isSubComponent && <Button variant="secondary" onClick={onSkip} style={{ width: '100%' }}>Pular Importação</Button>}
-
-                {isSubComponent && (
-                    <div style={{ textAlign: 'center' }}>
-                        <button onClick={onSkip} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>
-                            Cancelar
-                        </button>
-                    </div>
-                )}
             </div>
         );
     }
 
-    // RENDER: Upload
-    if (step === 'upload') {
+    // RENDER: Select Import Type
+    if (step === 'select-type') {
         return (
             <div style={{ padding: '1rem', textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '1rem' }}>
                     {selectedBank?.logo && <img src={selectedBank.logo} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
-                    <h3>Importar de {selectedBank?.name}</h3>
+                    <h3>O que você quer importar?</h3>
                 </div>
-                <p style={{ color: '#888', marginBottom: '2rem' }}>
-                    Selecione suas faturas fechadas (CSV) e extratos da conta (OFX/CSV).<br />
-                    <small>Você pode selecionar vários arquivos de uma vez.</small>
-                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                    <button
+                        onClick={() => handleTypeSelect('ACCOUNT')}
+                        style={{
+                            background: '#2a2a2a', border: '1px solid #444', borderRadius: '12px', padding: '1.5rem',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', cursor: 'pointer'
+                        }}
+                    >
+                        <FiFileText size={32} color="#6366F1" />
+                        <div>
+                            <strong style={{ display: 'block', color: '#fff' }}>Extrato Bancário</strong>
+                            <span style={{ fontSize: '0.8rem', color: '#888' }}>Conta corrente, poupança</span>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => handleTypeSelect('CARD')}
+                        style={{
+                            background: '#2a2a2a', border: '1px solid #444', borderRadius: '12px', padding: '1.5rem',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', cursor: 'pointer'
+                        }}
+                    >
+                        <FiCreditCard size={32} color="#10B981" />
+                        <div>
+                            <strong style={{ display: 'block', color: '#fff' }}>Fatura do Cartão</strong>
+                            <span style={{ fontSize: '0.8rem', color: '#888' }}>Cartão de crédito</span>
+                        </div>
+                    </button>
+                </div>
+
+                <Button variant="secondary" onClick={() => setStep('select-bank')}>Voltar</Button>
+            </div>
+        );
+    }
+
+    // RENDER: Upload Card (Month/Year Selection)
+    if (step === 'upload-card') {
+        return (
+            <div style={{ padding: '1rem', textAlign: 'center' }}>
+                <h3>Importar Fatura</h3>
+                <p style={{ color: '#888', marginBottom: '1.5rem' }}>Selecione o mês da fatura</p>
+
+                {/* Month/Year Picker */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem', background: '#222', padding: '1rem', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button onClick={() => handleCardYearChange(-1)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><FiChevronLeft /></button>
+                        <span style={{ fontWeight: 'bold' }}>{cardDate.year}</span>
+                        <button onClick={() => handleCardYearChange(1)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><FiChevronRight /></button>
+                    </div>
+                    <select
+                        value={cardDate.month}
+                        onChange={handleCardMonthChange}
+                        style={{ background: '#333', border: '1px solid #444', color: '#fff', padding: '0.5rem', borderRadius: '4px' }}
+                    >
+                        {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                    </select>
+                </div>
 
                 <div style={{
-                    border: '2px dashed #444', borderRadius: '12px', padding: '3rem',
+                    border: '2px dashed #444', borderRadius: '12px', padding: '2rem',
                     cursor: 'pointer', position: 'relative'
                 }}>
                     <input
                         type="file"
-                        id="multi-upload"
+                        id="card-upload"
                         accept=".ofx,.csv"
-                        multiple // ENABLE MULTI
-                        onChange={handleFileChange}
+                        onChange={handleFileSelect}
                         style={{ display: 'none' }}
                     />
-                    <label htmlFor="multi-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                        <FiUpload size={48} color="#666" style={{ marginBottom: '1rem' }} />
-                        <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                            Clique para selecionar arquivos
-                        </div>
-                        <div style={{ color: '#666' }}>Suporta .OFX e .CSV</div>
+                    <label htmlFor="card-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                        <FiUpload size={32} color="#666" style={{ marginBottom: '1rem' }} />
+                        <div style={{ fontWeight: 600, color: '#fff' }}>Upload da Fatura de {MONTHS[cardDate.month]}</div>
+                        <div style={{ color: '#666', fontSize: '0.9rem' }}>Suporta .OFX e .CSV</div>
                     </label>
                 </div>
 
                 <div style={{ marginTop: '2rem' }}>
-                    <button onClick={() => setStep('select-bank')} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>
-                        Voltar
-                    </button>
+                    <button onClick={() => setStep('select-type')} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>Voltar</button>
                 </div>
             </div>
         );
     }
 
-    // RENDER: Preview Queue
-    if (step === 'preview-queue') {
-        const file = filesQueue[currentFileIndex]?.file;
+    // RENDER: Upload Account (Monthly Grid)
+    if (step === 'upload-account') {
+        const currentYear = new Date().getFullYear();
         return (
             <div style={{ padding: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '0.9rem', color: '#888' }}>
-                    <span>Arquivo {currentFileIndex + 1} de {filesQueue.length}</span>
-                    <span>{file?.name}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3>Extrato da Conta</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#222', padding: '4px 8px', borderRadius: '4px' }}>
+                        <button onClick={() => handleAccountYearChange(-1)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><FiChevronLeft /></button>
+                        <span>{accountYear}</span>
+                        <button onClick={() => handleAccountYearChange(1)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><FiChevronRight /></button>
+                    </div>
                 </div>
 
-                {loading && !previewData && (
-                    <div style={{ padding: '3rem', textAlign: 'center', color: '#888' }}>Lendo arquivo...</div>
-                )}
+                <p style={{ color: '#888', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                    Selecione o mês para importar o extrato
+                </p>
 
-                {error && (
-                    <div style={{ color: '#f87171', background: 'rgba(248, 113, 113, 0.1)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-                        <FiAlertCircle style={{ marginRight: '8px' }} />
-                        {error}
-                        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-                            <Button size="sm" onClick={() => loadPreview(file)}>Tentar de novo</Button>
-                            <Button size="sm" variant="secondary" onClick={handleSkipFile}>Pular arquivo</Button>
-                        </div>
-                    </div>
-                )}
+                <div style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem',
+                    marginBottom: '2rem'
+                }}>
+                    {MONTHS.map((monthName, idx) => {
+                        const statusKey = `${accountYear}-${idx}`;
+                        const isDone = monthlyStatus[statusKey] === 'success';
 
-                {previewData && (
-                    <div style={{ animation: 'fadeIn 0.3s' }}>
-                        <div style={{ background: '#222', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ color: '#888' }}>Origem:</span>
-                                <span style={{ color: '#fff' }}>{previewData.bankName}</span>
+                        return (
+                            <div key={idx} style={{ position: 'relative' }}>
+                                <input
+                                    type="file"
+                                    id={`account-upload-${idx}`}
+                                    accept=".ofx,.csv"
+                                    onChange={(e) => handleFileSelect(e, idx)}
+                                    style={{ display: 'none' }}
+                                    disabled={loading}
+                                />
+                                <label
+                                    htmlFor={`account-upload-${idx}`}
+                                    style={{
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                        padding: '1rem 0.5rem', borderRadius: '8px',
+                                        background: isDone ? 'rgba(16, 185, 129, 0.1)' : '#222',
+                                        border: isDone ? '1px solid #10B981' : '1px solid #333',
+                                        cursor: 'pointer', opacity: loading ? 0.5 : 1
+                                    }}
+                                >
+                                    <span style={{ fontWeight: 600, color: isDone ? '#10B981' : '#fff' }}>{monthName}</span>
+                                    {isDone ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#10B981', marginTop: '4px' }}>
+                                            <FiCheckCircle /> OK
+                                        </div>
+                                    ) : (
+                                        <div style={{ fontSize: '0.7rem', color: '#666', marginTop: '4px' }}>
+                                            Importar
+                                        </div>
+                                    )}
+                                </label>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ color: '#888' }}>Conta:</span>
-                                <span style={{ color: '#fff' }}>{previewData.accountNumber}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span style={{ color: '#888' }}>Tipo Detectado:</span>
-                                <span style={{ color: previewData.accountType === 'CREDIT_CARD' ? '#C084FC' : '#fff' }}>
-                                    {previewData.accountType === 'CREDIT_CARD' ? 'Fatura Cartão' : 'Conta Corrente'}
-                                </span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ color: '#888' }}>Transações:</span>
-                                <span style={{ color: '#fff' }}>{previewData.totalTransactions}</span>
-                            </div>
-                        </div>
+                        );
+                    })}
+                </div>
 
-                        {/* Force Type Toggle for Investments */}
-                        <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', background: '#333', padding: '10px', borderRadius: '8px' }}>
-                            <input
-                                type="checkbox"
-                                id="isInvestment"
-                                checked={isInvestment}
-                                onChange={(e) => setIsInvestment(e.target.checked)}
-                                style={{ transform: 'scale(1.2)', cursor: 'pointer' }}
-                            />
-                            <label htmlFor="isInvestment" style={{ color: '#fff', cursor: 'pointer', flex: 1 }}>
-                                É Conta de <strong>Investimentos</strong>?
-                            </label>
-                        </div>
-
-                        <Button onClick={handleConfirmImport} disabled={loading} style={{ width: '100%', marginBottom: '1rem' }}>
-                            {loading ? 'Processando...' : `Confirmar e Importar (${filesQueue.length - currentFileIndex} restam)`}
-                        </Button>
-
-                        <button onClick={handleSkipFile} style={{ width: '100%', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>
-                            Pular este arquivo
-                        </button>
-                    </div>
-                )}
+                <div style={{ textAlign: 'center' }}>
+                    <Button variant="secondary" onClick={() => setStep('select-type')} disabled={loading}>Voltar</Button>
+                </div>
             </div>
         );
     }
 
-    // RENDER: Complete
-    if (step === 'complete') {
-        const successCount = filesQueue.filter(f => f.status === 'success').length;
-        const errorCount = filesQueue.filter(f => f.status === 'error').length;
-
+    // RENDER: Preview
+    if (step === 'preview') {
         return (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <FiCheckCircle size={48} color="#059669" style={{ marginBottom: '1rem' }} />
-                <h3>Processamento Finalizado!</h3>
+            <div style={{ padding: '1rem' }}>
+                <h3>Confirmar Importação</h3>
+                <div style={{ background: '#222', padding: '1rem', borderRadius: '8px', margin: '1rem 0' }}>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                        <span style={{ color: '#888' }}>Arquivo:</span> <strong style={{ color: '#fff' }}>{previewData?.fileName}</strong>
+                    </div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                        <span style={{ color: '#888' }}>Período:</span> <strong style={{ color: '#fff' }}>{previewData?.referenceMonth}/{previewData?.referenceYear}</strong>
+                    </div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                        <span style={{ color: '#888' }}>Transações:</span> <strong style={{ color: '#fff' }}>{previewData?.totalTransactions}</strong>
+                    </div>
+
+                    {/* Type Override Only For Account Mode (Investments) */}
+                    {importType === 'ACCOUNT' && (
+                        <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <input type="checkbox" checked={isInvestment} onChange={e => setIsInvestment(e.target.checked)} id="invest-check" />
+                            <label htmlFor="invest-check" style={{ color: '#fff' }}>É conta de investimentos?</label>
+                        </div>
+                    )}
+                </div>
+
+                {error && <div style={{ color: '#f87171', marginBottom: '1rem' }}>{error}</div>}
+
+                <Button onClick={handleConfirmImport} disabled={loading} style={{ width: '100%', marginBottom: '1rem' }}>
+                    {loading ? 'Processando...' : 'Confirmar Importação'}
+                </Button>
+
+                <Button variant="secondary" onClick={() => setStep(importType === 'CARD' ? 'upload-card' : 'upload-account')} disabled={loading} style={{ width: '100%' }}>
+                    Cancelar
+                </Button>
+            </div>
+        );
+    }
+
+    // RENDER: Complete (Final success screen, maybe not needed if we return to grid, but useful for Card flow)
+    if (step === 'complete') {
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                <FiCheckCircle size={48} color="#10B981" style={{ marginBottom: '1rem' }} />
+                <h3>Importação Concluída!</h3>
                 <p style={{ color: '#888', marginBottom: '2rem' }}>
-                    {successCount} arquivo(s) importado(s) com sucesso.<br />
-                    {errorCount > 0 && <span style={{ color: '#f87171' }}>{errorCount} erro(s).</span>}
+                    Seus dados foram importados com sucesso.
                 </p>
-                <Button onClick={onSkip}>Voltar para Lista</Button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <Button onClick={() => {
+                        // Reset to import more?
+                        if (importType === 'CARD') {
+                            setStep('upload-card'); // Process another month
+                            // Maybe reset file input if needed?
+                        } else {
+                            setStep('upload-account');
+                        }
+                    }}>Importar Outro Mês</Button>
+
+                    <Button variant="secondary" onClick={onSkip}>Finalizar</Button>
+                </div>
             </div>
         );
     }
