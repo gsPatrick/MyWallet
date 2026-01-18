@@ -228,18 +228,58 @@ export default function ProfileWizard({ onComplete }) {
 
     const handleImportFinish = (result) => {
         // result = { success, entity, detectedSubscriptions }
-        // Note: Backend returns 'entity', older code might expect 'bankAccount'
         const entity = result?.entity || result?.bankAccount;
 
         if (result?.success && entity) {
             const context = importContext || 'personal';
+            const isPersonal = context === 'personal';
 
-            // Distinguish between Card and Bank Account
+            // Access current state directly to check for existing banks
+            const currentBanks = isPersonal ? personalBanks : businessBanks;
+            const setBanks = isPersonal ? setPersonalBanks : setBusinessBanks;
+            const setCards = isPersonal ? setPersonalCards : setBusinessCards;
+            const setSubs = isPersonal ? setPersonalSubs : setBusinessSubs;
+
             if (entity.type === 'CREDIT_CARD') {
-                const setCards = context === 'personal' ? setPersonalCards : setBusinessCards;
-                setCards(prev => [...prev, entity]);
+                // Ensure a parent Bank Account exists for this card
+                // This makes the "Bank" appear in the list immediately
+                const bankName = entity.bankName || 'Banco Desconhecido';
+                let bankId = null;
+
+                const existingBank = currentBanks.find(b =>
+                    (b.bankName && b.bankName.toLowerCase() === bankName.toLowerCase()) ||
+                    (b.nickname && b.nickname.toLowerCase() === bankName.toLowerCase())
+                );
+
+                if (existingBank) {
+                    bankId = existingBank.id || existingBank._index;
+                } else {
+                    // Create new virtual bank for this card
+                    const newBankId = `TEMP-BANK-${Date.now()}`;
+                    const newBank = {
+                        id: newBankId,
+                        bankKey: 'custom',
+                        bankName: bankName,
+                        nickname: bankName,
+                        icon: null, // Will use default colored wallet icon
+                        color: entity.color || '#6366F1',
+                        balance: 0,
+                        isDefault: false,
+                        isCustom: true
+                    };
+
+                    setBanks(prev => {
+                        // Double check inside setter availability to be safe, though rare conflict
+                        return [...prev, newBank];
+                    });
+                    bankId = newBankId;
+                }
+
+                // Add Card (linked to the bank)
+                setCards(prev => [...prev, { ...entity, bankAccountId: bankId }]);
+
             } else {
-                const setBanks = context === 'personal' ? setPersonalBanks : setBusinessBanks;
+                // It is a specific Bank Account (Checking/Investment) import
                 setBanks(prev => {
                     const isFirst = prev.length === 0;
                     return [...prev, { ...entity, isDefault: isFirst }];
@@ -247,7 +287,6 @@ export default function ProfileWizard({ onComplete }) {
             }
 
             if (result.detectedSubscriptions?.length > 0) {
-                const setSubs = context === 'personal' ? setPersonalSubs : setBusinessSubs;
                 setSubs(prev => [...prev, ...result.detectedSubscriptions]);
             }
 
