@@ -35,7 +35,7 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                 }
             } catch (err) {
                 console.error('Preview error:', err);
-                setError('Erro ao processar arquivo. Verifique se é um OFX válido.');
+                setError('Erro ao processar arquivo. Verifique se é um OFX ou CSV válido.');
             } finally {
                 setLoading(false);
             }
@@ -124,28 +124,23 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                     }}>
                         <input
                             type="file"
-                            accept=".ofx"
+                            id="file-upload"
+                            accept=".ofx,.csv"
                             onChange={handleFileChange}
-                            style={{
-                                position: 'absolute',
-                                top: 0, left: 0, width: '100%', height: '100%',
-                                opacity: 0, cursor: 'pointer'
-                            }}
+                            style={{ display: 'none' }}
                         />
-                        <div style={{ pointerEvents: 'none' }}>
-                            <div style={{
-                                width: '60px', height: '60px',
-                                background: '#333', borderRadius: '50%',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '0 auto 1rem auto'
-                            }}>
-                                <FiUpload size={24} color="#888" />
-                            </div>
-                            <p style={{ color: '#fff', fontWeight: 500 }}>Clique para selecionar o arquivo .OFX</p>
-                            <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                                (Extratos do Nubank, Itaú, Santander, etc)
-                            </p>
-                        </div>
+                        <label htmlFor="file-upload" style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            cursor: 'pointer', padding: '2rem'
+                        }}>
+                            <FiUpload size={48} color="#666" style={{ marginBottom: '1rem' }} />
+                            <span style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600 }}>
+                                Clique para enviar
+                            </span>
+                            <span style={{ color: '#888', marginTop: '0.5rem' }}>
+                                Suporta arquivos .OFX e .CSV
+                            </span>
+                        </label>
                     </div>
                 )}
 
