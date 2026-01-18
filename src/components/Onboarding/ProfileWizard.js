@@ -315,8 +315,8 @@ export default function ProfileWizard({ onComplete }) {
                 setSubs(prev => [...prev, ...result.detectedSubscriptions]);
             }
 
-            // Close the import view
-            setShowImport(false);
+            // Close the import view - REMOVED to allow multi-import flow (Wizard keeps open)
+            // setShowImport(false); 
         }
     };
 
