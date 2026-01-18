@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlus, FiUpload, FiTrash2, FiBriefcase, FiCreditCard } from 'react-icons/fi';
+import { FiPlus, FiUpload, FiTrash2, FiBriefcase, FiCreditCard, FiCheck } from 'react-icons/fi';
+
+const formatCurrencyDisplay = (value) => {
+    if (!value) return 'R$ 0,00';
+    // Simple formatter if not passed from prop, or replicate logic
+    const num = parseFloat(value);
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(isNaN(num) ? 0 : num);
+};
 import Button from '@/components/ui/Button';
 import BankAccountModal from '@/components/modals/BankAccountModal';
 import ImportStep from './ImportStep';
@@ -12,19 +19,21 @@ export default function BankAccountsStep({
     onImportSuccess,
     onNext,
     onBack,
-    loading
+    loading,
+    title = "Suas Contas Bancárias",
+    subtitle = "Centralize suas contas. Adicione quantas quiser.",
+    onSetDefault // Optional: function(id or index)
 }) {
     const [viewMode, setViewMode] = useState('list'); // 'list', 'import'
     const [showManualModal, setShowManualModal] = useState(false);
 
     // Manual Creation Handler
     const handleSaveManual = (accountData) => {
-        // Just add to local list for now (or pushed if API calls happen inside modal, 
-        // but typically OnboardingConfig manages state. 
-        // Wait, OnboardingConfig.js fetches `bankAccounts` from API.
-        // So we need to refresh the list or append. 
-        // For this step, we assume the parent handles the "refresh" logic or valid append.
-        setAccounts(prev => [...prev, accountData]);
+        setAccounts(prev => {
+            // If first account, make it default if not specified
+            const isFirst = prev.length === 0;
+            return [...prev, { ...accountData, isDefault: accountData.isDefault || isFirst }];
+        });
         setShowManualModal(false);
     };
 
@@ -32,23 +41,26 @@ export default function BankAccountsStep({
     const handleImportFinish = (result) => {
         // result = { bankAccount, detectedSubscriptions, success }
         if (result.success) {
-            setAccounts(prev => [...prev, result.bankAccount]);
+            setAccounts(prev => {
+                const isFirst = prev.length === 0;
+                return [...prev, { ...result.bankAccount, isDefault: isFirst }];
+            });
             if (result.detectedSubscriptions?.length > 0) {
-                onImportSuccess(result.detectedSubscriptions);
+                onImportSuccess && onImportSuccess(result.detectedSubscriptions);
             }
         }
         setViewMode('list');
     };
 
-    const handleRemoveAccount = (id) => {
-        // If it's a real ID, call API? 
-        // Or just filter from list if only local?
-        // Onboarding usually creates entities immediately? 
-        // Based on OnboardingConfig, cards are created in batch but bank accounts seem fetched.
-        // Let's assume passed `accounts` are real entities.
-        // We won't implement deletion API here to keep it simple, just filter from view or warn.
-        // For now, simple filter.
-        setAccounts(prev => prev.filter(a => a.id !== id));
+    const handleRemoveAccount = (index) => {
+        setAccounts(prev => {
+            const updated = prev.filter((_, i) => i !== index);
+            // If removed default, make first default
+            if (prev[index]?.isDefault && updated.length > 0) {
+                updated[0].isDefault = true;
+            }
+            return updated;
+        });
     };
 
     return (
@@ -64,9 +76,9 @@ export default function BankAccountsStep({
                         <div className={styles.iconWrapper}>
                             <FiBriefcase />
                         </div>
-                        <h2>Suas Contas Bancárias</h2>
+                        <h2>{title}</h2>
                         <p className={styles.description}>
-                            Centralize suas contas. Adicione quantas quiser.
+                            {subtitle}
                         </p>
 
                         {/* Accounts List */}
@@ -79,8 +91,11 @@ export default function BankAccountsStep({
                                             style={{ background: acc.color || '#333' }}
                                         />
                                         <div className={styles.itemInfo}>
-                                            <strong>{acc.name}</strong>
-                                            <span>{acc.bankName} • {acc.accountNumber}</span>
+                                            <strong>{acc.nickname || acc.name}</strong>
+                                            <span>
+                                                {acc.bankName} • {formatCurrencyDisplay(acc.balance?.toString())}
+                                                {acc.isDefault && ' (Padrão)'}
+                                            </span>
                                         </div>
                                         {/* Tag for Investment */}
                                         {acc.type === 'INVESTMENT' && (
@@ -94,7 +109,16 @@ export default function BankAccountsStep({
                                             }}>Inv</span>
                                         )}
                                         <div className={styles.itemActions}>
-                                            <button onClick={() => handleRemoveAccount(acc.id)} className={styles.danger}>
+                                            {onSetDefault && !acc.isDefault && (
+                                                <button
+                                                    onClick={() => onSetDefault(idx)}
+                                                    title="Definir como padrão"
+                                                    style={{ marginRight: '8px', color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', border: 'none', borderRadius: '4px', padding: '6px', cursor: 'pointer' }}
+                                                >
+                                                    <FiCheck />
+                                                </button>
+                                            )}
+                                            <button onClick={() => handleRemoveAccount(idx)} className={styles.danger}>
                                                 <FiTrash2 />
                                             </button>
                                         </div>
