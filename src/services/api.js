@@ -243,7 +243,7 @@ export const subscriptionsAPI = {
     get: (id) => api.get(`/subscriptions/${id}`),
     create: (data) => api.post('/subscriptions', data),
     update: (id, data) => api.put(`/subscriptions/${id}`, data),
-    cancel: (id) => api.delete(`/subscriptions/${id}`),
+    cancel: (id, deleteTransaction = false) => api.delete(`/subscriptions/${id}?deleteTransaction=${deleteTransaction}`),
     getSummary: () => api.get('/subscriptions/summary'),
     getUpcoming: () => api.get('/subscriptions/upcoming'),
     markPaid: (id, date) => api.post(`/subscriptions/${id}/pay`, { date }),

@@ -101,6 +101,8 @@ export default function CardsPage() {
     // Edit states
     const [editingCard, setEditingCard] = useState(null);
     const [editingSub, setEditingSub] = useState(null);
+    const [showDeleteSubModal, setShowDeleteSubModal] = useState(false);
+    const [subToDelete, setSubToDelete] = useState(null);
 
     const [selectedCard, setSelectedCard] = useState(null);
     const [invoiceMonth, setInvoiceMonth] = useState({ month: 12, year: 2024 });
@@ -215,6 +217,24 @@ export default function CardsPage() {
         } catch (error) {
             console.error("❌ [CARDS PAGE] Error saving subscription:", error);
             alert("Erro ao salvar assinatura.");
+        }
+    };
+
+    const handleDeleteSub = (sub) => {
+        setSubToDelete(sub);
+        setShowDeleteSubModal(true);
+    };
+
+    const confirmDeleteSub = async (deleteTransaction) => {
+        if (!subToDelete) return;
+        try {
+            await subscriptionsAPI.cancel(subToDelete.id, deleteTransaction);
+            setShowDeleteSubModal(false);
+            setSubToDelete(null);
+            loadData();
+        } catch (error) {
+            console.error("Error deleting subscription:", error);
+            alert("Erro ao excluir assinatura.");
         }
     };
 
@@ -1252,7 +1272,7 @@ export default function CardsPage() {
                                                             </div>
                                                             <div className={styles.subscriptionActions}>
                                                                 <button className={styles.actionBtn} onClick={() => openSubModal(sub)}><FiEdit2 /></button>
-                                                                <button className={`${styles.actionBtn} ${styles.danger}`}><FiTrash2 /></button>
+                                                                <button className={`${styles.actionBtn} ${styles.danger}`} onClick={() => handleDeleteSub(sub)}><FiTrash2 /></button>
                                                             </div>
                                                         </div>
                                                     );
@@ -1335,6 +1355,43 @@ export default function CardsPage() {
                 editingSub={editingSub}
                 cards={cards}
             />
+
+            {/* Delete Subscription Modal */}
+            <Modal
+                title="Excluir Assinatura"
+                isOpen={showDeleteSubModal}
+                onClose={() => { setShowDeleteSubModal(false); setSubToDelete(null); }}
+            >
+                <div style={{ padding: '1rem' }}>
+                    <p style={{ marginBottom: '1.5rem', color: '#ccc', fontSize: '1rem' }}>
+                        Deseja excluir a assinatura <strong>{subToDelete?.name}</strong>?
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <Button
+                            variant="danger"
+                            icon={FiTrash2}
+                            onClick={() => confirmDeleteSub(true)}
+                            fullWidth
+                        >
+                            Excluir assinatura e despesa do mês
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() => confirmDeleteSub(false)}
+                            fullWidth
+                        >
+                            Excluir apenas assinatura (manter histórico)
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setShowDeleteSubModal(false)}
+                            fullWidth
+                        >
+                            Cancelar
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div >
     );
 }
