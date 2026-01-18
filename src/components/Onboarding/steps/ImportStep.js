@@ -4,11 +4,12 @@ import { FiUpload, FiCheck, FiAlertCircle, FiFileText, FiDatabase } from 'react-
 import Button from '@/components/ui/Button'; // Adjust path if needed
 import { importAPI } from '@/services/api';
 
-export default function ImportStep({ onNext, onSkip }) {
+export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubComponent }) {
     const [file, setFile] = useState(null);
     const [previewData, setPreviewData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isInvestment, setIsInvestment] = useState(false);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -47,8 +48,47 @@ export default function ImportStep({ onNext, onSkip }) {
         if (!previewData) return;
         setLoading(true);
         try {
-            await importAPI.confirmImport(previewData);
-            onNext(); // Proceed to next step
+            // Pass type='INVESTMENT' if toggle is on
+            const dataToImport = { ...previewData }; // Clone
+            // The API expects `type` in options, probably need to adjust `confirmImport` call or backend
+            // In `importAPI.confirmImport(data)`, data is passed as body { data }.
+            // The controller calls service.processImport(userId, data, { ... }).
+            // But we need to pass `type`. 
+            // Let's modify the `data` object sent to include `importOptions`.
+
+            const payload = {
+                ...previewData,
+                importOptions: {
+                    type: isInvestment ? 'INVESTMENT' : 'CHECKING'
+                }
+            };
+
+            // Wait, importAPI.confirmImport(data) sends { data }. 
+            // We should just ensure backend reads it or we update `api.js` to send extra params.
+            // Let's assume we can modify `api.js` or pack it into `data`.
+            // Let's modify api.js first or better yet, assume we pass it inside data for now if controller supports it.
+            // Looking at controller: `const { data } = req.body;` -> `processImport(userId, data, { profileId })`.
+            // Controller doesn't read `type` from body currently. 
+            // I should have updated controller to read `type` from body or `options`. 
+            // I'll update the controller in a bit. For now let's send it in payload.
+
+            // Actually, let's call a modified version of confirmImport that accepts options?
+            // "api.js": confirmImport: (data) => api.post('/import/ofx/confirm', { data })
+            // So we send { data: { ...previewData, type: ... } }
+            // Controller reads `data`. 
+            // Service reads `data`. 
+
+            // OK, I'll update the controller next to read `type` from the request body alongside `data`.
+            const response = await importAPI.confirmImport({
+                ...previewData,
+                type: isInvestment ? 'INVESTMENT' : 'CHECKING'
+            });
+
+            if (onConfirmHelper) {
+                onConfirmHelper(response);
+            } else {
+                onNext();
+            }
         } catch (err) {
             console.error('Import error:', err);
             setError('Falha ao importar dados. Tente novamente.');
@@ -165,6 +205,23 @@ export default function ImportStep({ onNext, onSkip }) {
                                 <span style={{ color: '#fff', fontWeight: 500 }}>{previewData.totalTransactions} itens</span>
                             </div>
                         </div>
+
+                        {/* Investment Toggle */}
+                        <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', background: '#333', padding: '10px', borderRadius: '8px' }}>
+                            <input
+                                type="checkbox"
+                                id="isInvestment"
+                                checked={isInvestment}
+                                onChange={(e) => setIsInvestment(e.target.checked)}
+                                style={{ transform: 'scale(1.2)', cursor: 'pointer' }}
+                            />
+                            <label htmlFor="isInvestment" style={{ color: '#fff', cursor: 'pointer', flex: 1 }}>
+                                Esta é uma <strong>Conta de Investimentos</strong> (Corretora)
+                                <span style={{ display: 'block', fontSize: '0.8rem', color: '#888' }}>
+                                    Saldo será identificado como custódia/caixa.
+                                </span>
+                            </label>
+                        </div>
                     </div>
                 )}
 
@@ -172,12 +229,14 @@ export default function ImportStep({ onNext, onSkip }) {
                 <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
                     {previewData ? (
                         <Button size="lg" onClick={handleConfirmImport} disabled={loading}>
-                            {loading ? 'Importando...' : 'Confirmar e Importar'}
+                            {loading ? 'Importando...' : 'Confirmar e Adicionar'}
                         </Button>
                     ) : (
-                        <Button size="lg" variant="secondary" onClick={onSkip} disabled={loading}>
-                            Pular esta etapa
-                        </Button>
+                        !isSubComponent && (
+                            <Button size="lg" variant="secondary" onClick={onSkip} disabled={loading}>
+                                Pular esta etapa
+                            </Button>
+                        )
                     )}
 
                     {previewData && (

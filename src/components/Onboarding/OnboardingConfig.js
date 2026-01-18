@@ -12,7 +12,7 @@ import Link from 'next/link';
 import CardModal from '@/components/modals/CardModal';
 import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import BROKERS_LIST from '@/data/brokers.json';
-import ImportStep from './steps/ImportStep';
+import BankAccountsStep from './steps/BankAccountsStep';
 import styles from './OnboardingConfig.module.css';
 
 // Currency input helper - allows free typing with comma/period
@@ -63,6 +63,7 @@ export default function OnboardingConfig({ onComplete }) {
     const [cards, setCards] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
     const [bankAccounts, setBankAccounts] = useState([]); // NEW: Store bank accounts
+    const [detectedSubscriptions, setDetectedSubscriptions] = useState([]); // NEW: Detected from import
 
     // Modal states
     const [showCardModal, setShowCardModal] = useState(false);
@@ -121,20 +122,9 @@ export default function OnboardingConfig({ onComplete }) {
                 console.error('Error saving config:', e);
             }
             setLoading(false);
-            setLoading(false);
-            setStep('import'); // Go to import step instead of cards directly
-        } else if (step === 'import') {
-            // Refresh bank accounts/cards after import
-            try {
-                const [accountsRes, cardsRes] = await Promise.all([
-                    bankAccountsAPI.list(),
-                    cardsAPI.list()
-                ]);
-                if (accountsRes?.data) setBankAccounts(accountsRes.data);
-                if (cardsRes?.data) setCards(prev => [...prev, ...cardsRes.data]);
-            } catch (e) {
-                console.error('Error refreshing data after import:', e);
-            }
+            setStep('bankAccounts'); // Go to Bank Accounts step
+        } else if (step === 'bankAccounts') {
+            // Proceed to Cards
             setStep('cards');
         } else if (step === 'cards') {
             setLoading(true);
@@ -199,8 +189,8 @@ export default function OnboardingConfig({ onComplete }) {
 
     const handleBack = () => {
         if (step === 'salary') setStep('balance');
-        else if (step === 'import') setStep('salary');
-        else if (step === 'cards') setStep('import');
+        else if (step === 'bankAccounts') setStep('salary');
+        else if (step === 'cards') setStep('bankAccounts');
         else if (step === 'subscriptions') setStep('cards');
         else if (step === 'brokers') setStep('subscriptions');
     };
@@ -275,7 +265,7 @@ export default function OnboardingConfig({ onComplete }) {
                             style={{
                                 width: step === 'balance' ? '14%' :
                                     step === 'salary' ? '28%' :
-                                        step === 'import' ? '42%' :
+                                        step === 'bankAccounts' ? '42%' :
                                             step === 'cards' ? '57%' :
                                                 step === 'subscriptions' ? '71%' :
                                                     step === 'brokers' ? '85%' : '100%'
@@ -368,16 +358,27 @@ export default function OnboardingConfig({ onComplete }) {
                             </motion.div>
                         )}
 
-                        {/* STEP: Import */}
-                        {step === 'import' && (
+                        {/* STEP: Bank Accounts (Centralized Import) */}
+                        {step === 'bankAccounts' && (
                             <motion.div
-                                key="import"
+                                key="bankAccounts"
                                 initial={{ opacity: 0, x: 50 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -50 }}
                                 className={styles.stepContent}
                             >
-                                <ImportStep onNext={handleNext} onSkip={handleNext} />
+                                <BankAccountsStep
+                                    accounts={bankAccounts}
+                                    setAccounts={setBankAccounts}
+                                    onNext={handleNext}
+                                    onBack={handleBack}
+                                    loading={loading}
+                                    onImportSuccess={(newSubs) => {
+                                        if (newSubs && newSubs.length > 0) {
+                                            setDetectedSubscriptions(prev => [...prev, ...newSubs]);
+                                        }
+                                    }}
+                                />
                             </motion.div>
                         )}
 
@@ -447,9 +448,49 @@ export default function OnboardingConfig({ onComplete }) {
                                     Adicione suas assinaturas mensais (opcional)
                                 </p>
 
+                                {/* Detected Subscriptions Alert */}
+                                {detectedSubscriptions.length > 0 && (
+                                    <div className={styles.alertBox} style={{
+                                        background: 'rgba(5, 150, 105, 0.2)',
+                                        border: '1px solid #059669',
+                                        borderRadius: '8px',
+                                        padding: '1rem',
+                                        marginBottom: '1.5rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{
+                                            background: '#059669',
+                                            borderRadius: '50%',
+                                            width: '24px', height: '24px',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            <FiCheck size={14} color="#fff" />
+                                        </div>
+                                        <div>
+                                            <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#fff' }}>
+                                                {detectedSubscriptions.length} assinatura(s) encontrada(s)!
+                                            </h4>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#ccc' }}>
+                                                Identificamos potenciais assinaturas nos seus extratos. Confirme-as abaixo.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Subscriptions List */}
-                                {subscriptions.length > 0 && (
+                                {(subscriptions.length > 0 || detectedSubscriptions.length > 0) ? (
                                     <div className={styles.itemsList}>
+                                        {/* Render Detected Subscriptions first (if not added to main list yet) */}
+                                        {/* Ideally we would merge them, but for now we rely on user manually adding via 'detected' specific UI or just knowing they are there?
+                                            Actually, let's keep it simple: We won't auto-add to the main list because detection is 'potential'.
+                                            But the user wants to see "Look we found these".
+                                            Let's auto-add them to the list but flag them as "Unconfirmed"?
+                                            Or just render them.
+                                            Let's map detectedSubscriptions to simple list items with a "Add" button if not already in subscriptions?
+                                         */}
+
                                         {subscriptions.map((sub, idx) => (
                                             <div key={idx} className={styles.listItem}>
                                                 <div className={styles.subIcon}>
@@ -474,7 +515,33 @@ export default function OnboardingConfig({ onComplete }) {
                                             </div>
                                         ))}
                                     </div>
+                                ) : (
+                                    null
                                 )}
+
+                                {/* If we have detected subs, maybe show a button to "Review Detected" or just auto-open a modal?
+                                    For simplicity, let's just show the Add button.
+                                    Ideally, we would iterate detectedSubscriptions and for each one NOT in subscriptions, show a card to "Confirm".
+                                */}
+                                {detectedSubscriptions.filter(d => !subscriptions.find(s => s.name === d.name)).map((det, i) => (
+                                    <div key={`det-${i}`} className={styles.listItem} style={{ border: '1px dashed #059669' }}>
+                                        <div className={styles.subIcon}>
+                                            <img src={det.icon || ''} alt={det.name} onError={(e) => e.target.style.display = 'none'} />
+                                        </div>
+                                        <div className={styles.itemInfo}>
+                                            <strong>{det.name}</strong>
+                                            <span style={{ color: '#34d399' }}>Detectado: {formatCurrency(det.amount)}</span>
+                                        </div>
+                                        <div className={styles.itemActions}>
+                                            <Button size="sm" onClick={() => {
+                                                setSubscriptions([...subscriptions, { ...det }]);
+                                                // Remove from view? It will be filtered out by the map above.
+                                            }}>
+                                                Confirmar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
 
                                 {subscriptions.length > 0 && (
                                     <div className={styles.totalBar}>
@@ -572,8 +639,8 @@ export default function OnboardingConfig({ onComplete }) {
                         )}
                     </AnimatePresence>
 
-                    {/* Navigation - Hide for Import step as it has its own buttons */}
-                    <div className={styles.navigation} style={{ display: step === 'import' ? 'none' : 'flex' }}>
+                    {/* Navigation - Hide for BankAccounts step as it controls navigation internally */}
+                    <div className={styles.navigation} style={{ display: step === 'bankAccounts' ? 'none' : 'flex' }}>
                         {step !== 'balance' && step !== 'complete' && (
                             <button className={styles.backBtn} onClick={handleBack}>
                                 <FiArrowLeft /> Voltar
