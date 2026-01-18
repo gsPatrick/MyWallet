@@ -1,7 +1,25 @@
 import React, { useState } from 'react';
 import { FiUpload, FiCheckCircle, FiAlertCircle, FiX, FiCalendar, FiCreditCard, FiFileText, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import CreditCard from '@/components/ui/CreditCard/CreditCard';
 import { importAPI } from '@/services/api';
+
+const cardColors = [
+    { name: 'Midnight', value: '#1a1a2e' },
+    { name: 'Navy', value: '#16213e' },
+    { name: 'Slate', value: '#334155' },
+    { name: 'Indigo', value: '#312e81' },
+    { name: 'Purple', value: '#581c87' },
+    { name: 'Rose', value: '#881337' },
+    { name: 'Gold', value: '#78350f' },
+    { name: 'Emerald', value: '#064e3b' },
+    { name: 'Blue', value: '#1e40af' },
+    { name: 'Red', value: '#991b1b' },
+    { name: 'Prata', value: '#e4e3e4' },
+    { name: 'Grafite', value: '#535151' },
+    { name: 'Black', value: '#020202' },
+];
 
 export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubComponent }) {
     const [step, setStep] = useState('select-bank'); // 'select-bank', 'select-type', 'upload-card', 'upload-account', 'preview', 'complete'
@@ -22,6 +40,16 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
     const [error, setError] = useState(null);
     const [isInvestment, setIsInvestment] = useState(false);
     const [targetMonthForUpload, setTargetMonthForUpload] = useState(null); // For Account Grid upload
+
+    // Card Form State (for customization during import)
+    const [cardForm, setCardForm] = useState({
+        name: '',
+        lastFourDigits: '',
+        closingDay: 1,
+        dueDay: 10,
+        color: '#1a1a2e',
+        brand: 'MASTERCARD' // Default guess
+    });
 
     // Mock Banks List (Same as before)
     const BANKS = [
@@ -110,6 +138,17 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                         referenceMonth: refMonth,
                         referenceYear: refYear
                     });
+
+                    // Initialize Card Form with detected data
+                    if (data.bank) {
+                        setCardForm(prev => ({
+                            ...prev,
+                            name: `Cartão ${data.bank.name || 'Importado'}`,
+                            lastFourDigits: data.bank.accountNumber ? data.bank.accountNumber.slice(-4) : '0000',
+                            color: selectedBank?.color || '#1a1a2e',
+                            brand: 'MASTERCARD' // Could try to detect, but default is fine
+                        }));
+                    }
                 } else {
                     setError(`Não foi possível ler ${file.name}`);
                 }
@@ -147,7 +186,28 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
 
             // Notify parent
             if (onConfirmHelper) {
-                onConfirmHelper(response);
+                // If it's a dry run (Wizard), we need to inject the user's custom form data
+                // because the backend returned a generic virtual entity.
+                if (isSubComponent && response && response.entity) {
+                    // Start with the backend response
+                    const enhancedResponse = { ...response };
+
+                    // Override the entity details with our form state
+                    if (importType === 'CARD') {
+                        enhancedResponse.entity = {
+                            ...enhancedResponse.entity,
+                            name: cardForm.name,
+                            lastFourDigits: cardForm.lastFourDigits,
+                            closingDay: parseInt(cardForm.closingDay),
+                            dueDay: parseInt(cardForm.dueDay),
+                            color: cardForm.color,
+                            brand: cardForm.brand
+                        };
+                    }
+                    onConfirmHelper(enhancedResponse);
+                } else {
+                    onConfirmHelper(response);
+                }
             }
 
         } catch (err) {
@@ -427,6 +487,93 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
                             <label htmlFor="invest-check" style={{ color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>
                                 Marcar como conta de <strong>Investimentos</strong>
                             </label>
+                        </div>
+                    )}
+
+                    {/* Card Customization Form (Only for Card Import) */}
+                    {importType === 'CARD' && (
+                        <div style={{ marginTop: '2rem', borderTop: '1px solid #333', paddingTop: '1.5rem' }}>
+                            <h4 style={{ marginBottom: '1rem', color: '#fff' }}>Detalhes do Cartão</h4>
+
+                            {/* Live Preview */}
+                            <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center' }}>
+                                <div style={{ width: '100%', maxWidth: '340px' }}>
+                                    <CreditCard
+                                        name={cardForm.name || 'Cartão Importado'}
+                                        number={`•••• •••• •••• ${cardForm.lastFourDigits || '0000'}`}
+                                        expiry="MM/YY"
+                                        cvc="•••"
+                                        brand={cardForm.brand}
+                                        color={cardForm.color}
+                                        style={{ width: '100%', height: 'auto', aspectRatio: '1.586' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gap: '1rem' }}>
+                                <Input
+                                    label="Nome do Cartão"
+                                    value={cardForm.name}
+                                    onChange={e => setCardForm(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="Ex: Nubank Platinum"
+                                    fullWidth
+                                />
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <Input
+                                        label="Últimos 4 dígitos"
+                                        value={cardForm.lastFourDigits}
+                                        onChange={e => setCardForm(prev => ({ ...prev, lastFourDigits: e.target.value.slice(0, 4) }))}
+                                        placeholder="0000"
+                                        maxLength={4}
+                                    />
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label style={{ fontSize: '0.9rem', color: '#888' }}>Cor</label>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            {cardColors.slice(0, 5).map(c => (
+                                                <button
+                                                    key={c.value}
+                                                    onClick={() => setCardForm(prev => ({ ...prev, color: c.value }))}
+                                                    style={{
+                                                        width: '24px', height: '24px', borderRadius: '50%',
+                                                        background: c.value,
+                                                        border: cardForm.color === c.value ? '2px solid #fff' : '2px solid transparent',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                />
+                                            ))}
+                                            <button
+                                                onClick={() => {
+                                                    // Cycle through colors or open modal? 
+                                                    // Simple version: Pick random from rest
+                                                    const random = cardColors[Math.floor(Math.random() * cardColors.length)].value;
+                                                    setCardForm(prev => ({ ...prev, color: random }));
+                                                }}
+                                                style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#333', border: '1px solid #444', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <Input
+                                        label="Dia Fechamento"
+                                        type="number"
+                                        value={cardForm.closingDay}
+                                        onChange={e => setCardForm(prev => ({ ...prev, closingDay: e.target.value }))}
+                                        min={1} max={31}
+                                    />
+                                    <Input
+                                        label="Dia Vencimento"
+                                        type="number"
+                                        value={cardForm.dueDay}
+                                        onChange={e => setCardForm(prev => ({ ...prev, dueDay: e.target.value }))}
+                                        min={1} max={31}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
