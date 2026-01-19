@@ -170,7 +170,16 @@ export default function ProfileWizard({ onComplete }) {
         if (typeof window === 'undefined') return null;
         try {
             const saved = localStorage.getItem(WIZARD_STATE_KEY);
-            return saved ? JSON.parse(saved) : null;
+            if (!saved) return null;
+
+            const parsed = JSON.parse(saved);
+
+            // Hydrate Maps (importedTransactions)
+            if (parsed.importedTransactions) {
+                parsed.importedTransactions = new Map(parsed.importedTransactions);
+            }
+
+            return parsed;
         } catch {
             return null;
         }
@@ -221,7 +230,7 @@ export default function ProfileWizard({ onComplete }) {
     const [editingCard, setEditingCard] = useState(null);
     const [editingSub, setEditingSub] = useState(null);
     const [editingBank, setEditingBank] = useState(null); // Bank being edited
-    const [importedTransactions, setImportedTransactions] = useState(new Map());
+    const [importedTransactions, setImportedTransactions] = useState(savedState?.importedTransactions || new Map());
     const [currentProfileContext, setCurrentProfileContext] = useState('personal'); // 'personal' or 'business'
     const [reopenCardModal, setReopenCardModal] = useState(false); // Flag to reopen CardModal after adding bank
     const [showImport, setShowImport] = useState(false);
@@ -437,14 +446,16 @@ export default function ProfileWizard({ onComplete }) {
             personalBanks,
             businessBanks,
             salaryBankIndex,
-            selectedBrokers
+            selectedBrokers,
+            // Serialize Map to Array for JSON storage
+            importedTransactions: Array.from(importedTransactions.entries())
         };
 
         localStorage.setItem(WIZARD_STATE_KEY, JSON.stringify(stateToSave));
     }, [step, profileType, personalName, salary, salaryDay, initialBalance, businessName,
         businessSubtype, businessCnpj, businessCpf, defaultProfile, dasValue, dasDueDay,
         proLabore, proLaboreDay, businessBalance, personalCards, personalSubs, businessCards,
-        businessSubs, personalBanks, businessBanks, salaryBankIndex, selectedBrokers]);
+        businessSubs, personalBanks, businessBanks, salaryBankIndex, selectedBrokers, importedTransactions]);
 
     const handleCurrencyChange = (value, setter) => {
         // Allow free typing with digits and comma/period
