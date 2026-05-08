@@ -274,18 +274,65 @@ export default function BankDetailPage() {
         }
     }, [accountId]);
 
+    const getBankCards = useCallback((allCards, accountData) => {
+        if (!accountData || !allCards) return [];
+        return allCards.filter(card => {
+            // 1. Vínculo direto por ID
+            if (String(card.bankAccountId) === String(accountId)) return true;
+            
+            // 2. Se já estiver vinculado a OUTRA conta, ignorar
+            if (card.bankAccountId && String(card.bankAccountId) !== String(accountId)) return false;
+            
+            // 3. Fallback por nome para cartões órfãos
+            const accName = (accountData.bankName || "").toLowerCase().trim();
+            const accNick = (accountData.nickname || "").toLowerCase().trim();
+            const cardBank = (card.bankName || card.name || "").toLowerCase().trim();
+            
+            return (
+                (accName && (cardBank.includes(accName) || accName.includes(cardBank))) ||
+                (accNick && (cardBank.includes(accNick) || accNick.includes(cardBank)))
+            );
+        });
+    }, [accountId]);
+
     const loadTabData = useCallback(async (tab) => {
         setLoadingTab(true);
         try {
-            switch (tab) {
-                case 'statement': {
-                    const cardsRes = await cardsAPI.list();
-                    const allCards = cardsRes?.data || [];
-                    const bankCards = allCards.filter(card => 
-                        String(card.bankAccountId) === String(accountId)
-                    );
-                    const cardIds = bankCards.map(c => c.id).join(',');
+            // Pre-fetch account if not available
+            let currentAccount = account;
+            if (!currentAccount) {
+                const accRes = await bankAccountService.get(accountId);
+                currentAccount = accRes?.data || accRes;
+            }
 
+            // Get cards for this bank using unified logic
+            const cardsRes = await cardsAPI.list();
+            const allCards = cardsRes?.data || [];
+            const bankCards = getBankCards(allCards, currentAccount);
+            const cardIds = bankCards.map(c => c.id).join(',');
+
+            switch (tab) {
+                case 'summary': {
+                    // Load data for Dashboard
+                    const [txData, goalsData, statementRes] = await Promise.all([
+                        transactionsAPI.list({ bankAccountId: accountId, cardIds: cardIds || undefined }),
+                        goalsAPI.list(),
+                        reportsAPI.getStatement(selectedYear, selectedMonth, accountId, cardIds || undefined)
+                    ]);
+
+                    const accountTx = txData?.data?.transactions || txData?.transactions || [];
+                    const accountGoals = (goalsData?.data || goalsData || []).filter(
+                        g => g.bankAccountId === accountId
+                    );
+
+                    setCards(bankCards);
+                    setTransactions(accountTx);
+                    setStatement(statementRes?.data?.data || statementRes?.data || null);
+                    setGoals(accountGoals);
+                    break;
+                }
+
+                case 'statement': {
                     const { data } = await reportsAPI.getStatement(
                         selectedYear, 
                         selectedMonth, 
@@ -295,102 +342,27 @@ export default function BankDetailPage() {
                     setStatement(data.data || { summary: { openingBalance: 0, totalIncome: 0, totalExpense: 0, closingBalance: 0 }, transactions: [] });
                     break;
                 }
+
                 case 'cards': {
-                    const cardsRes = await cardsAPI.list();
-                    // Filter cards linked to this bank account OR matching by name if not linked
-                    const linkedCards = (cardsRes?.data || []).filter(card => {
-                        const cardBankAccountId = card.bankAccountId ? String(card.bankAccountId) : null;
-                        const currentAccountId = accountId ? String(accountId) : null;
-                        
-                        // 1. Exact ID match
-                        if (cardBankAccountId === currentAccountId) return true;
-                        
-                        // 2. Name match if card has no linked account
-                        if (!cardBankAccountId && account) {
-                            const accName = (account.bankName || "").toLowerCase().trim();
-                            const accNick = (account.nickname || "").toLowerCase().trim();
-                            const cardBank = (card.bankName || "").toLowerCase().trim();
-                            
-                            return (
-                                (accName && (cardBank.includes(accName) || accName.includes(cardBank))) ||
-                                (accNick && (cardBank.includes(accNick) || accNick.includes(cardBank)))
-                            );
-                        }
-                        return false;
-                    });
-                    setCards(linkedCards);
+                    setCards(bankCards);
                     break;
                 }
 
-                case 'transactions':
-                    const cardsRes = await cardsAPI.list();
-                    const allCards = cardsRes?.data || [];
-                    const bankCards = allCards.filter(card => 
-                        String(card.bankAccountId) === String(accountId)
-                    );
-                    const cardIds = bankCards.map(c => c.id).join(',');
-
+                case 'transactions': {
                     const txRes = await transactionsAPI.list({ 
                         bankAccountId: accountId,
                         cardIds: cardIds || undefined
                     });
                     setTransactions(txRes?.data?.transactions || txRes?.transactions || []);
                     break;
+                }
 
                 case 'goals': {
                     const goalsRes = await goalsAPI.list();
-                    // Filter goals linked to this bank account
                     const linkedGoals = (goalsRes?.data || goalsRes || []).filter(
                         goal => goal.bankAccountId === accountId
                     );
                     setGoals(linkedGoals);
-
-                    // Calculate reserved amount for goals
-                    const reserved = linkedGoals.reduce(
-                        (sum, g) => sum + parseFloat(g.currentAmount || 0), 0
-                    );
-                    setStats(prev => ({ ...prev, reservedForGoals: reserved }));
-                    break;
-                }
-
-                case 'summary': {
-                    // Load ALL data needed for the Dashboard
-                    const [cardsRes, txData, goalsData] = await Promise.all([
-                        cardsAPI.list(),
-                        transactionsAPI.list({ bankAccountId: accountId }), // We'll update this below
-                        goalsAPI.list()
-                    ]);
-
-                    const allCards = cardsRes?.data || [];
-                    const bankCards = allCards.filter(card => 
-                        String(card.bankAccountId) === String(accountId)
-                    );
-                    const cardIds = bankCards.map(c => c.id).join(',');
-
-                    // Fetch transactions AGAIN but with cardIds this time
-                    const finalTxRes = await transactionsAPI.list({ 
-                        bankAccountId: accountId,
-                        cardIds: cardIds || undefined
-                    });
-
-                    // Fetch statement for metrics
-                    const statementRes = await reportsAPI.getStatement(
-                        selectedYear, 
-                        selectedMonth, 
-                        accountId,
-                        cardIds || undefined
-                    );
-
-                    const accountTx = finalTxRes?.data?.transactions || finalTxRes?.transactions || [];
-                    const accountGoals = (goalsData?.data || goalsData || []).filter(
-                        g => g.bankAccountId === accountId
-                    );
-
-                    setCards(bankCards);
-                    setAllTransactions(accountTx);
-                    setTransactions(accountTx); // For the dashboard charts
-                    setStatement(statementRes?.data?.data || statementRes?.data || null);
-                    setGoals(accountGoals);
                     break;
                 }
             }
@@ -399,7 +371,7 @@ export default function BankDetailPage() {
         } finally {
             setLoadingTab(false);
         }
-    }, [accountId, account]);
+    }, [accountId, account, selectedYear, selectedMonth, getBankCards]);
 
     useEffect(() => {
         if (accountId) {

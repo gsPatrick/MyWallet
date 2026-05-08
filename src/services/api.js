@@ -304,7 +304,7 @@ export const reportsAPI = {
     getEvolution: () => api.get('/reports/evolution'),
     getDividends: () => api.get('/reports/dividends'),
     // Statement (Extrato Financeiro)
-    getStatement: (year, month, bankAccountId) => api.get('/reports/statement', { params: { year, month, bankAccountId } }),
+    getStatement: (year, month, bankAccountId, cardIds) => api.get('/reports/statement', { params: { year, month, bankAccountId, cardIds } }),
     getStatementYears: () => api.get('/reports/statement/years'),
 };
 
