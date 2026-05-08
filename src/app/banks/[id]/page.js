@@ -113,7 +113,21 @@ export default function BankDetailPage() {
         try {
             switch (tab) {
                 case 'statement': {
-                    const { data } = await reportsAPI.getStatement(selectedYear, selectedMonth, accountId);
+                    const cardsRes = await cardsAPI.list();
+                    const allCards = cardsRes?.data || [];
+                    const bankCards = allCards.filter(card => 
+                        String(card.bankAccountId) === String(accountId) || 
+                        (account.bankName && card.bankName?.toLowerCase().includes(account.bankName.toLowerCase())) ||
+                        (account.bankName && card.name?.toLowerCase().includes(account.bankName.toLowerCase()))
+                    );
+                    const cardIds = bankCards.map(c => c.id).join(',');
+
+                    const { data } = await reportsAPI.getStatement(
+                        selectedYear, 
+                        selectedMonth, 
+                        accountId,
+                        cardIds || undefined
+                    );
                     setStatement(data.data || { summary: { openingBalance: 0, totalIncome: 0, totalExpense: 0, closingBalance: 0 }, transactions: [] });
                     break;
                 }
@@ -145,7 +159,19 @@ export default function BankDetailPage() {
                 }
 
                 case 'transactions':
-                    const txRes = await transactionsAPI.list({ bankAccountId: accountId });
+                    const cardsRes = await cardsAPI.list();
+                    const allCards = cardsRes?.data || [];
+                    const bankCards = allCards.filter(card => 
+                        String(card.bankAccountId) === String(accountId) || 
+                        (account.bankName && card.bankName?.toLowerCase().includes(account.bankName.toLowerCase())) ||
+                        (account.bankName && card.name?.toLowerCase().includes(account.bankName.toLowerCase()))
+                    );
+                    const cardIds = bankCards.map(c => c.id).join(',');
+
+                    const txRes = await transactionsAPI.list({ 
+                        bankAccountId: accountId,
+                        cardIds: cardIds || undefined
+                    });
                     setTransactions(txRes?.data?.transactions || txRes?.transactions || []);
                     break;
 
