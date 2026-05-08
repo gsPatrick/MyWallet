@@ -144,8 +144,9 @@ export default function DashboardPage() {
     const positions = portfolioData?.positions || [];
 
     const openFinanceTotal = openFinanceAccounts.reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
-    // Use bank accounts total instead of manualTotalBalance for accurate balance
-    const totalBalance = summary.totalCurrentValue + openFinanceTotal + bankAccountsTotal;
+    // bankAccountsTotal already includes Open Finance accounts in the backend, so we subtract to get the manual portion for display
+    const manualBankAccountsTotal = bankAccountsTotal - openFinanceTotal;
+    const totalBalance = summary.totalCurrentValue + manualBankAccountsTotal;
     const patrimonioTotal = totalBalance;
 
     // Debug log - remove after testing
@@ -402,7 +403,7 @@ export default function DashboardPage() {
                             <motion.div id="hero-balance" className={styles.hero} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
                                 <span className={styles.heroLabel}>Patrimônio Total</span>
                                 <span className={styles.heroValue}>{formatCurrency(patrimonioTotal)}</span>
-                                <span className={styles.heroPeriod}>Contas ({formatCurrency(bankAccountsTotal)}) + Open Finance ({formatCurrency(openFinanceTotal)}) + Investimentos ({formatCurrency(summary.totalCurrentValue)})</span>
+                                <span className={styles.heroPeriod}>Contas ({formatCurrency(manualBankAccountsTotal)}) + Investimentos ({formatCurrency(summary.totalCurrentValue)})</span>
                             </motion.div>
 
                             <div className={styles.dashboardGrid}>

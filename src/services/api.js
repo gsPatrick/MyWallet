@@ -17,30 +17,33 @@ const api = axios.create({
 const CACHE_PREFIX = 'cache_';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
-const getCacheKey = (url) => `${CACHE_PREFIX}${url}`;
+const getCacheKey = (url, params = {}) => {
+    const queryString = params ? JSON.stringify(params) : '';
+    return `${CACHE_PREFIX}${url}${queryString}`;
+};
 
-const saveToCache = (url, data) => {
+const saveToCache = (key, data) => {
     try {
         const cacheEntry = {
             data,
             timestamp: Date.now()
         };
-        localStorage.setItem(getCacheKey(url), JSON.stringify(cacheEntry));
+        localStorage.setItem(key, JSON.stringify(cacheEntry));
     } catch (e) {
         console.warn('Cache write failed:', e);
     }
 };
 
-const getFromCache = (url) => {
+const getFromCache = (key) => {
     try {
-        const cached = localStorage.getItem(getCacheKey(url));
+        const cached = localStorage.getItem(key);
         if (!cached) return null;
 
         const { data, timestamp } = JSON.parse(cached);
 
         // Check if cache is still valid
         if (Date.now() - timestamp > CACHE_TTL) {
-            localStorage.removeItem(getCacheKey(url));
+            localStorage.removeItem(key);
             return null;
         }
 
@@ -76,9 +79,9 @@ api.interceptors.request.use(
 
             // OFFLINE CACHING: For GET requests when offline, return cached data
             if (config.method === 'get' && !isNetworkOnline) {
-                const cachedData = getFromCache(config.url);
+                const cachedData = getFromCache(getCacheKey(config.url, config.params));
                 if (cachedData) {
-                    console.log('[Offline] Serving cached data for:', config.url);
+                    console.log('[Offline] Serving cached data for:', config.url, config.params);
                     // Cancel the actual request and resolve with cached data
                     const source = axios.CancelToken.source();
                     config.cancelToken = source.token;
@@ -97,8 +100,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => {
         // Cache successful GET responses
+        // Cache successful GET responses
         if (response.config.method === 'get' && response.status === 200) {
-            saveToCache(response.config.url, response.data);
+            saveToCache(getCacheKey(response.config.url, response.config.params), response.data);
         }
         return response.data;
     },
@@ -300,7 +304,7 @@ export const reportsAPI = {
     getEvolution: () => api.get('/reports/evolution'),
     getDividends: () => api.get('/reports/dividends'),
     // Statement (Extrato Financeiro)
-    getStatement: (year, month) => api.get('/reports/statement', { params: { year, month } }),
+    getStatement: (year, month, bankAccountId) => api.get('/reports/statement', { params: { year, month, bankAccountId } }),
     getStatementYears: () => api.get('/reports/statement/years'),
 };
 

@@ -76,7 +76,8 @@ function BanksContent() {
         bankKey: '',
         nickname: '',
         type: 'CONTA_CORRENTE',
-        initialBalance: ''
+        initialBalance: '',
+        includeInTotals: true
     });
 
     // Transfer states
@@ -136,7 +137,8 @@ function BanksContent() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const valueToUse = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData(prev => ({ ...prev, [name]: valueToUse }));
     };
 
     const handleBankSelect = (bankKey) => {
@@ -161,7 +163,8 @@ function BanksContent() {
             type: formData.type,
             color: selectedBank?.color,
             icon: selectedBank?.icon,
-            initialBalance: parseFloat(formData.initialBalance) || 0
+            initialBalance: parseFloat(formData.initialBalance) || 0,
+            includeInTotals: formData.includeInTotals
         };
 
         try {
@@ -197,7 +200,8 @@ function BanksContent() {
             bankKey: account.bankCode || 'other',
             nickname: account.nickname || '',
             type: account.type || 'CONTA_CORRENTE',
-            initialBalance: account.balance || 0
+            initialBalance: account.balance || 0,
+            includeInTotals: account.includeInTotals !== undefined ? account.includeInTotals : true
         });
         setShowAddModal(true);
     };
@@ -210,7 +214,8 @@ function BanksContent() {
             bankKey: '',
             nickname: '',
             type: 'CONTA_CORRENTE',
-            initialBalance: ''
+            initialBalance: '',
+            includeInTotals: true
         });
         setTransferData({
             fromAccountId: '',
@@ -601,6 +606,20 @@ function BanksContent() {
                                         placeholder="0.00"
                                         step="0.01"
                                     />
+                                </div>
+
+                                {/* Include in Totals */}
+                                <div className={styles.formGroupCheckbox}>
+                                    <label className={styles.checkboxLabel}>
+                                        <input
+                                            type="checkbox"
+                                            name="includeInTotals"
+                                            checked={formData.includeInTotals}
+                                            onChange={handleInputChange}
+                                        />
+                                        <span>Contabilizar no saldo total da dashboard</span>
+                                        <small className={styles.checkboxHint}>Desmarque para ocultar contas de investimento ou reservas do cálculo geral.</small>
+                                    </label>
                                 </div>
 
                                 <div className={styles.formActions}>

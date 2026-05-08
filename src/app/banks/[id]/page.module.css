@@ -470,3 +470,20 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Cards Grid Update */
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding-top: 0.5rem;
+}
+
+.cardItemWrapper {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.cardItemWrapper:hover {
+    transform: translateY(-5px);
+}

@@ -17,7 +17,7 @@ import {
     FiTool, FiHome, FiTrendingUp, FiUpload
 } from 'react-icons/fi';
 import { BiWallet } from 'react-icons/bi';
-import { profilesAPI, cardsAPI, subscriptionsAPI, brokersAPI } from '@/services/api';
+import { profilesAPI, cardsAPI, subscriptionsAPI, brokersAPI, importAPI } from '@/services/api';
 import bankAccountService from '@/services/bankAccountService';
 import { useProfiles } from '@/contexts/ProfileContext';
 import CardModal from '@/components/modals/CardModal';
@@ -762,26 +762,28 @@ export default function ProfileWizard({ onComplete }) {
                             isDefault: bank.isDefault || false
                         });
 
+                        const savedBank = bankResult?.data || bankResult;
+
                         // Map temporary ID to real ID if applicable
-                        if (bankResult && bank.id) {
-                            personalBankIdMap.set(bank.id, bankResult.id);
+                        if (savedBank?.id && bank.id) {
+                            personalBankIdMap.set(bank.id, savedBank.id);
                         }
 
-                        console.log('🏦 [WIZARD] Created personal bank account:', bank.nickname);
+                        console.log('🏦 [WIZARD] Created personal bank account:', bank.nickname, '-> ID:', savedBank?.id);
 
                         // Save Imported Transactions for this Bank
-                        if (bank.id && importedTransactions.has(bank.id) && bankResult?.id) {
+                        if (bank.id && importedTransactions.has(bank.id) && savedBank?.id) {
                             const txs = importedTransactions.get(bank.id);
                             console.log(`💾 [WIZARD] Saving ${txs.length} transactions for Bank ${bank.nickname}...`);
                             await importAPI.confirmImport({
                                 data: {
-                                    bank: { id: bankResult.id },
+                                    bank: { id: savedBank.id },
                                     account: { number: bank.accountNumber },
                                     transactions: txs
                                 },
-                                type: 'CHECKING', // Default to Checking, logic handles investments if needed
+                                type: 'CHECKING',
                                 dryRun: false,
-                                overrideTargetId: bankResult.id
+                                overrideTargetId: savedBank.id
                             });
                         }
 
@@ -807,12 +809,14 @@ export default function ProfileWizard({ onComplete }) {
                             isDefault: bank.isDefault || false
                         });
 
+                        const savedBank = bankResult?.data || bankResult;
+
                         // Map temporary ID to real ID
-                        if (bankResult && bank.id) {
-                            businessBankIdMap.set(bank.id, bankResult.id);
+                        if (savedBank?.id && bank.id) {
+                            businessBankIdMap.set(bank.id, savedBank.id);
                         }
 
-                        console.log('🏦 [WIZARD] Created business bank account:', bank.nickname);
+                        console.log('🏦 [WIZARD] Created business bank account:', bank.nickname, '-> ID:', savedBank?.id);
                     } catch (bankError) {
                         console.error('⚠️ [WIZARD] Error creating business bank account (non-blocking):', bankError);
                     }
@@ -837,20 +841,24 @@ export default function ProfileWizard({ onComplete }) {
                     }
 
                     try {
-                        const result = await cardsAPI.create({
+                        const response = await cardsAPI.create({
                             ...card,
                             bankAccountId: realBankId,
                             source: 'MANUAL', // Force Manual Source
                             isVirtual: false  // It is a real card, not a temporary wizard entity
                         });
-                        const createdCard = result?.card || result;
+                        const createdCard = response?.data || response;
+
                         if (createdCard?.id) {
                             // Map by index and by name pattern
                             const oldRef = `${card.name} •••• ${card.lastFourDigits}`;
                             personalCardIdMap.set(oldRef, createdCard.id);
+                            // Also map the temp card.id if it exists
+                            if (card.id) personalCardIdMap.set(card.id, createdCard.id);
                             personalCardIdMap.set(i.toString(), createdCard.id);
+                            
+                            console.log('💳 [WIZARD] Created personal card:', card.name, '-> ID:', createdCard.id);
                         }
-                        console.log('💳 [WIZARD] Created personal card:', card.name, '-> ID:', createdCard?.id);
 
                         // Save Imported Transactions for this Card?
                         // We need to look up if we have transactions for the TEMP ID of this card
@@ -876,7 +884,35 @@ export default function ProfileWizard({ onComplete }) {
                 }
             }
 
-            // ... (Subscriptions code unchanged)
+            // 4. Create subscriptions for personal profile
+            if (personalSubs.length > 0 && personalProfileId) {
+                localStorage.setItem('investpro_profile_id', personalProfileId);
+                for (const sub of personalSubs) {
+                    try {
+                        let realCardId = null;
+                        if (sub.cardId) {
+                            realCardId = personalCardIdMap.get(sub.cardId) || null;
+                            console.log('🔗 [WIZARD] Mapping personal cardId:', sub.cardId, '-> realCardId:', realCardId);
+                        }
+
+                        const subPayload = {
+                            name: sub.name,
+                            amount: parseFloat(sub.amount) || 0,
+                            category: sub.category,
+                            frequency: sub.frequency || 'MONTHLY',
+                            startDate: sub.startDate || sub.nextBillingDate || new Date().toISOString().split('T')[0],
+                            icon: sub.icon || '',
+                            color: sub.color || '#6366F1',
+                            cardId: realCardId
+                        };
+
+                        await subscriptionsAPI.create(subPayload);
+                        console.log('📦 [WIZARD] Created personal subscription:', sub.name);
+                    } catch (e) {
+                        console.error('Error creating personal subscription:', e);
+                    }
+                }
+            }
 
             // 5. Create cards for business profile and track IDs
             if (businessCards.length > 0 && businessProfileId) {
@@ -891,19 +927,22 @@ export default function ProfileWizard({ onComplete }) {
                     }
 
                     try {
-                        const result = await cardsAPI.create({
+                        const response = await cardsAPI.create({
                             ...card,
                             bankAccountId: realBankId,
                             source: 'MANUAL',
                             isVirtual: false
                         });
-                        const createdCard = result?.card || result;
+                        const createdCard = response?.data || response;
+
                         if (createdCard?.id) {
                             const oldRef = `${card.name} •••• ${card.lastFourDigits}`;
                             businessCardIdMap.set(oldRef, createdCard.id);
+                            if (card.id) businessCardIdMap.set(card.id, createdCard.id);
                             businessCardIdMap.set(i.toString(), createdCard.id);
+                            
+                            console.log('💳 [WIZARD] Created business card:', card.name, '-> ID:', createdCard.id);
                         }
-                        console.log('💳 [WIZARD] Created business card:', card.name, '-> ID:', createdCard?.id);
                     } catch (e) {
                         console.error('Error creating business card:', e);
                     }

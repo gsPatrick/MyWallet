@@ -76,6 +76,17 @@ const parseCurrencyValue = (formatted) => {
     return parseFloat(number) || 0;
 };
 
+// Helper to convert float number to formatted input string (e.g., 129.45 -> "129,45")
+const numberToInputString = (value) => {
+    if (value === null || value === undefined || isNaN(value)) return '';
+    // Round to 2 decimal places to avoid precision issues
+    const rounded = Math.round(value * 100) / 100;
+    return rounded.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+};
+
 export default function CardModal({
     isOpen,
     onClose,
@@ -109,8 +120,8 @@ export default function CardModal({
                 brand: editingCard.brand || 'VISA',
                 brandIcon: editingCard.brandIcon || '',
                 lastFourDigits: editingCard.lastFourDigits || '',
-                creditLimit: editingCard.creditLimit ? formatCurrencyInput((editingCard.creditLimit * 100).toString()) : '',
-                availableLimit: editingCard.availableLimit ? formatCurrencyInput((editingCard.availableLimit * 100).toString()) : '',
+                creditLimit: numberToInputString(editingCard.creditLimit),
+                availableLimit: numberToInputString(editingCard.availableLimit),
                 closingDay: editingCard.closingDay?.toString() || '',
                 dueDay: editingCard.dueDay?.toString() || '',
                 color: editingCard.color || '#1a1a2e',
@@ -201,10 +212,10 @@ export default function CardModal({
     // Get current brand info
     const currentBrand = brands.find(b => b.key === form.brand);
 
-    // Get selected bank account for display
+    // Get selected bank account for display (using string-safe comparison)
     const selectedBankAccount = bankAccounts.find(
-        (b, idx) => (b.id || idx) === form.bankAccountId
-    ) || bankAccounts.find(b => b.isDefault) || bankAccounts[0];
+        (b, idx) => String(b.id || idx) === String(form.bankAccountId)
+    ) || bankAccounts.find(b => String(b.id) === String(form.bankAccountId)) || bankAccounts.find(b => b.isDefault) || bankAccounts[0];
 
     return (
         <>

@@ -22,9 +22,9 @@ export default function CreditCard({
 }) {
     const [iconError, setIconError] = useState(false);
 
-    const usedAmount = creditLimit - availableLimit - blockedLimit;
+    const usedAmount = Math.round((creditLimit - availableLimit - blockedLimit) * 100) / 100;
     const usedPercent = creditLimit > 0
-        ? (usedAmount / creditLimit) * 100
+        ? Math.round((usedAmount / creditLimit) * 100)
         : 0;
 
     const formatCurrency = (value) => {
@@ -170,7 +170,7 @@ export default function CreditCard({
                     />
                 </div>
                 <div className={styles.usageInfo}>
-                    <span>{usedPercent.toFixed(0)}% utilizado</span>
+                    <span>{usedPercent}% utilizado</span>
                     <span>Fecha dia {closingDay} • Vence dia {dueDay}</span>
                 </div>
             </div>

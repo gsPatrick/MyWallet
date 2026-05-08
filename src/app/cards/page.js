@@ -285,8 +285,8 @@ export default function CardsPage() {
             setCurrentInvoiceData(invoiceRes);
             setInvoiceHistory(historyRes?.invoices || []);
 
-            // Filter subscriptions for this card
-            const cardSubs = subscriptions.filter(s => s.cardId === card.id);
+            // Filter subscriptions for this card (using loose equality for ID safety)
+            const cardSubs = subscriptions.filter(s => String(s.cardId) === String(card.id));
             setCardSubscriptions(cardSubs);
         } catch (error) {
             console.error("Error loading card data:", error);
@@ -389,7 +389,8 @@ export default function CardsPage() {
         setEditingLimitValue(formatted);
         // When limit changes, recalculate available = new limit - used amount
         const newLimit = parseLimitValue(formatted);
-        const usedAmount = selectedCard.creditLimit - selectedCard.availableLimit;
+        // Round to avoid floating point precision errors
+        const usedAmount = Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100;
         const newAvailable = Math.max(0, newLimit - usedAmount);
         // Always update slider to reflect new available amount
         setSliderValue(newAvailable);
@@ -405,8 +406,9 @@ export default function CardsPage() {
         if (!selectedCard) return;
         const newLimit = parseLimitValue(editingLimitValue);
         const newAvailable = sliderValue;
-        const usedAmount = selectedCard.creditLimit - selectedCard.availableLimit;
-        const newBlocked = Math.max(0, newLimit - usedAmount - newAvailable);
+        // Round to avoid floating point precision errors
+        const usedAmount = Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100;
+        const newBlocked = Math.round(Math.max(0, newLimit - usedAmount - newAvailable) * 100) / 100;
 
         try {
             await cardsAPI.update(selectedCard.id, {
@@ -558,6 +560,7 @@ export default function CardsPage() {
                                     color={selectedCard.color}
                                     holderName={selectedCard?.holderName || "NOME DO TITULAR"}
                                     validThru="12/28"
+                                    icon={selectedCard.bankIcon}
                                 />
 
                                 {/* Action Buttons - Bank Style */}
@@ -703,19 +706,28 @@ export default function CardsPage() {
                                                 </div>
                                                 <div className={styles.limitsRow}>
                                                     <span>Utilizado</span>
-                                                    <strong style={{ color: '#6b7280' }}>{formatCurrency(selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0))}</strong>
+                                                    <strong style={{ color: '#6b7280' }}>{formatCurrency(Math.round((selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) * 100) / 100)}</strong>
                                                 </div>
                                             </div>
                                             <div className={styles.limitsBar}>
+                                                {/* Used Segment */}
                                                 <div
                                                     className={styles.limitsUsed}
                                                     style={{
-                                                        width: `${((selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) / selectedCard.creditLimit) * 100}%`
+                                                        width: `${Math.max(0, ((selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) / (selectedCard.creditLimit || 1)) * 100)}%`
                                                     }}
                                                 />
+                                                {/* Blocked Segment */}
+                                                <div
+                                                    className={styles.limitsBlocked}
+                                                    style={{
+                                                        width: `${Math.max(0, ((selectedCard.blockedLimit || 0) / (selectedCard.creditLimit || 1)) * 100)}%`
+                                                    }}
+                                                />
+                                                {/* Available is the background (green) */}
                                             </div>
                                             <div className={styles.limitsFooter}>
-                                                <span>{Math.round(((selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) / selectedCard.creditLimit) * 100)}% utilizado</span>
+                                                <span>{Math.round(Math.max(0, (selectedCard.creditLimit - selectedCard.availableLimit - (selectedCard.blockedLimit || 0)) / (selectedCard.creditLimit || 1)) * 100)}% utilizado</span>
                                                 <span>Fecha dia {selectedCard.closingDay} • Vence dia {selectedCard.dueDay}</span>
                                             </div>
                                         </div>
@@ -973,28 +985,33 @@ export default function CardsPage() {
                                                     <div
                                                         className={styles.limitBarUsed}
                                                         style={{
-                                                            width: `${((selectedCard.creditLimit - selectedCard.availableLimit) / (parseLimitValue(editingLimitValue) || 1)) * 100}%`
+                                                            width: `${Math.min(100, (Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100 / (parseLimitValue(editingLimitValue) || 1)) * 100)}%`
                                                         }}
                                                     />
-                                                    {/* Blocked + Available track */}
-                                                    <div className={styles.limitBarTrack}>
-                                                        {/* Available segment (green) - controlled by slider */}
-                                                        <div
-                                                            className={styles.limitBarAvailable}
-                                                            style={{
-                                                                width: `${(sliderValue / (Math.max(1, parseLimitValue(editingLimitValue) - (selectedCard.creditLimit - selectedCard.availableLimit)))) * 100}%`
-                                                            }}
-                                                        />
-                                                        <input
-                                                            type="range"
-                                                            min="0"
-                                                            max={Math.max(0, parseLimitValue(editingLimitValue) - (selectedCard.creditLimit - selectedCard.availableLimit))}
-                                                            step="100"
-                                                            value={sliderValue}
-                                                            onChange={(e) => setSliderValue(parseFloat(e.target.value))}
-                                                            className={styles.rangeSlider}
-                                                        />
-                                                    </div>
+                                                    {/* Blocked segment (orange) */}
+                                                    <div
+                                                        className={styles.limitBarBlocked}
+                                                        style={{
+                                                            width: `${Math.max(0, (parseLimitValue(editingLimitValue) - (Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100) - sliderValue) / (parseLimitValue(editingLimitValue) || 1) * 100)}%`
+                                                        }}
+                                                    />
+                                                    {/* Available segment (green) */}
+                                                    <div
+                                                        className={styles.limitBarAvailable}
+                                                        style={{
+                                                            width: `${Math.max(0, sliderValue / (parseLimitValue(editingLimitValue) || 1) * 100)}%`
+                                                        }}
+                                                    />
+                                                    {/* Input range over the Available+Blocked area */}
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max={Math.max(0, parseLimitValue(editingLimitValue) - (Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100))}
+                                                        step="1"
+                                                        value={sliderValue}
+                                                        onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+                                                        className={styles.rangeSlider}
+                                                    />
                                                 </div>
 
                                                 <div className={styles.sliderLabels}>
@@ -1010,14 +1027,12 @@ export default function CardsPage() {
                                                 </div>
                                                 <div className={styles.previewRow} style={{ color: '#6b7280' }}>
                                                     <span>Limite utilizado:</span>
-                                                    <strong>{formatCurrency(selectedCard.creditLimit - selectedCard.availableLimit)}</strong>
+                                                    <strong>{formatCurrency(Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100)}</strong>
                                                 </div>
                                                 <div className={styles.previewRow} style={{ color: '#f59e0b' }}>
                                                     <span>Limite bloqueado:</span>
                                                     <strong>{formatCurrency(
-                                                        parseLimitValue(editingLimitValue) -
-                                                        (selectedCard.creditLimit - selectedCard.availableLimit) -
-                                                        sliderValue
+                                                        Math.round((parseLimitValue(editingLimitValue) - (Math.round((selectedCard.creditLimit - selectedCard.availableLimit) * 100) / 100) - sliderValue) * 100) / 100
                                                     )}</strong>
                                                 </div>
                                                 <div className={styles.previewRow} style={{ color: '#10b981' }}>
@@ -1115,7 +1130,7 @@ export default function CardsPage() {
                                     }
 
                                     const displayIcon = dictionaryEntry?.icon;
-                                    const displayColor = dictionaryEntry?.color || card.color || '#1a1a2e';
+                                    const displayColor = card.color || dictionaryEntry?.color || '#1a1a2e';
 
                                     return (
                                         <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>

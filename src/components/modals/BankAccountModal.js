@@ -88,13 +88,18 @@ export default function BankAccountModal({ isOpen, onClose, onSuccess, initialDa
                 icon: bankInfo.icon
             };
 
+            let result;
             if (initialData) {
-                await bankAccountService.update(initialData.id, payload);
+                result = await bankAccountService.update(initialData.id, payload);
             } else {
-                await bankAccountService.create(payload);
+                result = await bankAccountService.create(payload);
             }
 
-            if (onSuccess) onSuccess();
+            // bankAccountService returns the API response.
+            // If the interceptor is working correctly, 'result' is the body { message, data: account }
+            const savedAccount = result?.data || result;
+
+            if (onSuccess) onSuccess(savedAccount);
             onClose();
         } catch (error) {
             console.error('Error saving account:', error);

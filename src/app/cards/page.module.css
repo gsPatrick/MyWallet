@@ -14,6 +14,12 @@
     padding: 0 var(--spacing-xl);
 }
 
+@media (max-width: 768px) {
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+}
+
 /* Page Header */
 .pageHeader {
     display: flex;
@@ -157,9 +163,24 @@
     align-items: start;
 }
 
+@media (max-width: 1024px) {
+    .invoiceView {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+    }
+}
+
 .invoiceCard {
     position: sticky;
     top: calc(var(--header-height) + var(--spacing-xl));
+    z-index: 10;
+}
+
+@media (max-width: 1024px) {
+    .invoiceCard {
+        position: relative;
+        top: 0;
+    }
 }
 
 .invoiceDetails {
@@ -174,6 +195,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-xl);
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+    .invoiceHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 .invoiceHeader h2 {
@@ -214,22 +244,37 @@
 }
 
 .invoiceSummary {
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
     margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.invoiceSummary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-primary);
+    opacity: 0.5;
 }
 
 .invoiceMain {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--spacing-lg);
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 
 .invoiceTotal {
-    display: flex;
-    flex-direction: column;
+    margin: var(--spacing-sm) 0;
 }
 
 .invoiceLabel {
@@ -239,10 +284,16 @@
 }
 
 .invoiceValue {
-    font-size: 2.5rem;
-    font-weight: 600;
+    font-size: 3rem;
+    font-weight: 800;
     color: var(--text-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
+}
+
+@media (max-width: 480px) {
+    .invoiceValue {
+        font-size: 2.25rem;
+    }
 }
 
 .invoiceStatus {
@@ -1079,11 +1130,22 @@
 /* Bank-Style Action Buttons                 */
 /* ========================================= */
 .actionButtons {
-    display: flex;
-    justify-content: center;
-    gap: var(--spacing-xl);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: var(--spacing-md);
     margin-top: var(--spacing-xl);
-    padding: var(--spacing-md) 0;
+    padding: var(--spacing-lg);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-light);
+}
+
+@media (max-width: 480px) {
+    .actionButtons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
 }
 
 .actionButtons .actionBtn {
@@ -1099,16 +1161,18 @@
 }
 
 .actionButtons .actionBtn .actionIcon {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-tertiary);
-    border-radius: 50%;
-    font-size: 1.25rem;
+    background: var(--bg-primary);
+    border-radius: 14px;
+    font-size: 1.125rem;
     color: var(--text-primary);
     transition: all var(--transition-fast);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
 }
 
 .actionButtons .actionBtn:hover .actionIcon {
@@ -1404,46 +1468,68 @@
 /* Limits Summary Bar */
 .limitsSummary {
     background: var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
     margin-bottom: var(--spacing-xl);
-}
-
-.limitsBar {
-    height: 8px;
-    background: rgba(var(--accent-success-rgb), 0.3);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    margin-bottom: var(--spacing-sm);
-}
-
-.limitsUsed {
-    height: 100%;
-    background: #8b5cf6;
-    border-radius: var(--radius-full);
-    transition: width var(--transition-normal);
+    border: 1px solid var(--border-light);
 }
 
 .limitsInfoRows {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+@media (max-width: 480px) {
+    .limitsInfoRows {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
 }
 
 .limitsRow {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.875rem;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
 }
 
 .limitsRow span {
-    color: var(--text-secondary);
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .limitsRow strong {
-    font-weight: 600;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.limitsBar {
+    height: 12px;
+    background: #10b981; /* Green - available */
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-light);
+    display: flex;
+}
+
+.limitsUsed {
+    height: 100%;
+    background: #6b7280; /* Gray - used */
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.limitsBlocked {
+    height: 100%;
+    background: #f59e0b; /* Orange - blocked */
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .limitsFooter {
@@ -1451,7 +1537,7 @@
     justify-content: space-between;
     font-size: 0.8125rem;
     color: var(--text-tertiary);
-    margin-top: var(--spacing-sm);
+    font-weight: 500;
 }
 
 /* Transaction Groups */
@@ -1779,54 +1865,48 @@
 .limitBarContainer {
     display: flex;
     align-items: center;
-    height: 12px;
-    background: #10b981;
-    /* Green - available */
+    height: 14px;
+    background: var(--bg-primary);
     border-radius: var(--radius-full);
-    overflow: visible;
+    overflow: hidden;
     position: relative;
+    border: 1px solid var(--border-light);
 }
 
 .limitBarUsed {
     height: 100%;
-    background: #6b7280;
-    /* Gray - used/fixed */
-    border-radius: var(--radius-full) 0 0 var(--radius-full);
+    background: #6b7280; /* Gray - used */
     flex-shrink: 0;
     z-index: 1;
+    transition: width 0.3s ease;
 }
 
-.limitBarTrack {
-    flex: 1;
+.limitBarBlocked {
     height: 100%;
-    position: relative;
-    background: #f59e0b;
-    /* Orange - blocked area */
-    border-radius: 0 var(--radius-full) var(--radius-full) 0;
+    background: #f59e0b; /* Orange - blocked */
+    flex-shrink: 0;
+    z-index: 1;
+    transition: width 0.3s ease;
 }
 
 .limitBarAvailable {
-    position: absolute;
-    left: 0;
-    top: 0;
     height: 100%;
-    background: #10b981;
-    /* Green - available */
-    border-radius: 0 var(--radius-full) var(--radius-full) 0;
-    pointer-events: none;
+    background: #10b981; /* Green - available */
+    flex-shrink: 0;
     z-index: 1;
+    transition: width 0.3s ease;
 }
 
 .rangeSlider {
     width: 100%;
     height: 100%;
     background: transparent;
-    border-radius: var(--radius-full);
     appearance: none;
     cursor: pointer;
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 2; /* Over segments */
 }
 
 .rangeSlider::-webkit-slider-runnable-track {

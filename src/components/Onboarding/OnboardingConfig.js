@@ -92,39 +92,43 @@ export default function OnboardingConfig({ onComplete }) {
         } else if (step === 'salary') {
             setLoading(true);
             try {
+                console.log('💰 [ONBOARDING] Saving initial config...');
                 const response = await api.put('/auth/onboarding-config', {
                     initialBalance: parseCurrencyValue(initialBalance),
                     salary: parseCurrencyValue(salary),
                     salaryDay: parseInt(salaryDay) || 5
                 });
 
-                // ✅ Capture Profile ID and save for subsequent requests
-                if (response && response.data && response.data.profileId) {
-                    console.log('✅ [ONBOARDING] Profile ID received:', response.data.profileId);
-                    localStorage.setItem('investpro_profile_id', response.data.profileId);
-                } else if (response && response.profileId) {
-                    // In case interceptor unwraps it differently
-                    console.log('✅ [ONBOARDING] Profile ID received (root):', response.profileId);
-                    localStorage.setItem('investpro_profile_id', response.profileId);
+                // ✅ Robust Profile ID capture
+                const result = response?.data || response;
+                const profileId = result?.profileId || result?.data?.profileId;
+
+                if (profileId) {
+                    console.log('✅ [ONBOARDING] Profile ID received:', profileId);
+                    localStorage.setItem('investpro_profile_id', profileId);
                 }
 
                 // Fetch bank accounts immediately to ensure Wallet is available for Cards step
                 try {
                     const accountsResponse = await bankAccountsAPI.list();
-                    if (accountsResponse && accountsResponse.data) {
-                        setBankAccounts(accountsResponse.data);
+                    const accountsList = accountsResponse?.data || accountsResponse;
+                    if (Array.isArray(accountsList)) {
+                        console.log('🏦 [ONBOARDING] Bank accounts fetched:', accountsList.length);
+                        setBankAccounts(accountsList);
                     }
                 } catch (err) {
                     console.error('⚠️ [ONBOARDING] Failed to fetch bank accounts:', err);
                 }
 
+                setStep('bankAccounts');
             } catch (e) {
-                console.error('Error saving config:', e);
+                console.error('❌ [ONBOARDING] Error saving config:', e);
+                alert('Erro ao salvar configurações iniciais. Verifique sua conexão.');
             }
             setLoading(false);
-            setStep('bankAccounts'); // Go to Bank Accounts step
         } else if (step === 'bankAccounts') {
-            // Proceed to Cards
+            // All bank accounts added via modal already have IDs.
+            // If any were added manually without ID (shouldn't happen now), we could save them here.
             setStep('cards');
         } else if (step === 'cards') {
             setLoading(true);
@@ -135,41 +139,68 @@ export default function OnboardingConfig({ onComplete }) {
                 for (const card of cards) {
                     // Only create if it doesn't have an ID yet
                     if (!card.id) {
+                        // Ensure bankAccountId is a UUID, not an index
+                        if (typeof card.bankAccountId === 'number') {
+                            const realBank = bankAccounts[card.bankAccountId];
+                            if (realBank?.id) {
+                                card.bankAccountId = realBank.id;
+                            } else {
+                                // If no bank found, use the first available one as fallback
+                                card.bankAccountId = bankAccounts[0]?.id || null;
+                            }
+                        }
+
                         console.log('🃏 [ONBOARDING] Creating new card:', card);
                         const response = await cardsAPI.create(card);
-                        console.log('🃏 [ONBOARDING] Card API response:', response);
+                        const result = response?.data || response;
+                        
+                        // Robust response handling
+                        const savedCard = result?.id ? result : (result?.data?.id ? result.data : null);
 
-                        if (response && response.data) {
-                            console.log('✅ [ONBOARDING] Card created:', response.data.id);
-                            processedCards.push(response.data);
+                        if (savedCard) {
+                            console.log('✅ [ONBOARDING] Card created:', savedCard.id);
+                            processedCards.push(savedCard);
+                        } else {
+                            console.warn('⚠️ [ONBOARDING] Unexpected card API response:', response);
+                            processedCards.push(card); // Fallback
                         }
                     } else {
-                        // Keep existing card
                         console.log('ℹ️ [ONBOARDING] Card already exists:', card.id);
                         processedCards.push(card);
                     }
                 }
 
-                console.log('🃏 [ONBOARDING] Final cards list:', processedCards);
                 setCards(processedCards);
+                setStep('subscriptions');
             } catch (e) {
                 console.error('❌ [ONBOARDING] Error saving cards:', e);
+                alert('Erro ao salvar cartões. Alguns itens podem não ter sido salvos.');
             }
             setLoading(false);
-            setStep('subscriptions');
         } else if (step === 'subscriptions') {
             setLoading(true);
             try {
                 console.log('📦 [ONBOARDING] Creating subscriptions...', subscriptions);
                 for (const sub of subscriptions) {
+                    // Fix cardId reference if it was an index
+                    if (typeof sub.cardId === 'number') {
+                        const realCard = cards[sub.cardId];
+                        sub.cardId = realCard?.id || null;
+                    }
+                    
+                    // Ensure startDate is not empty
+                    if (!sub.startDate) {
+                        sub.startDate = new Date().toISOString().split('T')[0];
+                    }
+
                     await subscriptionsAPI.create(sub);
                 }
+                setStep('brokers');
             } catch (e) {
                 console.error('❌ [ONBOARDING] Error saving subscriptions:', e);
+                alert('Erro ao salvar assinaturas.');
             }
             setLoading(false);
-            console.log('📈 [ONBOARDING] Going to brokers step, availableBrokers:', availableBrokers);
-            setStep('brokers'); // Go to brokers step
         } else if (step === 'brokers') {
             setLoading(true);
             try {

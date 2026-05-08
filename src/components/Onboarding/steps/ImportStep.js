@@ -66,10 +66,6 @@ export default function ImportStep({ onNext, onSkip, onConfirmHelper, isSubCompo
         { id: 'other', name: 'Outro', color: '#333333', logo: null }
     ];
 
-    { id: 'xp', name: 'XP', color: '#000000', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/XP_Investimentos_logo.svg' },
-    { id: 'other', name: 'Outro', color: '#333333', logo: null }
-    ];
-
     const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
     // Auto-Calculate Available Limit when Credit Limit or Preview Data changes

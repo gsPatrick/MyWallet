@@ -18,14 +18,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiArrowLeft, FiCreditCard, FiActivity, FiTarget, FiDollarSign,
     FiRefreshCw, FiEdit2, FiTrendingUp, FiTrendingDown, FiCalendar,
-    FiPieChart
+    FiPieChart, FiClock, FiRepeat, FiCheck, FiLayers, FiAlertCircle, FiHome, FiTrash2, FiEdit, FiPlus, FiDownload, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
+import { formatDate } from '@/utils/formatters';
+import { detectBrand } from '@/utils/brandDetection';
+import { getBrandIcon } from '@/hooks/useBrandIcon';
+import { usePrivateCurrency } from '@/components/ui/PrivateValue';
+import txStyles from '@/app/transactions/page.module.css';
+import statementStyles from '@/app/settings/statement/page.module.css';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
 import AppShell from '@/components/AppShell';
 import bankAccountService from '@/services/bankAccountService';
-import { goalsAPI, cardsAPI, transactionsAPI } from '@/services/api';
+import { goalsAPI, cardsAPI, transactionsAPI, reportsAPI } from '@/services/api';
 import styles from './page.module.css';
+
+const MONTHS = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -36,12 +47,14 @@ const formatCurrency = (value) => {
 
 const tabs = [
     { id: 'summary', label: 'Resumo', icon: FiPieChart },
+    { id: 'statement', label: 'Extrato', icon: FiCalendar },
     { id: 'cards', label: 'Cartões', icon: FiCreditCard },
     { id: 'transactions', label: 'Transações', icon: FiActivity },
     { id: 'goals', label: 'Metas', icon: FiTarget }
 ];
 
 import CardModal from '@/components/modals/CardModal';
+import CreditCard from '@/components/ui/CreditCard/CreditCard';
 
 export default function BankDetailPage() {
     const params = useParams();
@@ -53,6 +66,12 @@ export default function BankDetailPage() {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('summary');
     const [showCardModal, setShowCardModal] = useState(false);
+    const { formatCurrency } = usePrivateCurrency();
+
+    // Chart-specific filters
+    const [chartFilterType, setChartFilterType] = useState('EXPENSE');
+    const [chartFilterStatus, setChartFilterStatus] = useState('all');
+    const [allTransactions, setAllTransactions] = useState([]);
 
     // Tab data
     const [cards, setCards] = useState([]);
@@ -60,11 +79,19 @@ export default function BankDetailPage() {
     const [goals, setGoals] = useState([]);
     const [loadingTab, setLoadingTab] = useState(false);
 
+    // Statement State
+    const [statement, setStatement] = useState(null);
+    const currentDate = new Date();
+    const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+
     // Statistics
     const [stats, setStats] = useState({
         totalIncome: 0,
         totalExpenses: 0,
-        reservedForGoals: 0
+        reservedForGoals: 0,
+        pendingIncome: 0,
+        pendingExpenses: 0
     });
 
     const loadAccount = useCallback(async () => {
@@ -85,14 +112,37 @@ export default function BankDetailPage() {
         setLoadingTab(true);
         try {
             switch (tab) {
-                case 'cards':
+                case 'statement': {
+                    const { data } = await reportsAPI.getStatement(selectedYear, selectedMonth, accountId);
+                    setStatement(data.data || { summary: { openingBalance: 0, totalIncome: 0, totalExpense: 0, closingBalance: 0 }, transactions: [] });
+                    break;
+                }
+                case 'cards': {
                     const cardsRes = await cardsAPI.list();
-                    // Filter cards linked to this bank account
-                    const linkedCards = (cardsRes?.data || []).filter(
-                        card => card.bankAccountId === accountId
-                    );
+                    // Filter cards linked to this bank account OR matching by name if not linked
+                    const linkedCards = (cardsRes?.data || []).filter(card => {
+                        const cardBankAccountId = card.bankAccountId ? String(card.bankAccountId) : null;
+                        const currentAccountId = accountId ? String(accountId) : null;
+                        
+                        // 1. Exact ID match
+                        if (cardBankAccountId === currentAccountId) return true;
+                        
+                        // 2. Name match if card has no linked account
+                        if (!cardBankAccountId && account) {
+                            const accName = (account.bankName || "").toLowerCase().trim();
+                            const accNick = (account.nickname || "").toLowerCase().trim();
+                            const cardBank = (card.bankName || "").toLowerCase().trim();
+                            
+                            return (
+                                (accName && (cardBank.includes(accName) || accName.includes(cardBank))) ||
+                                (accNick && (cardBank.includes(accNick) || accNick.includes(cardBank)))
+                            );
+                        }
+                        return false;
+                    });
                     setCards(linkedCards);
                     break;
+                }
 
                 case 'transactions':
                     const txRes = await transactionsAPI.list({ bankAccountId: accountId });
@@ -128,17 +178,32 @@ export default function BankDetailPage() {
                     const accountTx = txData?.data?.transactions || txData?.transactions || [];
 
                     const income = accountTx
-                        .filter(t => t.type === 'INCOME')
+                        .filter(t => t.type === 'INCOME' && t.status !== 'PENDING' && t.status !== 'CANCELLED')
                         .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
                     const expenses = accountTx
-                        .filter(t => t.type === 'EXPENSE')
+                        .filter(t => t.type === 'EXPENSE' && t.status !== 'PENDING' && t.status !== 'CANCELLED')
                         .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+                    
+                    const pendingIncome = accountTx
+                        .filter(t => t.type === 'INCOME' && t.status === 'PENDING')
+                        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+                    const pendingExpenses = accountTx
+                        .filter(t => t.type === 'EXPENSE' && t.status === 'PENDING')
+                        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+
                     const reserved = accountGoals.reduce(
                         (s, g) => s + parseFloat(g.currentAmount || 0), 0
                     );
 
-                    setStats({ totalIncome: income, totalExpenses: expenses, reservedForGoals: reserved });
+                    setStats({ 
+                        totalIncome: income, 
+                        totalExpenses: expenses, 
+                        pendingIncome, 
+                        pendingExpenses,
+                        reservedForGoals: reserved 
+                    });
                     setGoals(accountGoals);
+                    setAllTransactions(accountTx);
                     break;
                 }
             }
@@ -147,7 +212,7 @@ export default function BankDetailPage() {
         } finally {
             setLoadingTab(false);
         }
-    }, [accountId]);
+    }, [accountId, account]);
 
     useEffect(() => {
         if (accountId) {
@@ -159,7 +224,7 @@ export default function BankDetailPage() {
         if (account && activeTab) {
             loadTabData(activeTab);
         }
-    }, [account, activeTab, loadTabData]);
+    }, [account, activeTab, loadTabData, selectedYear, selectedMonth]);
 
     const handleCardSave = () => {
         loadTabData('cards');
@@ -197,6 +262,118 @@ export default function BankDetailPage() {
     }
 
     const availableBalance = parseFloat(account.balance || 0) - stats.reservedForGoals;
+
+    // --- Statement Helpers ---
+    const navigateMonth = (direction) => {
+        if (direction === 'prev') {
+            if (selectedMonth === 1) {
+                setSelectedMonth(12);
+                setSelectedYear(y => y - 1);
+            } else {
+                setSelectedMonth(m => m - 1);
+            }
+        } else {
+            if (selectedMonth === 12) {
+                setSelectedMonth(1);
+                setSelectedYear(y => y + 1);
+            } else {
+                setSelectedMonth(m => m + 1);
+            }
+        }
+    };
+
+    const groupedByDate = statement?.transactions?.reduce((acc, t) => {
+        const key = t.date;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(t);
+        return acc;
+    }, {}) || {};
+
+    const getDayTotal = (transactions) => {
+        return transactions.reduce((sum, t) => {
+            return sum + (t.type === 'INCOME' ? t.amount : -t.amount);
+        }, 0);
+    };
+
+    const exportToPDF = async () => {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.text(`Extrato - ${account.nickname || account.bankName}`, 20, 20);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`${MONTHS[selectedMonth - 1]} de ${selectedYear}`, 20, 28);
+
+        let y = 45;
+        doc.setFontSize(10);
+        doc.setTextColor(60);
+        doc.text(`Saldo Anterior: ${formatCurrency(statement?.summary?.openingBalance || 0)}`, 20, y);
+        y += 8;
+        doc.text(`Entradas: +${formatCurrency(statement?.summary?.totalIncome || 0)}`, 20, y);
+        y += 8;
+        doc.text(`Saídas: -${formatCurrency(statement?.summary?.totalExpense || 0)}`, 20, y);
+        y += 8;
+        doc.setFontSize(11);
+        doc.text(`Saldo Final: ${formatCurrency(statement?.summary?.closingBalance || 0)}`, 20, y);
+
+        y += 20;
+
+        Object.entries(groupedByDate).forEach(([date, items]) => {
+            if (y > 265) { doc.addPage(); y = 20; }
+
+            const dateObj = new Date(date + 'T12:00:00');
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }), 20, y);
+            y += 8;
+
+            items.forEach(t => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.setFontSize(9);
+                doc.setTextColor(60);
+                const time = t.time || '';
+                doc.text(`${time}`, 20, y);
+                doc.text(t.description.substring(0, 45), 35, y);
+                doc.setTextColor(t.type === 'INCOME' ? 34 : 200, t.type === 'INCOME' ? 197 : 80, t.type === 'INCOME' ? 94 : 80);
+                doc.text(`${t.type === 'INCOME' ? '+' : '-'}${formatCurrency(t.amount)}`, 155, y);
+                y += 6;
+            });
+            y += 6;
+        });
+
+        doc.save(`extrato_${account.bankName}_${selectedYear}_${selectedMonth}.pdf`);
+    };
+    // -------------------------
+
+    // Charts Logic
+    const completedTransactions = allTransactions.filter(t => t.status !== 'PENDING' && t.status !== 'CANCELLED');
+    const pendingTransactions = allTransactions.filter(t => t.status === 'PENDING');
+
+    const chartTransactionsSource = chartFilterStatus === 'all'
+        ? allTransactions
+        : chartFilterStatus === 'COMPLETED'
+            ? completedTransactions
+            : pendingTransactions;
+
+    const categoryBreakdown = chartTransactionsSource
+        .filter(t => t.type === chartFilterType)
+        .reduce((acc, tx) => {
+            const cat = tx.category || 'Outros';
+            acc[cat] = (acc[cat] || 0) + parseFloat(tx.amount);
+            return acc;
+        }, {});
+
+    const chartTotal = Object.values(categoryBreakdown).reduce((a, b) => a + b, 0);
+
+    const categoryChartData = Object.entries(categoryBreakdown)
+        .map(([name, value], i) => ({
+            name,
+            value,
+            percent: chartTotal > 0 ? Math.round((value / chartTotal) * 100) : 0,
+            color: ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'][i % 7]
+        }))
+        .sort((a, b) => b.value - a.value);
 
     return (
         <AppShell>
@@ -275,34 +452,220 @@ export default function BankDetailPage() {
                                 <>
                                     {/* SUMMARY TAB */}
                                     {activeTab === 'summary' && (
-                                        <div className={styles.summaryGrid}>
-                                            <div className={styles.statCard}>
-                                                <FiTrendingUp className={styles.iconSuccess} />
-                                                <div>
-                                                    <span className={styles.statLabel}>Entradas (mês)</span>
-                                                    <span className={styles.statValue}>{formatCurrency(stats.totalIncome)}</span>
+                                        <div className={txStyles.chartsGrid}>
+                                            <div className={txStyles.summaryGrid}>
+                                                <div className={txStyles.summaryCard}>
+                                                    <div className={txStyles.summaryHeader}>
+                                                        <span className={txStyles.summaryLabel}>Receita Realizada</span>
+                                                        <FiTrendingUp className={txStyles.incomeIcon} />
+                                                    </div>
+                                                    <span className={`${txStyles.summaryValue} ${txStyles.income}`}>{formatCurrency(stats.totalIncome)}</span>
+                                                </div>
+                                                <div className={`${txStyles.summaryCard} ${txStyles.predictionCard}`}>
+                                                    <div className={txStyles.summaryHeader}>
+                                                        <span className={txStyles.summaryLabel}>Receita Futura</span>
+                                                        <FiClock className={txStyles.incomeIcon} />
+                                                    </div>
+                                                    <span className={`${txStyles.summaryValue} ${txStyles.income} ${txStyles.predictionText}`}>{formatCurrency(stats.pendingIncome)}</span>
+                                                </div>
+                                                <div className={txStyles.summaryCard}>
+                                                    <div className={txStyles.summaryHeader}>
+                                                        <span className={txStyles.summaryLabel}>Despesa Realizada</span>
+                                                        <FiTrendingDown className={txStyles.expenseIcon} />
+                                                    </div>
+                                                    <span className={`${txStyles.summaryValue} ${txStyles.expense}`}>{formatCurrency(stats.totalExpenses)}</span>
+                                                </div>
+                                                <div className={`${txStyles.summaryCard} ${txStyles.predictionCard}`}>
+                                                    <div className={txStyles.summaryHeader}>
+                                                        <span className={txStyles.summaryLabel}>Despesa Futura</span>
+                                                        <FiAlertCircle className={txStyles.expenseIcon} />
+                                                    </div>
+                                                    <span className={`${txStyles.summaryValue} ${txStyles.expense} ${txStyles.predictionText}`}>{formatCurrency(stats.pendingExpenses)}</span>
                                                 </div>
                                             </div>
-                                            <div className={styles.statCard}>
-                                                <FiTrendingDown className={styles.iconDanger} />
-                                                <div>
-                                                    <span className={styles.statLabel}>Saídas (mês)</span>
-                                                    <span className={styles.statValue}>{formatCurrency(stats.totalExpenses)}</span>
+
+                                            <div className={txStyles.chartCard}>
+                                                <div className={txStyles.chartHeader}>
+                                                    <h3>{chartFilterType === 'EXPENSE' ? 'Despesas' : 'Receitas'} por Categoria</h3>
+                                                    <div className={txStyles.chartFilters}>
+                                                        <button
+                                                            className={`${txStyles.chartFilterBtn} ${chartFilterType === 'EXPENSE' ? txStyles.active : ''}`}
+                                                            onClick={() => setChartFilterType('EXPENSE')}
+                                                        >
+                                                            Despesas
+                                                        </button>
+                                                        <button
+                                                            className={`${txStyles.chartFilterBtn} ${chartFilterType === 'INCOME' ? txStyles.active : ''}`}
+                                                            onClick={() => setChartFilterType('INCOME')}
+                                                        >
+                                                            Receitas
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className={txStyles.chartSubFilters}>
+                                                    <button
+                                                        className={`${txStyles.chartSubBtn} ${chartFilterStatus === 'all' ? txStyles.active : ''}`}
+                                                        onClick={() => setChartFilterStatus('all')}
+                                                    >
+                                                        Todos
+                                                    </button>
+                                                    <button
+                                                        className={`${txStyles.chartSubBtn} ${chartFilterStatus === 'COMPLETED' ? txStyles.active : ''}`}
+                                                        onClick={() => setChartFilterStatus('COMPLETED')}
+                                                    >
+                                                        Realizados
+                                                    </button>
+                                                    <button
+                                                        className={`${txStyles.chartSubBtn} ${chartFilterStatus === 'PENDING' ? txStyles.active : ''}`}
+                                                        onClick={() => setChartFilterStatus('PENDING')}
+                                                    >
+                                                        Futuros
+                                                    </button>
+                                                </div>
+                                                <div className={txStyles.pieContainer}>
+                                                    <div className={txStyles.pieChart}>
+                                                        <svg viewBox="0 0 100 100" className={txStyles.pieSvg}>
+                                                            {categoryChartData.length > 0 ? (
+                                                                (() => {
+                                                                    let accumulated = 0;
+                                                                    return categoryChartData.map((d, i) => {
+                                                                        const startAngle = (accumulated / 100) * 360;
+                                                                        accumulated += d.percent;
+                                                                        const endAngle = (accumulated / 100) * 360;
+                                                                        if (d.percent >= 100) return <circle key={i} cx="50" cy="50" r="40" fill={d.color} />;
+                                                                        const largeArc = d.percent > 50 ? 1 : 0;
+                                                                        const startX = 50 + 40 * Math.cos((startAngle - 90) * Math.PI / 180);
+                                                                        const startY = 50 + 40 * Math.sin((startAngle - 90) * Math.PI / 180);
+                                                                        const endX = 50 + 40 * Math.cos((endAngle - 90) * Math.PI / 180);
+                                                                        const endY = 50 + 40 * Math.sin((endAngle - 90) * Math.PI / 180);
+                                                                        return (
+                                                                            <path key={i} d={`M 50 50 L ${startX} ${startY} A 40 40 0 ${largeArc} 1 ${endX} ${endY} Z`} fill={d.color} />
+                                                                        );
+                                                                    });
+                                                                })()
+                                                            ) : (
+                                                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-light)" strokeWidth="8" opacity="0.3" />
+                                                            )}
+                                                            <circle cx="50" cy="50" r="25" fill="var(--bg-secondary)" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className={txStyles.pieLegend}>
+                                                        {categoryChartData.slice(0, 4).map((d, i) => (
+                                                            <div key={i} className={txStyles.legendItem}>
+                                                                <span className={txStyles.legendDot} style={{ background: d.color }}></span>
+                                                                <span className={txStyles.legendName}>{d.name}</span>
+                                                                <span className={txStyles.legendPercent}>{d.percent}%</span>
+                                                            </div>
+                                                        ))}
+                                                        {categoryChartData.length === 0 && (
+                                                            <span className={txStyles.emptyLegend}>Sem dados</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className={styles.statCard}>
-                                                <FiTarget className={styles.iconPrimary} />
+                                        </div>
+                                    )}
+
+                                    {/* STATEMENT TAB */}
+                                    {activeTab === 'statement' && (
+                                        <div className={statementStyles.page} style={{ padding: 0, minHeight: 'auto', background: 'transparent' }}>
+                                            <div className={statementStyles.header} style={{ marginBottom: '1rem' }}>
                                                 <div>
-                                                    <span className={styles.statLabel}>Reservado (metas)</span>
-                                                    <span className={styles.statValue}>{formatCurrency(stats.reservedForGoals)}</span>
+                                                    <h2 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>Extrato Financeiro</h2>
+                                                    <p className={statementStyles.subtitle}>Movimentações detalhadas da sua conta</p>
+                                                </div>
+                                                <button className={styles.btnSecondary} onClick={exportToPDF}>
+                                                    <FiDownload /> Exportar PDF
+                                                </button>
+                                            </div>
+
+                                            <div className={statementStyles.monthNav}>
+                                                <button onClick={() => navigateMonth('prev')} aria-label="Mês anterior">
+                                                    <FiChevronLeft />
+                                                </button>
+                                                <div className={statementStyles.monthDisplay}>
+                                                    <span className={statementStyles.monthName}>{MONTHS[selectedMonth - 1]}</span>
+                                                    <span className={statementStyles.yearName}>{selectedYear}</span>
+                                                </div>
+                                                <button onClick={() => navigateMonth('next')} aria-label="Próximo mês">
+                                                    <FiChevronRight />
+                                                </button>
+                                            </div>
+
+                                            <div className={statementStyles.summary}>
+                                                <div className={statementStyles.summaryGrid}>
+                                                    <div className={statementStyles.summaryItem}>
+                                                        <span className={statementStyles.label}>Saldo Anterior</span>
+                                                        <span className={statementStyles.value}>{formatCurrency(statement?.summary?.openingBalance || 0)}</span>
+                                                    </div>
+                                                    <div className={statementStyles.summaryItem}>
+                                                        <span className={statementStyles.label}>Total de Entradas</span>
+                                                        <span className={`${statementStyles.value} ${statementStyles.credit}`}>+{formatCurrency(statement?.summary?.totalIncome || 0)}</span>
+                                                    </div>
+                                                    <div className={statementStyles.summaryItem}>
+                                                        <span className={statementStyles.label}>Total de Saídas</span>
+                                                        <span className={`${statementStyles.value} ${statementStyles.debit}`}>-{formatCurrency(statement?.summary?.totalExpense || 0)}</span>
+                                                    </div>
+                                                    <div className={statementStyles.summaryItem}>
+                                                        <span className={statementStyles.label}>Saldo Final</span>
+                                                        <span className={`${statementStyles.value} ${statementStyles.highlight}`}>{formatCurrency(statement?.summary?.closingBalance || 0)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className={styles.statCard}>
-                                                <FiDollarSign className={styles.iconWarning} />
-                                                <div>
-                                                    <span className={styles.statLabel}>Disponível</span>
-                                                    <span className={styles.statValue}>{formatCurrency(availableBalance)}</span>
-                                                </div>
+
+                                            <div className={statementStyles.transactionsList}>
+                                                {loadingTab ? (
+                                                    <div className={statementStyles.loading}>Carregando extrato...</div>
+                                                ) : Object.keys(groupedByDate).length > 0 ? (
+                                                    Object.entries(groupedByDate).map(([date, items]) => {
+                                                        const dateObj = new Date(date + 'T12:00:00');
+                                                        const dayTotal = getDayTotal(items);
+
+                                                        return (
+                                                            <motion.div
+                                                                key={date}
+                                                                className={statementStyles.dayBlock}
+                                                                initial={{ opacity: 0, y: 10 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                            >
+                                                                <div className={statementStyles.dayHeader}>
+                                                                    <div className={statementStyles.dayInfo}>
+                                                                        <span className={statementStyles.dayNumber}>{dateObj.getDate()}</span>
+                                                                        <div className={statementStyles.dayMeta}>
+                                                                            <span className={statementStyles.dayWeek}>
+                                                                                {dateObj.toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                                                            </span>
+                                                                            <span className={statementStyles.dayMonth}>
+                                                                                {dateObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={`${statementStyles.dayTotal} ${dayTotal >= 0 ? statementStyles.credit : statementStyles.debit}`}>
+                                                                        {dayTotal >= 0 ? '+' : ''}{formatCurrency(dayTotal)}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className={statementStyles.dayTransactions}>
+                                                                    {items.map((t) => (
+                                                                        <div key={t.id} className={statementStyles.transaction}>
+                                                                            <div className={statementStyles.txTime}>{t.time || '--:--'}</div>
+                                                                            <div className={statementStyles.txContent}>
+                                                                                <span className={statementStyles.txDesc}>{t.description}</span>
+                                                                            </div>
+                                                                            <div className={`${statementStyles.txAmount} ${t.type === 'INCOME' ? statementStyles.credit : statementStyles.debit}`}>
+                                                                                {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className={statementStyles.empty}>
+                                                        <p>Nenhuma movimentação encontrada neste período</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -333,50 +696,84 @@ export default function BankDetailPage() {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                cards.map(card => (
-                                                    <div key={card.id} className={styles.cardItem} style={{ '--card-color': card.color }}>
-                                                        <div className={styles.cardInfo}>
-                                                            <span className={styles.cardName}>{card.name}</span>
-                                                            <span className={styles.cardDigits}>**** {card.lastFourDigits}</span>
-                                                        </div>
-                                                        <span className={styles.cardLimit}>
-                                                            Limite: {formatCurrency(card.creditLimit)}
-                                                        </span>
-                                                    </div>
-                                                ))
+                                                <div className={styles.cardsGrid}>
+                                                    {cards.map(card => (
+                                                        <Link key={card.id} href={`/cards?cardId=${card.id}`} style={{ textDecoration: 'none' }}>
+                                                            <div className={styles.cardItemWrapper}>
+                                                                <CreditCard
+                                                                    name={card.name}
+                                                                    brand={card.brand}
+                                                                    lastFourDigits={card.lastFourDigits}
+                                                                    creditLimit={card.creditLimit}
+                                                                    availableLimit={card.availableLimit}
+                                                                    blockedLimit={card.blockedLimit || 0}
+                                                                    closingDay={card.closingDay}
+                                                                    dueDay={card.dueDay}
+                                                                    color={card.color}
+                                                                    holderName={card?.holderName || "NOME DO TITULAR"}
+                                                                    validThru="12/28"
+                                                                    icon={account?.icon || card.bankIcon}
+                                                                />
+                                                            </div>
+                                                        </Link>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
                                     )}
 
                                     {/* TRANSACTIONS TAB */}
                                     {activeTab === 'transactions' && (
-                                        <div className={styles.transactionsList}>
+                                        <div className={txStyles.transactionsList} style={{ marginTop: '1rem' }}>
                                             {transactions.length === 0 ? (
-                                                <div className={styles.emptyTab}>
+                                                <div className={txStyles.emptyState}>
                                                     <FiActivity />
                                                     <p>Nenhuma transação nesta conta</p>
-                                                    <Link href="/transactions?new=true" className={styles.linkBtn}>
+                                                    <Link href={`/transactions?new=true&bankAccountId=${accountId}`} className={styles.linkBtn} style={{ marginTop: '1rem' }}>
                                                         Adicionar Transação
                                                     </Link>
                                                 </div>
                                             ) : (
-                                                transactions.slice(0, 20).map(tx => (
-                                                    <div key={tx.id} className={styles.txItem}>
-                                                        <div className={styles.txInfo}>
-                                                            <span className={styles.txDescription}>{tx.description}</span>
-                                                            <span className={styles.txDate}>
-                                                                {new Date(tx.date).toLocaleDateString('pt-BR')}
-                                                            </span>
+                                                transactions.slice(0, 20).map(tx => {
+                                                    const detectedBrand = detectBrand(tx.description);
+                                                    const brandIcon = tx.imageUrl || tx.icon || tx.subscription?.icon || getBrandIcon(tx.brandKey) || detectedBrand?.icon;
+
+                                                    return (
+                                                        <div key={tx.id} className={`${txStyles.transactionItem} ${tx.status === 'PENDING' ? txStyles.pendingItem : ''}`} onClick={() => router.push(`/transactions`)}>
+                                                            <div className={`${txStyles.transactionIcon} ${tx.type === 'INCOME' ? txStyles.income : txStyles.expense}`} style={{ background: brandIcon ? 'transparent' : undefined }}>
+                                                                {brandIcon ? (
+                                                                    <img src={brandIcon} alt={tx.description} className={txStyles.brandLogo} />
+                                                                ) : (
+                                                                    tx.type === 'INCOME' ? <FiTrendingUp /> : <FiTrendingDown />
+                                                                )}
+                                                            </div>
+                                                            <div className={txStyles.transactionInfo}>
+                                                                <div className={txStyles.descRow}>
+                                                                    <span className={txStyles.transactionDesc}>{tx.description}</span>
+                                                                    {(tx.status === 'PENDING' || tx.status === 'PAID' && tx.source === 'CARD' && new Date(tx.date) > new Date()) && <span className={txStyles.pendingBadge}><FiClock /> Agendado</span>}
+                                                                </div>
+                                                                <div className={txStyles.transactionMeta}>
+                                                                    <span className={txStyles.transactionCategory}>{tx.category || 'Outros'}</span>
+                                                                    {tx.isRecurring && (
+                                                                        <span className={txStyles.recurringBadge}><FiRepeat /> Recorrente</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className={txStyles.transactionAmount}>
+                                                                <span className={`${tx.type === 'INCOME' ? txStyles.income : txStyles.expense} ${(tx.status === 'PENDING' || tx.status === 'PAID') ? txStyles.pendingText : ''}`}>
+                                                                    {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                                                </span>
+                                                                <span className={txStyles.transactionDateHighlight}>
+                                                                    {formatDate(tx.date)}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <span className={`${styles.txAmount} ${tx.type === 'INCOME' ? styles.income : styles.expense}`}>
-                                                            {tx.type === 'INCOME' ? '+' : '-'} {formatCurrency(tx.amount)}
-                                                        </span>
-                                                    </div>
-                                                ))
+                                                    );
+                                                })
                                             )}
                                             {transactions.length > 20 && (
                                                 <Link href={`/transactions?bankAccountId=${accountId}`} className={styles.viewMoreLink}>
-                                                    Ver todas ({transactions.length})
+                                                    Ver todas as transações da conta ({transactions.length})
                                                 </Link>
                                             )}
                                         </div>

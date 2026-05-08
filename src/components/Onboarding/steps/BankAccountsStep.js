@@ -28,22 +28,31 @@ export default function BankAccountsStep({
     const [showManualModal, setShowManualModal] = useState(false);
 
     // Manual Creation Handler
-    const handleSaveManual = (accountData) => {
+    const handleSaveManual = (savedAccount) => {
         setAccounts(prev => {
-            // If first account, make it default if not specified
+            // If it's a real account from DB, it has an ID
             const isFirst = prev.length === 0;
-            return [...prev, { ...accountData, isDefault: accountData.isDefault || isFirst }];
+            // Check if account already exists (by ID) to avoid duplicates if editing (though modal doesn't handle edit yet in this view)
+            const exists = savedAccount.id && prev.find(a => a.id === savedAccount.id);
+            if (exists) {
+                return prev.map(a => a.id === savedAccount.id ? savedAccount : a);
+            }
+            return [...prev, { ...savedAccount, isDefault: savedAccount.isDefault || isFirst }];
         });
         setShowManualModal(false);
     };
 
     // Import Handler
     const handleImportFinish = (result) => {
-        // result = { bankAccount, detectedSubscriptions, success }
-        if (result.success) {
+        // result = { entity, detectedSubscriptions, success }
+        if (result.success && result.entity) {
             setAccounts(prev => {
                 const isFirst = prev.length === 0;
-                return [...prev, { ...result.bankAccount, isDefault: isFirst }];
+                // Check if already in list (avoid duplicates if re-importing)
+                const exists = prev.find(a => a.id === result.entity.id);
+                if (exists) return prev;
+
+                return [...prev, { ...result.entity, isDefault: isFirst }];
             });
             if (result.detectedSubscriptions?.length > 0) {
                 onImportSuccess && onImportSuccess(result.detectedSubscriptions);
@@ -197,8 +206,8 @@ export default function BankAccountsStep({
             <BankAccountModal
                 isOpen={showManualModal}
                 onClose={() => setShowManualModal(false)}
-                onSave={handleSaveManual}
-                editingAccount={null}
+                onSuccess={handleSaveManual}
+                initialData={null}
             />
         </div>
     );

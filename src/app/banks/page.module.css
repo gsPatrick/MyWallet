@@ -898,3 +898,45 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+/* Checkbox Toggle */
+.formGroupCheckbox {
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+}
+
+[data-theme="light"] .formGroupCheckbox {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.checkboxLabel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent-primary);
+    cursor: pointer;
+}
+
+.checkboxLabel span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.checkboxHint {
+    flex-basis: 100%;
+    margin-left: 28px;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 0.25rem;
+}

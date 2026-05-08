@@ -28,9 +28,11 @@ export default function SubscriptionModal({
     onClose,
     onSave,
     editingSub = null,
+    initialData = null, // Alias for compatibility
     isLoading = false,
     cards = [] // Array of available cards for linking
 }) {
+    const dataToEdit = editingSub || initialData;
     const [form, setForm] = useState(defaultForm);
     const [showIconGallery, setShowIconGallery] = useState(false);
     const [iconSearch, setIconSearch] = useState('');
@@ -102,21 +104,21 @@ export default function SubscriptionModal({
     }, [subscriptionsLibrary, iconSearch, selectedCategory]);
 
     useEffect(() => {
-        if (editingSub) {
+        if (dataToEdit) {
             setForm({
-                name: editingSub.name || '',
-                amount: editingSub.amount?.toString() || '',
-                category: editingSub.category || 'OTHER',
-                frequency: editingSub.frequency || 'MONTHLY',
-                nextBillingDate: editingSub.nextBillingDate || '',
-                icon: editingSub.icon || '',
-                color: editingSub.color || '#6366F1',
-                cardId: editingSub.cardId || '',
+                name: dataToEdit.name || '',
+                amount: dataToEdit.amount?.toString() || '',
+                category: dataToEdit.category || 'OTHER',
+                frequency: dataToEdit.frequency || 'MONTHLY',
+                nextBillingDate: dataToEdit.nextBillingDate || dataToEdit.startDate || '',
+                icon: dataToEdit.icon || '',
+                color: dataToEdit.color || '#6366F1',
+                cardId: dataToEdit.cardId || '',
             });
         } else {
             setForm(defaultForm);
         }
-    }, [editingSub, isOpen]);
+    }, [dataToEdit, isOpen]);
 
     const handleSelectFromLibrary = (sub) => {
         setForm(prev => ({
@@ -153,24 +155,18 @@ export default function SubscriptionModal({
     };
 
     const handleSave = () => {
-        console.log('🔵 [SUBSCRIPTION MODAL] handleSave called');
-        console.log('🔵 [SUBSCRIPTION MODAL] form state:', form);
-        console.log('🔵 [SUBSCRIPTION MODAL] form.cardId:', form.cardId, '| Type:', typeof form.cardId);
-        console.log('🔵 [SUBSCRIPTION MODAL] cards prop received:', cards);
-
         const payload = {
             name: form.name,
             amount: parseFloat(form.amount) || 0,
             category: form.category,
             frequency: form.frequency,
-            startDate: form.nextBillingDate, // Backend expects startDate
+            startDate: form.nextBillingDate || new Date().toISOString().split('T')[0], // Fallback to today
             icon: form.icon,
             color: form.color,
             cardId: form.cardId || null,
         };
 
-        console.log('🔵 [SUBSCRIPTION MODAL] Final payload to send:', payload);
-        onSave?.(payload, editingSub?.id);
+        onSave?.(payload, dataToEdit?.id);
     };
 
     const handleCategoryCreated = (newCat) => {
