@@ -56,6 +56,172 @@ const tabs = [
 import CardModal from '@/components/modals/CardModal';
 import CreditCard from '@/components/ui/CreditCard/CreditCard';
 
+import { 
+    ResponsiveContainer, 
+    AreaChart, Area, 
+    BarChart, Bar, 
+    PieChart, Pie, Cell, 
+    XAxis, YAxis, CartesianGrid, Tooltip, Legend 
+} from 'recharts';
+
+// Componente de Dashboard para a conta
+const AccountDashboard = ({ account, statement, transactions, cards }) => {
+    const summary = statement?.summary || { openingBalance: 0, totalIncome: 0, totalExpense: 0, closingBalance: 0 };
+    
+    // Preparar dados para Gráfico de Categorias (Pie)
+    const categoryData = transactions.reduce((acc, tx) => {
+        if (tx.type === 'EXPENSE') {
+            const catName = tx.category?.name || 'Outros';
+            const existing = acc.find(item => item.name === catName);
+            if (existing) existing.value += tx.amount;
+            else acc.push({ name: catName, value: tx.amount });
+        }
+        return acc;
+    }, []).sort((a, b) => b.value - a.value);
+
+    // Preparar dados para Tendência Diária (Area)
+    const dailyData = transactions.reduce((acc, tx) => {
+        const date = tx.date;
+        const existing = acc.find(item => item.date === date);
+        if (existing) {
+            if (tx.type === 'INCOME') existing.balance += tx.amount;
+            else existing.balance -= tx.amount;
+        } else {
+            acc.push({ date, balance: tx.amount * (tx.type === 'INCOME' ? 1 : -1) });
+        }
+        return acc;
+    }, []).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Calcular saldo acumulado para o gráfico
+    let runningBalance = summary.openingBalance;
+    const balanceTrend = dailyData.map(item => {
+        runningBalance += item.balance;
+        return {
+            date: new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+            saldo: runningBalance
+        };
+    });
+
+    const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28', '#FF8042'];
+
+    return (
+        <div className={styles.dashboardContainer}>
+            {/* Métricas Principais */}
+            <div className={styles.metricsGrid}>
+                <div className={styles.metricCard}>
+                    <span className={styles.metricLabel}>Saldo Atual</span>
+                    <h3 className={`${styles.metricValue} ${summary.closingBalance >= 0 ? styles.positive : styles.negative}`}>
+                        {summary.closingBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </h3>
+                </div>
+                <div className={styles.metricCard}>
+                    <span className={styles.metricLabel}>Entradas (Mês)</span>
+                    <h3 className={`${styles.metricValue} ${styles.positive}`}>
+                        + {summary.totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </h3>
+                </div>
+                <div className={styles.metricCard}>
+                    <span className={styles.metricLabel}>Saídas (Mês)</span>
+                    <h3 className={`${styles.metricValue} ${styles.negative}`}>
+                        - {summary.totalExpense.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </h3>
+                </div>
+                {cards.length > 0 && (
+                    <div className={styles.metricCard}>
+                        <span className={styles.metricLabel}>Uso de Crédito</span>
+                        <h3 className={styles.metricValue}>
+                            {((cards[0].creditLimit - cards[0].availableLimit) / cards[0].creditLimit * 100).toFixed(0)}%
+                        </h3>
+                        <div className={styles.progressContainer}>
+                            <div 
+                                className={styles.progressBar} 
+                                style={{ width: `${Math.min(100, (cards[0].creditLimit - cards[0].availableLimit) / cards[0].creditLimit * 100)}%` }} 
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Gráficos */}
+            <div className={styles.chartsGrid}>
+                {/* Evolução do Saldo */}
+                <div className={styles.chartCard}>
+                    <h4>Evolução do Saldo</h4>
+                    <div className={styles.chartWrapper}>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <AreaChart data={balanceTrend}>
+                                <defs>
+                                    <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                                <XAxis dataKey="date" stroke="#888" fontSize={12} />
+                                <YAxis stroke="#888" fontSize={12} tickFormatter={(val) => `R$ ${val}`} />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
+                                    formatter={(value) => [`R$ ${value.toFixed(2)}`, 'Saldo']}
+                                />
+                                <Area type="monotone" dataKey="saldo" stroke="#82ca9d" fillOpacity={1} fill="url(#colorSaldo)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Gastos por Categoria */}
+                <div className={styles.chartCard}>
+                    <h4>Gastos por Categoria</h4>
+                    <div className={styles.chartWrapper}>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={categoryData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {categoryData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
+                                    formatter={(value) => [`R$ ${value.toFixed(2)}`, 'Total']}
+                                />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Comparativo Mensal */}
+                <div className={styles.chartCard}>
+                    <h4>Entradas vs Saídas</h4>
+                    <div className={styles.chartWrapper}>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={[
+                                { name: 'Mensal', Entradas: summary.totalIncome, Saídas: summary.totalExpense }
+                            ]}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                                <XAxis dataKey="name" stroke="#888" hide />
+                                <YAxis stroke="#888" />
+                                <Tooltip contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }} />
+                                <Legend />
+                                <Bar dataKey="Entradas" fill="#82ca9d" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="Saídas" fill="#ff8042" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function BankDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -188,44 +354,43 @@ export default function BankDetailPage() {
                 }
 
                 case 'summary': {
-                    // Load summary statistics
-                    const [goalsData, txData] = await Promise.all([
-                        goalsAPI.list(),
-                        transactionsAPI.list({ bankAccountId: accountId })
+                    // Load ALL data needed for the Dashboard
+                    const [cardsRes, txData, goalsData] = await Promise.all([
+                        cardsAPI.list(),
+                        transactionsAPI.list({ bankAccountId: accountId }), // We'll update this below
+                        goalsAPI.list()
                     ]);
 
+                    const allCards = cardsRes?.data || [];
+                    const bankCards = allCards.filter(card => 
+                        String(card.bankAccountId) === String(accountId)
+                    );
+                    const cardIds = bankCards.map(c => c.id).join(',');
+
+                    // Fetch transactions AGAIN but with cardIds this time
+                    const finalTxRes = await transactionsAPI.list({ 
+                        bankAccountId: accountId,
+                        cardIds: cardIds || undefined
+                    });
+
+                    // Fetch statement for metrics
+                    const statementRes = await reportsAPI.getStatement(
+                        selectedYear, 
+                        selectedMonth, 
+                        accountId,
+                        cardIds || undefined
+                    );
+
+                    const accountTx = finalTxRes?.data?.transactions || finalTxRes?.transactions || [];
                     const accountGoals = (goalsData?.data || goalsData || []).filter(
                         g => g.bankAccountId === accountId
                     );
-                    const accountTx = txData?.data?.transactions || txData?.transactions || [];
 
-                    const income = accountTx
-                        .filter(t => t.type === 'INCOME' && t.status !== 'PENDING' && t.status !== 'CANCELLED')
-                        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-                    const expenses = accountTx
-                        .filter(t => t.type === 'EXPENSE' && t.status !== 'PENDING' && t.status !== 'CANCELLED')
-                        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-                    
-                    const pendingIncome = accountTx
-                        .filter(t => t.type === 'INCOME' && t.status === 'PENDING')
-                        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-                    const pendingExpenses = accountTx
-                        .filter(t => t.type === 'EXPENSE' && t.status === 'PENDING')
-                        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-
-                    const reserved = accountGoals.reduce(
-                        (s, g) => s + parseFloat(g.currentAmount || 0), 0
-                    );
-
-                    setStats({ 
-                        totalIncome: income, 
-                        totalExpenses: expenses, 
-                        pendingIncome, 
-                        pendingExpenses,
-                        reservedForGoals: reserved 
-                    });
-                    setGoals(accountGoals);
+                    setCards(bankCards);
                     setAllTransactions(accountTx);
+                    setTransactions(accountTx); // For the dashboard charts
+                    setStatement(statementRes?.data?.data || statementRes?.data || null);
+                    setGoals(accountGoals);
                     break;
                 }
             }
@@ -474,118 +639,12 @@ export default function BankDetailPage() {
                                 <>
                                     {/* SUMMARY TAB */}
                                     {activeTab === 'summary' && (
-                                        <div className={txStyles.chartsGrid}>
-                                            <div className={txStyles.summaryGrid}>
-                                                <div className={txStyles.summaryCard}>
-                                                    <div className={txStyles.summaryHeader}>
-                                                        <span className={txStyles.summaryLabel}>Receita Realizada</span>
-                                                        <FiTrendingUp className={txStyles.incomeIcon} />
-                                                    </div>
-                                                    <span className={`${txStyles.summaryValue} ${txStyles.income}`}>{formatCurrency(stats.totalIncome)}</span>
-                                                </div>
-                                                <div className={`${txStyles.summaryCard} ${txStyles.predictionCard}`}>
-                                                    <div className={txStyles.summaryHeader}>
-                                                        <span className={txStyles.summaryLabel}>Receita Futura</span>
-                                                        <FiClock className={txStyles.incomeIcon} />
-                                                    </div>
-                                                    <span className={`${txStyles.summaryValue} ${txStyles.income} ${txStyles.predictionText}`}>{formatCurrency(stats.pendingIncome)}</span>
-                                                </div>
-                                                <div className={txStyles.summaryCard}>
-                                                    <div className={txStyles.summaryHeader}>
-                                                        <span className={txStyles.summaryLabel}>Despesa Realizada</span>
-                                                        <FiTrendingDown className={txStyles.expenseIcon} />
-                                                    </div>
-                                                    <span className={`${txStyles.summaryValue} ${txStyles.expense}`}>{formatCurrency(stats.totalExpenses)}</span>
-                                                </div>
-                                                <div className={`${txStyles.summaryCard} ${txStyles.predictionCard}`}>
-                                                    <div className={txStyles.summaryHeader}>
-                                                        <span className={txStyles.summaryLabel}>Despesa Futura</span>
-                                                        <FiAlertCircle className={txStyles.expenseIcon} />
-                                                    </div>
-                                                    <span className={`${txStyles.summaryValue} ${txStyles.expense} ${txStyles.predictionText}`}>{formatCurrency(stats.pendingExpenses)}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className={txStyles.chartCard}>
-                                                <div className={txStyles.chartHeader}>
-                                                    <h3>{chartFilterType === 'EXPENSE' ? 'Despesas' : 'Receitas'} por Categoria</h3>
-                                                    <div className={txStyles.chartFilters}>
-                                                        <button
-                                                            className={`${txStyles.chartFilterBtn} ${chartFilterType === 'EXPENSE' ? txStyles.active : ''}`}
-                                                            onClick={() => setChartFilterType('EXPENSE')}
-                                                        >
-                                                            Despesas
-                                                        </button>
-                                                        <button
-                                                            className={`${txStyles.chartFilterBtn} ${chartFilterType === 'INCOME' ? txStyles.active : ''}`}
-                                                            onClick={() => setChartFilterType('INCOME')}
-                                                        >
-                                                            Receitas
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className={txStyles.chartSubFilters}>
-                                                    <button
-                                                        className={`${txStyles.chartSubBtn} ${chartFilterStatus === 'all' ? txStyles.active : ''}`}
-                                                        onClick={() => setChartFilterStatus('all')}
-                                                    >
-                                                        Todos
-                                                    </button>
-                                                    <button
-                                                        className={`${txStyles.chartSubBtn} ${chartFilterStatus === 'COMPLETED' ? txStyles.active : ''}`}
-                                                        onClick={() => setChartFilterStatus('COMPLETED')}
-                                                    >
-                                                        Realizados
-                                                    </button>
-                                                    <button
-                                                        className={`${txStyles.chartSubBtn} ${chartFilterStatus === 'PENDING' ? txStyles.active : ''}`}
-                                                        onClick={() => setChartFilterStatus('PENDING')}
-                                                    >
-                                                        Futuros
-                                                    </button>
-                                                </div>
-                                                <div className={txStyles.pieContainer}>
-                                                    <div className={txStyles.pieChart}>
-                                                        <svg viewBox="0 0 100 100" className={txStyles.pieSvg}>
-                                                            {categoryChartData.length > 0 ? (
-                                                                (() => {
-                                                                    let accumulated = 0;
-                                                                    return categoryChartData.map((d, i) => {
-                                                                        const startAngle = (accumulated / 100) * 360;
-                                                                        accumulated += d.percent;
-                                                                        const endAngle = (accumulated / 100) * 360;
-                                                                        if (d.percent >= 100) return <circle key={i} cx="50" cy="50" r="40" fill={d.color} />;
-                                                                        const largeArc = d.percent > 50 ? 1 : 0;
-                                                                        const startX = 50 + 40 * Math.cos((startAngle - 90) * Math.PI / 180);
-                                                                        const startY = 50 + 40 * Math.sin((startAngle - 90) * Math.PI / 180);
-                                                                        const endX = 50 + 40 * Math.cos((endAngle - 90) * Math.PI / 180);
-                                                                        const endY = 50 + 40 * Math.sin((endAngle - 90) * Math.PI / 180);
-                                                                        return (
-                                                                            <path key={i} d={`M 50 50 L ${startX} ${startY} A 40 40 0 ${largeArc} 1 ${endX} ${endY} Z`} fill={d.color} />
-                                                                        );
-                                                                    });
-                                                                })()
-                                                            ) : (
-                                                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-light)" strokeWidth="8" opacity="0.3" />
-                                                            )}
-                                                            <circle cx="50" cy="50" r="25" fill="var(--bg-secondary)" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className={txStyles.pieLegend}>
-                                                        {categoryChartData.slice(0, 4).map((d, i) => (
-                                                            <div key={i} className={txStyles.legendItem}>
-                                                                <span className={txStyles.legendDot} style={{ background: d.color }}></span>
-                                                                <span className={txStyles.legendName}>{d.name}</span>
-                                                                <span className={txStyles.legendPercent}>{d.percent}%</span>
-                                                            </div>
-                                                        ))}
-                                                        {categoryChartData.length === 0 && (
-                                                            <span className={txStyles.emptyLegend}>Sem dados</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <AccountDashboard 
+                                            account={account} 
+                                            statement={statement} 
+                                            transactions={transactions} 
+                                            cards={cards} 
+                                        />
                                     )}
 
                                     {/* STATEMENT TAB */}
