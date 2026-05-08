@@ -115,11 +115,20 @@ export default function BankDetailPage() {
                 case 'statement': {
                     const cardsRes = await cardsAPI.list();
                     const allCards = cardsRes?.data || [];
-                    const bankCards = allCards.filter(card => 
-                        String(card.bankAccountId) === String(accountId) || 
-                        (account.bankName && card.bankName?.toLowerCase().includes(account.bankName.toLowerCase())) ||
-                        (account.bankName && card.name?.toLowerCase().includes(account.bankName.toLowerCase()))
-                    );
+                    const bankCards = allCards.filter(card => {
+                        // 1. Vínculo direto por ID
+                        if (String(card.bankAccountId) === String(accountId)) return true;
+                        
+                        // 2. Se já estiver vinculado a OUTRA conta, ignorar
+                        if (card.bankAccountId && String(card.bankAccountId) !== String(accountId)) return false;
+                        
+                        // 3. Fallback por nome para cartões órfãos
+                        const searchName = account.bankName?.toLowerCase();
+                        if (!searchName) return false;
+
+                        return card.bankName?.toLowerCase() === searchName || 
+                               card.name?.toLowerCase().includes(searchName);
+                    });
                     const cardIds = bankCards.map(c => c.id).join(',');
 
                     const { data } = await reportsAPI.getStatement(
@@ -161,11 +170,20 @@ export default function BankDetailPage() {
                 case 'transactions':
                     const cardsRes = await cardsAPI.list();
                     const allCards = cardsRes?.data || [];
-                    const bankCards = allCards.filter(card => 
-                        String(card.bankAccountId) === String(accountId) || 
-                        (account.bankName && card.bankName?.toLowerCase().includes(account.bankName.toLowerCase())) ||
-                        (account.bankName && card.name?.toLowerCase().includes(account.bankName.toLowerCase()))
-                    );
+                    const bankCards = allCards.filter(card => {
+                        // 1. Vínculo direto por ID (Regra de Ouro)
+                        if (String(card.bankAccountId) === String(accountId)) return true;
+                        
+                        // 2. Se já estiver vinculado a OUTRA conta, não mostrar aqui de jeito nenhum
+                        if (card.bankAccountId && String(card.bankAccountId) !== String(accountId)) return false;
+                        
+                        // 3. Fallback por nome apenas para cartões "órfãos"
+                        const searchName = account.bankName?.toLowerCase();
+                        if (!searchName) return false;
+
+                        return card.bankName?.toLowerCase() === searchName || 
+                               card.name?.toLowerCase().includes(searchName);
+                    });
                     const cardIds = bankCards.map(c => c.id).join(',');
 
                     const txRes = await transactionsAPI.list({ 
