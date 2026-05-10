@@ -1,134 +1,271 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { FiMail, FiArrowLeft, FiCheck } from 'react-icons/fi';
-import ParticleBackground from '@/components/canvas/ParticleBackground';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiMail, FiLock, FiArrowRight, FiArrowLeft, FiCheckCircle, FiShield } from 'react-icons/fi';
+import { authAPI } from '@/services/api';
+import { useNotification } from '@/contexts/NotificationContext';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import styles from './page.module.css';
+import styles from '../login/page.module.css'; // Reuse login styles
 
 export default function ForgotPasswordPage() {
+    const router = useRouter();
+    const { addNotification } = useNotification();
+    
+    const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
     const [email, setEmail] = useState('');
-    const [error, setError] = useState('');
+    const [otp, setOtp] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [sent, setSent] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleSendOTP = async (e) => {
         e.preventDefault();
-        if (!email) {
-            setError('Email é obrigatório');
-            return;
-        }
-        if (!/\S+@\S+\.\S+/.test(email)) {
-            setError('Email inválido');
-            return;
-        }
-
+        if (!email) return;
+        
         setIsLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        setSent(true);
+        try {
+            await authAPI.forgotPassword(email);
+            addNotification({
+                type: 'success',
+                title: 'Código enviado',
+                message: 'Verifique seu email para obter o código de recuperação.'
+            });
+            setStep(2);
+        } catch (err) {
+            addNotification({
+                type: 'error',
+                title: 'Erro',
+                message: err.message || 'Erro ao enviar código.'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault();
+        if (!otp) return;
+        
+        setIsLoading(true);
+        try {
+            await authAPI.verifyOTP(email, otp);
+            setStep(3);
+        } catch (err) {
+            addNotification({
+                type: 'error',
+                title: 'Código inválido',
+                message: 'O código informado é inválido ou expirou.'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            addNotification({ type: 'error', title: 'Senhas diferentes', message: 'As senhas informadas não coincidem.' });
+            return;
+        }
+        
+        setIsLoading(true);
+        try {
+            await authAPI.resetPassword(email, otp, newPassword);
+            addNotification({
+                type: 'success',
+                title: 'Senha redefinida',
+                message: 'Sua senha foi alterada com sucesso! Você já pode entrar.'
+            });
+            router.push('/login');
+        } catch (err) {
+            addNotification({
+                type: 'error',
+                title: 'Erro',
+                message: err.message || 'Erro ao redefinir senha.'
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <div className={styles.container}>
-            {/* Visual Side */}
+        <div className={styles.page}>
+            {/* Left side - Dark Branding */}
             <motion.div
-                className={styles.visualSide}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8 }}
+                className={styles.brandingSide}
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
             >
-                <ParticleBackground />
-                <div className={styles.visualContent}>
-                    <motion.h1
-                        className={styles.visualTitle}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        Esqueceu sua<br />
-                        <span className={styles.highlight}>senha?</span>
-                    </motion.h1>
-                    <motion.p
-                        className={styles.visualDescription}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                    >
-                        Não se preocupe! Enviaremos um link para você redefinir sua senha.
-                    </motion.p>
+                <div className={styles.brandingContent}>
+                    <Image
+                        src="/images/logoparafundopreto.png"
+                        alt="MyWallet"
+                        width={280}
+                        height={100}
+                        className={styles.logo}
+                        priority
+                    />
+                    <h1 className={styles.tagline}>
+                        Recupere seu<br />acesso com segurança
+                    </h1>
                 </div>
             </motion.div>
 
-            {/* Form Side */}
-            <motion.div
-                className={styles.formSide}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <div className={styles.formContainer}>
-                    <Link href="/login" className={styles.backLink}>
-                        <FiArrowLeft />
-                        Voltar para login
-                    </Link>
-
+            {/* Right side - Form */}
+            <div className={styles.formSide}>
+                <motion.div
+                    className={styles.formContainer}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                >
                     <div className={styles.formHeader}>
-                        <Link href="/" className={styles.logo}>
-                            <span className={styles.logoText}>MyWallet</span>
-                        </Link>
-                        <h2 className={styles.formTitle}>Recuperar senha</h2>
+                        <h2 className={styles.formTitle}>
+                            {step === 1 ? 'Esqueceu a senha?' : step === 2 ? 'Verificar código' : 'Nova senha'}
+                        </h2>
                         <p className={styles.formSubtitle}>
-                            Digite seu email e enviaremos um link para redefinir sua senha.
+                            {step === 1 
+                                ? 'Informe seu email para receber o código de recuperação' 
+                                : step === 2 
+                                    ? `Enviamos um código de 6 dígitos para ${email}`
+                                    : 'Crie uma nova senha forte para sua conta'}
                         </p>
                     </div>
 
-                    {!sent ? (
-                        <form onSubmit={handleSubmit} className={styles.form}>
-                            <Input
-                                label="Email"
-                                type="email"
-                                placeholder="seu@email.com"
-                                value={email}
-                                onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                                error={error}
-                                leftIcon={<FiMail />}
-                                fullWidth
-                            />
-
-                            <Button
-                                type="submit"
-                                fullWidth
-                                loading={isLoading}
+                    <AnimatePresence mode="wait">
+                        {step === 1 && (
+                            <motion.form 
+                                key="step1"
+                                onSubmit={handleSendOTP} 
+                                className={styles.form}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
                             >
-                                Enviar link de recuperação
-                            </Button>
-                        </form>
-                    ) : (
-                        <motion.div
-                            className={styles.successMessage}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                        >
-                            <div className={styles.successIcon}>
-                                <FiCheck />
-                            </div>
-                            <h3>Email enviado!</h3>
-                            <p>
-                                Enviamos um link para <strong>{email}</strong>.
-                                Verifique sua caixa de entrada e spam.
-                            </p>
-                            <Button variant="secondary" onClick={() => setSent(false)}>
-                                Enviar novamente
-                            </Button>
-                        </motion.div>
-                    )}
-                </div>
-            </motion.div>
+                                <Input
+                                    label="Email"
+                                    type="email"
+                                    placeholder="seu@email.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    leftIcon={<FiMail />}
+                                    fullWidth
+                                    variant="light"
+                                    required
+                                />
+
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    loading={isLoading}
+                                    className={styles.submitBtn}
+                                >
+                                    Enviar Código <FiArrowRight />
+                                </Button>
+                                
+                                <Link href="/login" className={styles.signupLink} style={{ textAlign: 'center', marginTop: '1rem', display: 'block' }}>
+                                    <FiArrowLeft /> Voltar para o login
+                                </Link>
+                            </motion.form>
+                        )}
+
+                        {step === 2 && (
+                            <motion.form 
+                                key="step2"
+                                onSubmit={handleVerifyOTP} 
+                                className={styles.form}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                            >
+                                <Input
+                                    label="Código de 6 dígitos"
+                                    type="text"
+                                    placeholder="000000"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    leftIcon={<FiShield />}
+                                    fullWidth
+                                    variant="light"
+                                    required
+                                />
+
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    loading={isLoading}
+                                    className={styles.submitBtn}
+                                >
+                                    Verificar Código <FiArrowRight />
+                                </Button>
+                                
+                                <button 
+                                    type="button"
+                                    onClick={() => setStep(1)}
+                                    className={styles.signupLink}
+                                    style={{ textAlign: 'center', marginTop: '1rem', display: 'block', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}
+                                >
+                                    <FiArrowLeft /> Usar outro email
+                                </button>
+                            </motion.form>
+                        )}
+
+                        {step === 3 && (
+                            <motion.form 
+                                key="step3"
+                                onSubmit={handleResetPassword} 
+                                className={styles.form}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                            >
+                                <Input
+                                    label="Nova Senha"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    leftIcon={<FiLock />}
+                                    fullWidth
+                                    variant="light"
+                                    required
+                                />
+                                
+                                <Input
+                                    label="Confirmar Nova Senha"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    leftIcon={<FiCheckCircle />}
+                                    fullWidth
+                                    variant="light"
+                                    required
+                                />
+
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    loading={isLoading}
+                                    className={styles.submitBtn}
+                                >
+                                    Redefinir Senha <FiArrowRight />
+                                </Button>
+                            </motion.form>
+                        )}
+                    </AnimatePresence>
+
+                    <div className={styles.footer}>
+                        <p>Segurança garantida pelo MyWallet SSL 🔒</p>
+                    </div>
+                </motion.div>
+            </div>
         </div>
     );
 }

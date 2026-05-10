@@ -149,6 +149,9 @@ export const authAPI = {
         api.put('/auth/change-password', { currentPassword, newPassword }),
     verifyPIN: (pin) => api.post('/auth/verify-pin', { pin }),
     updatePIN: (oldPin, newPin) => api.put('/auth/update-pin', { oldPin, newPin }),
+    forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+    verifyOTP: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
+    resetPassword: (email, otp, newPassword) => api.post('/auth/reset-password', { email, otp, newPassword }),
 };
 
 // Dashboard API
