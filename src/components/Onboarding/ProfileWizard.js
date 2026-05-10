@@ -753,8 +753,11 @@ export default function ProfileWizard({ onComplete }) {
             // Maps to track old IDs -> new IDs
             const personalCardIdMap = new Map();
             const businessCardIdMap = new Map();
-            const personalBankIdMap = new Map(); // NEW: Map for banks
-            const businessBankIdMap = new Map(); // NEW: Map for banks
+            const personalBankIdMap = new Map();
+            const businessBankIdMap = new Map();
+            
+            let firstPersonalBankId = null; // Safety fallback
+            let firstBusinessBankId = null; // Safety fallback
 
             // 2.5. Create bank accounts for profiles from banks arrays
             // Personal bank accounts
@@ -774,13 +777,14 @@ export default function ProfileWizard({ onComplete }) {
                         });
 
                         const savedBank = bankResult?.data || bankResult;
+                        const realBankId = savedBank?.id;
 
-                        // Map temporary ID to real ID if applicable
-                        if (savedBank?.id && bank.id) {
-                            personalBankIdMap.set(bank.id, savedBank.id);
+                        if (realBankId) {
+                            if (!firstPersonalBankId) firstPersonalBankId = realBankId;
+                            if (bank.id) personalBankIdMap.set(String(bank.id), realBankId);
                         }
 
-                        console.log('🏦 [WIZARD] Created personal bank account:', bank.nickname, '-> ID:', savedBank?.id);
+                        console.log('🏦 [WIZARD] Created personal bank account:', bank.nickname, '-> ID:', realBankId);
 
                         // Save Imported Transactions for this Bank
                         if (bank.id && importedTransactions.has(bank.id) && savedBank?.id) {
@@ -821,13 +825,14 @@ export default function ProfileWizard({ onComplete }) {
                         });
 
                         const savedBank = bankResult?.data || bankResult;
+                        const realBankId = savedBank?.id;
 
-                        // Map temporary ID to real ID
-                        if (savedBank?.id && bank.id) {
-                            businessBankIdMap.set(bank.id, savedBank.id);
+                        if (realBankId) {
+                            if (!firstBusinessBankId) firstBusinessBankId = realBankId;
+                            if (bank.id) businessBankIdMap.set(String(bank.id), realBankId);
                         }
 
-                        console.log('🏦 [WIZARD] Created business bank account:', bank.nickname, '-> ID:', savedBank?.id);
+                        console.log('🏦 [WIZARD] Created business bank account:', bank.nickname, '-> ID:', realBankId);
                     } catch (bankError) {
                         console.error('⚠️ [WIZARD] Error creating business bank account (non-blocking):', bankError);
                     }
@@ -847,8 +852,12 @@ export default function ProfileWizard({ onComplete }) {
 
                     // Resolve Bank Account ID (if it was a temp one)
                     let realBankId = card.bankAccountId;
-                    if (realBankId && personalBankIdMap.has(realBankId)) {
-                        realBankId = personalBankIdMap.get(realBankId);
+                    if (realBankId && personalBankIdMap.has(String(realBankId))) {
+                        realBankId = personalBankIdMap.get(String(realBankId));
+                    } else {
+                        // Fallback to first bank if mapping fails or ID is missing
+                        realBankId = firstPersonalBankId;
+                        console.log('⚠️ [WIZARD] Card bank mapping failed, using fallback:', realBankId);
                     }
 
                     try {
@@ -940,8 +949,12 @@ export default function ProfileWizard({ onComplete }) {
 
                     // Resolve Bank Account ID
                     let realBankId = card.bankAccountId;
-                    if (realBankId && businessBankIdMap.has(realBankId)) {
-                        realBankId = businessBankIdMap.get(realBankId);
+                    if (realBankId && businessBankIdMap.has(String(realBankId))) {
+                        realBankId = businessBankIdMap.get(String(realBankId));
+                    } else {
+                        // Fallback to first bank
+                        realBankId = firstBusinessBankId;
+                        console.log('⚠️ [WIZARD] Business card bank mapping failed, using fallback:', realBankId);
                     }
 
                     try {

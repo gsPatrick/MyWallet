@@ -812,17 +812,52 @@ export default function BankDetailPage() {
                                                                 </div>
 
                                                                 <div className={statementStyles.dayTransactions}>
-                                                                    {items.map((t) => (
-                                                                        <div key={t.id} className={statementStyles.transaction}>
-                                                                            <div className={statementStyles.txTime}>{t.time || '--:--'}</div>
-                                                                            <div className={statementStyles.txContent}>
-                                                                                <span className={statementStyles.txDesc}>{t.description}</span>
+                                                                    {items.map((t) => {
+                                                                        const time = t.createdAt ? new Date(t.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                                                                        
+                                                                        // Smart Brand/Category Icon Detection
+                                                                        const detectedBrand = detectBrand(t.description);
+                                                                        const brandIcon = t.imageUrl || t.icon || t.subscription?.icon || getBrandIcon(t.brandKey) || detectedBrand?.icon;
+                                                                        const categoryIcon = t.category?.icon;
+                                                                        const categoryColor = t.category?.color || (t.type === 'INCOME' ? '#22c55e' : '#6366f1');
+                                                                        
+                                                                        return (
+                                                                            <div key={t.id} className={statementStyles.transaction}>
+                                                                                <div className={statementStyles.txMainInfo}>
+                                                                                    <div 
+                                                                                        className={statementStyles.txIcon}
+                                                                                        style={{ 
+                                                                                            backgroundColor: brandIcon ? 'transparent' : `${categoryColor}15`, 
+                                                                                            color: categoryColor,
+                                                                                            padding: brandIcon ? '0' : '8px'
+                                                                                        }}
+                                                                                    >
+                                                                                        {brandIcon ? (
+                                                                                            <img src={brandIcon} alt={t.description} style={{ width: '100%', height: '100%', borderRadius: '8px' }} />
+                                                                                        ) : categoryIcon ? (
+                                                                                            <span dangerouslySetInnerHTML={{ __html: categoryIcon }} />
+                                                                                        ) : (
+                                                                                            t.type === 'INCOME' ? <FiTrendingUp /> : <FiTrendingDown />
+                                                                                        )}
+                                                                                    </div>
+                                                                                    <div className={statementStyles.txDetails}>
+                                                                                        <div className={statementStyles.txTimeRow}>
+                                                                                            <span className={statementStyles.txTime}>
+                                                                                                {time} • {new Date(t.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                                                                                            </span>
+                                                                                            <span className={statementStyles.txTag}>
+                                                                                                {t.lastFourDigits ? `•••• ${t.lastFourDigits}` : (t.sourceName || (t.origin === 'CARD' ? 'Cartão' : 'Conta'))}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <span className={statementStyles.txDesc}>{t.description}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className={`${statementStyles.txAmount} ${t.type === 'INCOME' ? statementStyles.credit : statementStyles.debit}`}>
+                                                                                    {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount, account.hideBalance)}
+                                                                                </div>
                                                                             </div>
-                                                                            <div className={`${statementStyles.txAmount} ${t.type === 'INCOME' ? statementStyles.credit : statementStyles.debit}`}>
-                                                                                {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount, account.hideBalance)}
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             </motion.div>
                                                         );
