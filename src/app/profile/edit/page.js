@@ -7,6 +7,7 @@ import { FiArrowLeft, FiSave, FiLock, FiCheck, FiAlertCircle } from 'react-icons
 import { useAuth } from '@/contexts/AuthContext';
 import gamificationService from '@/services/gamificationService';
 import { authAPI } from '@/services/api';
+import { DicebearSelector } from '@/components/gamification';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import styles from './page.module.css';
@@ -137,24 +138,10 @@ export default function ProfileEditPage() {
                 {/* Avatar Section */}
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Avatar</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                        <img 
-                            src={formData.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`} 
-                            alt="Avatar" 
-                            style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-light)' }}
-                        />
-                        <Button 
-                            variant="secondary" 
-                            onClick={() => {
-                                const randomSeed = Math.random().toString(36).substring(7);
-                                const newAvatar = `https://api.dicebear.com/9.x/micah/svg?seed=${randomSeed}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`;
-                                setFormData(prev => ({ ...prev, avatar: newAvatar }));
-                            }} 
-                            type="button"
-                        >
-                            Gerar Novo Avatar
-                        </Button>
-                    </div>
+                    <DicebearSelector 
+                        value={formData.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4`}
+                        onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
+                    />
                 </section>
 
                 {/* Profile Section */}

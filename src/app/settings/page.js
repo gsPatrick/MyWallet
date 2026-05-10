@@ -13,6 +13,7 @@ import Dock from '@/components/layout/Dock';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
+import { DicebearSelector } from '@/components/gamification';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAI } from '@/contexts/AIContext';
@@ -884,16 +885,10 @@ export default function SettingsPage() {
                 title="Editar Perfil"
             >
                 <div className={styles.modalForm}>
-                    <div className={styles.avatarEditSection}>
-                        <img 
-                            src={profileForm.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`} 
-                            alt="Preview do Avatar" 
-                            className={styles.avatarPreview}
-                        />
-                        <Button variant="secondary" size="sm" onClick={generateNewAvatar} type="button">
-                            <FiRefreshCw /> Gerar Aleatório
-                        </Button>
-                    </div>
+                    <DicebearSelector 
+                        value={profileForm.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4`}
+                        onChange={(url) => setProfileForm({ ...profileForm, avatar: url })}
+                    />
                     <div className={styles.formGroup}>
                         <label>Nome</label>
                         <input
