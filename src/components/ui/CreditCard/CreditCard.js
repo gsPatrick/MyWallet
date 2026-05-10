@@ -55,17 +55,29 @@ export default function CreditCard({
 
     // Brand logos
     const renderBrandLogo = () => {
-        // If brandIcon is provided (URL or local path), use it
-        if (brandIcon && (brandIcon.startsWith('http') || brandIcon.startsWith('/'))) {
+        // Local Brand Icons Dictionary for better reliability
+        const brandIcons = {
+            'VISA': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
+            'MASTERCARD': 'https://upload.wikimedia.org/wikipedia/commons/b/b7/MasterCard_Logo.svg',
+            'ELO': 'https://upload.wikimedia.org/wikipedia/commons/0/03/Elo_logo.svg',
+            'AMEX': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
+            'HIPERCARD': 'https://upload.wikimedia.org/wikipedia/commons/8/89/Hipercard_logo.svg',
+            'DINERS': 'https://upload.wikimedia.org/wikipedia/commons/a/a6/Diners_Club_Logo3.svg'
+        };
+
+        const currentIcon = brandIcon || brandIcons[brand.toUpperCase()];
+
+        if (currentIcon && (currentIcon.startsWith('http') || currentIcon.startsWith('/'))) {
             return (
                 <img
-                    src={brandIcon}
+                    src={currentIcon}
                     alt={brand}
                     className={styles.brandImage}
                     style={{
-                        height: '23px',
+                        height: '24px',
                         objectFit: 'contain',
-                        filter: brand.toUpperCase() === 'VISA' && textColor === 'white' ? 'none' : 'none' // Visa logo usually looks better as is
+                        filter: brand.toUpperCase() === 'MASTERCARD' ? 'none' : 
+                                (brand.toUpperCase() === 'VISA' && textColor === 'white' ? 'brightness(0) invert(1)' : 'none')
                     }}
                 />
             );
@@ -78,10 +90,6 @@ export default function CreditCard({
                 return <span className={styles.brandText}>Mastercard</span>;
             case 'ELO':
                 return <span className={styles.brandText}>elo</span>;
-            case 'AMEX':
-                return <span className={styles.brandText}>AMEX</span>;
-            case 'HIPERCARD':
-                return <span className={styles.brandText} style={{ color: '#822124', fontWeight: 'bold' }}>Hipercard</span>;
             default:
                 return <FiCreditCard className={styles.brandIcon} />;
         }
