@@ -20,6 +20,7 @@ const defaultForm = {
     icon: '',
     color: '#6366F1',
     cardId: '',
+    bankAccountId: '',
     manuallySelected: false, // Flag to track if user manually selected icon from gallery
 };
 
@@ -30,7 +31,8 @@ export default function SubscriptionModal({
     editingSub = null,
     initialData = null, // Alias for compatibility
     isLoading = false,
-    cards = [] // Array of available cards for linking
+    cards = [], // Array of available cards for linking
+    bankAccounts = [] // Array of available bank accounts for linking
 }) {
     const dataToEdit = editingSub || initialData;
     const [form, setForm] = useState(defaultForm);
@@ -114,6 +116,7 @@ export default function SubscriptionModal({
                 icon: dataToEdit.icon || '',
                 color: dataToEdit.color || '#6366F1',
                 cardId: dataToEdit.cardId || '',
+                bankAccountId: dataToEdit.bankAccountId || '',
             });
         } else {
             setForm(defaultForm);
@@ -164,6 +167,7 @@ export default function SubscriptionModal({
             icon: form.icon,
             color: form.color,
             cardId: form.cardId || null,
+            bankAccountId: form.bankAccountId || null,
         };
 
         onSave?.(payload, dataToEdit?.id);
@@ -273,6 +277,25 @@ export default function SubscriptionModal({
                             {cards.map(card => (
                                 <option key={card.id} value={card.id}>
                                     {card.name} •••• {card.lastFourDigits}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>
+                            <FiDollarSign style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                            Vincular à Conta Bancária (opcional)
+                        </label>
+                        <select
+                            className={styles.selectInput}
+                            value={form.bankAccountId}
+                            onChange={(e) => setForm(prev => ({ ...prev, bankAccountId: e.target.value }))}
+                        >
+                            <option value="">Sem conta vinculada</option>
+                            {bankAccounts.map(bank => (
+                                <option key={bank.id} value={bank.id}>
+                                    {bank.nickname || bank.bankName}
                                 </option>
                             ))}
                         </select>

@@ -906,6 +906,12 @@ export default function ProfileWizard({ onComplete }) {
                             console.log('🔗 [WIZARD] Mapping personal cardId:', sub.cardId, '-> realCardId:', realCardId);
                         }
 
+                        let realBankId = null;
+                        if (sub.bankAccountId) {
+                            realBankId = personalBankIdMap.get(sub.bankAccountId) || null;
+                            console.log('🏦 [WIZARD] Mapping personal bankAccountId:', sub.bankAccountId, '-> realBankId:', realBankId);
+                        }
+
                         const subPayload = {
                             name: sub.name,
                             amount: parseFloat(sub.amount) || 0,
@@ -914,7 +920,8 @@ export default function ProfileWizard({ onComplete }) {
                             startDate: sub.startDate || sub.nextBillingDate || new Date().toISOString().split('T')[0],
                             icon: sub.icon || '',
                             color: sub.color || '#6366F1',
-                            cardId: realCardId
+                            cardId: realCardId,
+                            bankAccountId: realBankId
                         };
 
                         await subscriptionsAPI.create(subPayload);
@@ -971,6 +978,12 @@ export default function ProfileWizard({ onComplete }) {
                             console.log('🔗 [WIZARD] Mapping business cardId:', sub.cardId, '-> realCardId:', realCardId);
                         }
 
+                        let realBankId = null;
+                        if (sub.bankAccountId) {
+                            realBankId = businessBankIdMap.get(sub.bankAccountId) || null;
+                            console.log('🏦 [WIZARD] Mapping business bankAccountId:', sub.bankAccountId, '-> realBankId:', realBankId);
+                        }
+
                         const subPayload = {
                             name: sub.name,
                             amount: parseFloat(sub.amount) || 0,
@@ -979,7 +992,8 @@ export default function ProfileWizard({ onComplete }) {
                             startDate: sub.startDate || sub.nextBillingDate || new Date().toISOString().split('T')[0],
                             icon: sub.icon || '',
                             color: sub.color || '#6366F1',
-                            cardId: realCardId
+                            cardId: realCardId,
+                            bankAccountId: realBankId
                         };
 
                         await subscriptionsAPI.create(subPayload);
@@ -1075,6 +1089,7 @@ export default function ProfileWizard({ onComplete }) {
     };
 
     const getCurrentCards = () => currentProfileContext === 'personal' ? personalCards : businessCards;
+    const getCurrentBanks = () => currentProfileContext === 'personal' ? personalBanks : businessBanks;
 
     return (
         <>
@@ -2027,6 +2042,7 @@ export default function ProfileWizard({ onComplete }) {
                 onSave={handleSaveSub}
                 editingSub={editingSub}
                 cards={getCurrentCards()}
+                bankAccounts={getCurrentBanks()}
             />
 
             {/* Bank Account Modal */}
