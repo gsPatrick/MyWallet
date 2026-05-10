@@ -166,10 +166,12 @@ export default function ForgotPasswordPage() {
                                     loading={isLoading}
                                     className={styles.submitBtn}
                                 >
-                                    Enviar Código <FiArrowRight />
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                        Enviar Código <FiArrowRight />
+                                    </div>
                                 </Button>
                                 
-                                <Link href="/login" className={styles.signupLink} style={{ textAlign: 'center', marginTop: '1rem', display: 'block' }}>
+                                <Link href="/login" className={styles.signupLink} style={{ textAlign: 'center', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                     <FiArrowLeft /> Voltar para o login
                                 </Link>
                             </motion.form>
@@ -202,14 +204,16 @@ export default function ForgotPasswordPage() {
                                     loading={isLoading}
                                     className={styles.submitBtn}
                                 >
-                                    Verificar Código <FiArrowRight />
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                        Verificar Código <FiArrowRight />
+                                    </div>
                                 </Button>
                                 
                                 <button 
                                     type="button"
                                     onClick={() => setStep(1)}
                                     className={styles.signupLink}
-                                    style={{ textAlign: 'center', marginTop: '1rem', display: 'block', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}
+                                    style={{ textAlign: 'center', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}
                                 >
                                     <FiArrowLeft /> Usar outro email
                                 </button>
@@ -255,14 +259,16 @@ export default function ForgotPasswordPage() {
                                     loading={isLoading}
                                     className={styles.submitBtn}
                                 >
-                                    Redefinir Senha <FiArrowRight />
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                        Redefinir Senha <FiArrowRight />
+                                    </div>
                                 </Button>
                             </motion.form>
                         )}
                     </AnimatePresence>
 
                     <div className={styles.footer}>
-                        <p>Segurança garantida pelo MyWallet SSL 🔒</p>
+                        <p>O MyWallet utiliza criptografia de ponta a ponta 🔒</p>
                     </div>
                 </motion.div>
             </div>
