@@ -141,7 +141,8 @@ export default function SettingsPage() {
                     name: profileRes.data.name || '',
                     email: profileRes.data.email || '',
                     phone: profileRes.data.phone || '',
-                    cpf: profileRes.data.cpf || ''
+                    cpf: profileRes.data.cpf || '',
+                    avatar: profileRes.data.avatar || ''
                 });
             }
 
@@ -208,6 +209,12 @@ export default function SettingsPage() {
             console.error("Error updating privacy:", error);
             setPrivacySettings(privacySettings);
         }
+    };
+
+    const generateNewAvatar = () => {
+        const randomSeed = Math.random().toString(36).substring(7);
+        const newAvatar = `https://api.dicebear.com/9.x/micah/svg?seed=${randomSeed}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`;
+        setProfileForm(prev => ({ ...prev, avatar: newAvatar }));
     };
 
     const handleUpdateProfile = async () => {
@@ -341,7 +348,11 @@ export default function SettingsPage() {
                             <Card className={styles.settingCard}>
                                 <div className={styles.profileSection}>
                                     <div className={styles.profileAvatar}>
-                                        {user?.name?.charAt(0) || 'U'}
+                                        <img 
+                                            src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`} 
+                                            alt="Avatar" 
+                                            className={styles.avatarImg}
+                                        />
                                     </div>
                                     <div className={styles.profileInfo}>
                                         <span className={styles.profileName}>{user?.name || 'Usuário'}</span>
@@ -873,6 +884,16 @@ export default function SettingsPage() {
                 title="Editar Perfil"
             >
                 <div className={styles.modalForm}>
+                    <div className={styles.avatarEditSection}>
+                        <img 
+                            src={profileForm.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`} 
+                            alt="Preview do Avatar" 
+                            className={styles.avatarPreview}
+                        />
+                        <Button variant="secondary" size="sm" onClick={generateNewAvatar} type="button">
+                            <FiRefreshCw /> Gerar Aleatório
+                        </Button>
+                    </div>
                     <div className={styles.formGroup}>
                         <label>Nome</label>
                         <input

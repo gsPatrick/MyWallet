@@ -386,7 +386,7 @@ export default function AdminPage() {
                                             <td>
                                                 <div className={styles.userCell}>
                                                     <img
-                                                        src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.email}`}
+                                                        src={u.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${u.id || u.email}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
                                                         alt=""
                                                         className={styles.userAvatar}
                                                     />

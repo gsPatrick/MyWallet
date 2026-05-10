@@ -225,8 +225,8 @@ export default function Header({ leftContent, rightContent }) {
                                 onClick={() => setShowDropdown(!showDropdown)}
                             >
                                 <img
-                                    src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User'}
-                                    alt=""
+                                    src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
+                                    alt="Avatar"
                                     className={styles.avatar}
                                 />
                                 <FiChevronDown className={styles.chevron} />
