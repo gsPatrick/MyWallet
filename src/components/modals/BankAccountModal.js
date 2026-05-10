@@ -152,7 +152,7 @@ export default function BankAccountModal({ isOpen, onClose, onSuccess, initialDa
                             <div className={styles.formGroup}>
                                 <label>Banco</label>
                                 <div className={styles.bankGrid}>
-                                    {bankOptions.slice(0, 12).map((bank) => (
+                                    {bankOptions.map((bank) => (
                                         <button
                                             key={bank.key}
                                             type="button"
