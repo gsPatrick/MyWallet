@@ -153,10 +153,8 @@ function BanksContent() {
         }
     }, [loadAccounts, searchParams]);
 
-    // Bank options from cardBanks.json - Filter out brokers/corretoras
-    const brokerKeys = ['xp', 'btg', 'modalmais', 'rico', 'nuinvest', 'clear', 'avenue', 'binance', 'mercadobitcoin', 'ativa', 'genial'];
+    // Bank options from cardBanks.json
     const bankOptions = Object.entries(cardBanksData.banks)
-        .filter(([key]) => !brokerKeys.includes(key))
         .map(([key, value]) => ({
             key,
             ...value
