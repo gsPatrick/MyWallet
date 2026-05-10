@@ -266,10 +266,6 @@ export default function ForgotPasswordPage() {
                             </motion.form>
                         )}
                     </AnimatePresence>
-
-                    <div className={styles.footer}>
-                        <p>O MyWallet utiliza criptografia de ponta a ponta 🔒</p>
-                    </div>
                 </motion.div>
             </div>
         </div>
