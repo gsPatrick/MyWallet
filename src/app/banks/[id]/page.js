@@ -18,8 +18,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiArrowLeft, FiCreditCard, FiActivity, FiTarget, FiDollarSign,
     FiRefreshCw, FiEdit2, FiTrendingUp, FiTrendingDown, FiCalendar,
-    FiPieChart, FiClock, FiRepeat, FiCheck, FiLayers, FiAlertCircle, FiHome, FiTrash2, FiEdit, FiPlus, FiDownload, FiChevronLeft, FiChevronRight
+    FiPieChart, FiClock, FiRepeat, FiCheck, FiLayers, FiAlertCircle, FiHome, 
+    FiTrash2, FiEdit, FiPlus, FiDownload, FiChevronLeft, FiChevronRight,
+    FiSettings, FiLock, FiEyeOff, FiEye, FiCheckCircle, FiShield
 } from 'react-icons/fi';
+import NumericKeypad from '@/components/ui/NumericKeypad';
+import { useNotification } from '@/contexts/NotificationContext';
 import { formatDate } from '@/utils/formatters';
 import { detectBrand } from '@/utils/brandDetection';
 import { getBrandIcon } from '@/hooks/useBrandIcon';
@@ -29,6 +33,8 @@ import statementStyles from '@/app/settings/statement/page.module.css';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
 import AppShell from '@/components/AppShell';
+import { useProfiles } from '@/contexts/ProfileContext';
+import { usePrivacy } from '@/contexts/PrivacyContext';
 import bankAccountService from '@/services/bankAccountService';
 import { goalsAPI, cardsAPI, transactionsAPI, reportsAPI } from '@/services/api';
 import styles from './page.module.css';
@@ -38,7 +44,8 @@ const MONTHS = [
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const formatCurrency = (value) => {
+const formatCurrency = (value, hide = false) => {
+    if (hide) return 'R$ ••••••';
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -50,7 +57,8 @@ const tabs = [
     { id: 'statement', label: 'Extrato', icon: FiCalendar },
     { id: 'cards', label: 'Cartões', icon: FiCreditCard },
     { id: 'transactions', label: 'Transações', icon: FiActivity },
-    { id: 'goals', label: 'Metas', icon: FiTarget }
+    { id: 'goals', label: 'Metas', icon: FiTarget },
+    { id: 'settings', label: 'Ajustes', icon: FiSettings }
 ];
 
 import CardModal from '@/components/modals/CardModal';
@@ -229,7 +237,22 @@ export default function BankDetailPage() {
 
     const [account, setAccount] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loadingTab, setLoadingTab] = useState(false);
     const [error, setError] = useState(null);
+
+    const { isBankUnlocked, unlockBank } = usePrivacy();
+    const [showInitialUnlock, setShowInitialUnlock] = useState(false);
+
+    const { addNotification } = useNotification();
+
+    const handleInitialUnlock = (pin) => {
+        if (pin === account.pin) {
+            unlockBank(account.id);
+            setShowInitialUnlock(false);
+        } else {
+            alert('PIN incorreto!');
+        }
+    };
     const [activeTab, setActiveTab] = useState('summary');
     const [showCardModal, setShowCardModal] = useState(false);
     const { formatCurrency } = usePrivateCurrency();
@@ -243,7 +266,6 @@ export default function BankDetailPage() {
     const [cards, setCards] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [goals, setGoals] = useState([]);
-    const [loadingTab, setLoadingTab] = useState(false);
 
     // Statement State
     const [statement, setStatement] = useState(null);
@@ -259,6 +281,13 @@ export default function BankDetailPage() {
         pendingIncome: 0,
         pendingExpenses: 0
     });
+
+    // Bank Settings State
+    const [showPinModal, setShowPinModal] = useState(false);
+    const [pinModalConfig, setPinModalConfig] = useState({ title: 'Configurar PIN', action: null });
+    const [savingSettings, setSavingSettings] = useState(false);
+    const [pinStep, setPinStep] = useState('new'); // 'verify', 'new', 'confirm'
+    const [tempPin, setTempPin] = useState('');
 
     const loadAccount = useCallback(async () => {
         try {
@@ -377,10 +406,15 @@ export default function BankDetailPage() {
     }, [accountId, account, selectedYear, selectedMonth, getBankCards]);
 
     useEffect(() => {
-        if (accountId) {
-            loadAccount();
-        }
+        loadAccount();
     }, [accountId, loadAccount]);
+
+    // Check if bank is locked on load
+    useEffect(() => {
+        if (account && account.pin && !isBankUnlocked(account.id)) {
+            setShowInitialUnlock(true);
+        }
+    }, [account, isBankUnlocked]);
 
     useEffect(() => {
         if (account && activeTab) {
@@ -391,6 +425,82 @@ export default function BankDetailPage() {
     const handleCardSave = () => {
         loadTabData('cards');
         setShowCardModal(false);
+    };
+
+    const updateSetting = async (key, value) => {
+        try {
+            setSavingSettings(true);
+            const updatedData = { ...account, [key]: value };
+            
+            // Clean up unnecessary fields for API
+            delete updatedData.id;
+            delete updatedData.createdAt;
+            delete updatedData.updatedAt;
+            
+            await bankAccountService.update(accountId, updatedData);
+            await loadAccount();
+        } catch (err) {
+            console.error('Erro ao atualizar configuração:', err);
+            alert('Erro ao salvar configuração');
+        } finally {
+            setSavingSettings(false);
+        }
+    };
+
+    const handlePinConfirm = async (pin) => {
+        if (pinStep === 'verify') {
+            if (pin === account.pin) {
+                setPinStep('new');
+                setPinModalConfig({
+                    title: 'Novo PIN',
+                    description: 'Digite o novo PIN de 4 dígitos'
+                });
+            } else {
+                addNotification({
+                    type: 'error',
+                    title: 'PIN Incorreto',
+                    message: 'O PIN atual informado é inválido.',
+                    duration: 3000
+                });
+            }
+            return;
+        }
+
+        if (pinStep === 'new') {
+            setTempPin(pin);
+            setPinStep('confirm');
+            setPinModalConfig({
+                title: 'Confirmar PIN',
+                description: 'Digite novamente o novo PIN para confirmar'
+            });
+            return;
+        }
+
+        if (pinStep === 'confirm') {
+            if (pin === tempPin) {
+                await updateSetting('pin', pin);
+                setShowPinModal(false);
+                addNotification({
+                    type: 'success',
+                    title: 'PIN Atualizado',
+                    message: 'Suas credenciais foram alteradas com sucesso!',
+                    duration: 4000
+                });
+            } else {
+                addNotification({
+                    type: 'error',
+                    title: 'PINs Não Conferem',
+                    message: 'O PIN de confirmação é diferente do novo PIN.',
+                    duration: 3000
+                });
+                // Reset to 'new' step to start over safely
+                setPinStep('new');
+                setPinModalConfig({
+                    title: 'Novo PIN',
+                    description: 'Digite o novo PIN de 4 dígitos'
+                });
+            }
+        }
     };
 
     if (loading) {
@@ -541,7 +651,7 @@ export default function BankDetailPage() {
         <AppShell>
             <Header />
             <main className={styles.main}>
-                <div className={styles.container}>
+                <div className={styles.container} style={{ filter: showInitialUnlock ? 'blur(20px)' : 'none', pointerEvents: showInitialUnlock ? 'none' : 'auto' }}>
                     {/* Back Button & Title */}
                     <div className={styles.pageHeader}>
                         <button className={styles.backBtn} onClick={() => router.push('/banks')}>
@@ -572,10 +682,10 @@ export default function BankDetailPage() {
 
                         <div className={styles.heroBalance}>
                             <span className={styles.balanceLabel}>Saldo Total</span>
-                            <span className={styles.balanceValue}>{formatCurrency(account.balance)}</span>
+                            <span className={styles.balanceValue}>{formatCurrency(account.balance, account.hideBalance)}</span>
                             {stats.reservedForGoals > 0 && (
                                 <span className={styles.reservedBadge}>
-                                    {formatCurrency(stats.reservedForGoals)} em metas
+                                    {formatCurrency(stats.reservedForGoals, account.hideBalance)} em metas
                                 </span>
                             )}
                         </div>
@@ -652,19 +762,19 @@ export default function BankDetailPage() {
                                                 <div className={statementStyles.summaryGrid}>
                                                     <div className={statementStyles.summaryItem}>
                                                         <span className={statementStyles.label}>Saldo Anterior</span>
-                                                        <span className={statementStyles.value}>{formatCurrency(statement?.summary?.openingBalance || 0)}</span>
+                                                        <span className={statementStyles.value}>{formatCurrency(statement?.summary?.openingBalance || 0, account.hideBalance)}</span>
                                                     </div>
                                                     <div className={statementStyles.summaryItem}>
                                                         <span className={statementStyles.label}>Total de Entradas</span>
-                                                        <span className={`${statementStyles.value} ${statementStyles.credit}`}>+{formatCurrency(statement?.summary?.totalIncome || 0)}</span>
+                                                        <span className={`${statementStyles.value} ${statementStyles.credit}`}>+{formatCurrency(statement?.summary?.totalIncome || 0, account.hideBalance)}</span>
                                                     </div>
                                                     <div className={statementStyles.summaryItem}>
                                                         <span className={statementStyles.label}>Total de Saídas</span>
-                                                        <span className={`${statementStyles.value} ${statementStyles.debit}`}>-{formatCurrency(statement?.summary?.totalExpense || 0)}</span>
+                                                        <span className={`${statementStyles.value} ${statementStyles.debit}`}>-{formatCurrency(statement?.summary?.totalExpense || 0, account.hideBalance)}</span>
                                                     </div>
                                                     <div className={statementStyles.summaryItem}>
                                                         <span className={statementStyles.label}>Saldo Final</span>
-                                                        <span className={`${statementStyles.value} ${statementStyles.highlight}`}>{formatCurrency(statement?.summary?.closingBalance || 0)}</span>
+                                                        <span className={`${statementStyles.value} ${statementStyles.highlight}`}>{formatCurrency(statement?.summary?.closingBalance || 0, account.hideBalance)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -697,7 +807,7 @@ export default function BankDetailPage() {
                                                                         </div>
                                                                     </div>
                                                                     <div className={`${statementStyles.dayTotal} ${dayTotal >= 0 ? statementStyles.credit : statementStyles.debit}`}>
-                                                                        {dayTotal >= 0 ? '+' : ''}{formatCurrency(dayTotal)}
+                                                                        {dayTotal >= 0 ? '+' : ''}{formatCurrency(dayTotal, account.hideBalance)}
                                                                     </div>
                                                                 </div>
 
@@ -709,7 +819,7 @@ export default function BankDetailPage() {
                                                                                 <span className={statementStyles.txDesc}>{t.description}</span>
                                                                             </div>
                                                                             <div className={`${statementStyles.txAmount} ${t.type === 'INCOME' ? statementStyles.credit : statementStyles.debit}`}>
-                                                                                {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
+                                                                                {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount, account.hideBalance)}
                                                                             </div>
                                                                         </div>
                                                                     ))}
@@ -817,7 +927,7 @@ export default function BankDetailPage() {
                                                             </div>
                                                             <div className={txStyles.transactionAmount}>
                                                                 <span className={`${tx.type === 'INCOME' ? txStyles.income : txStyles.expense} ${(tx.status === 'PENDING' || tx.status === 'PAID') ? txStyles.pendingText : ''}`}>
-                                                                    {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                                                    {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount, account.hideBalance)}
                                                                 </span>
                                                                 <span className={txStyles.transactionDateHighlight}>
                                                                     {formatDate(tx.date)}
@@ -864,10 +974,10 @@ export default function BankDetailPage() {
                                                                 />
                                                             </div>
                                                             <div className={styles.goalValues}>
-                                                                <span>{formatCurrency(goal.currentAmount)}</span>
+                                                                <span>{formatCurrency(goal.currentAmount, account.hideBalance)}</span>
                                                                 {goal.targetAmount && (
                                                                     <span className={styles.goalTarget}>
-                                                                        de {formatCurrency(goal.targetAmount)}
+                                                                        de {formatCurrency(goal.targetAmount, account.hideBalance)}
                                                                     </span>
                                                                 )}
                                                             </div>
@@ -877,6 +987,98 @@ export default function BankDetailPage() {
                                             )}
                                         </div>
                                     )}
+
+                                    {/* SETTINGS TAB */}
+                                    {activeTab === 'settings' && (
+                                        <div className={styles.settingsView}>
+                                            <div className={styles.settingsSection}>
+                                                <div className={styles.sectionHeader}>
+                                                    <FiEye />
+                                                    <h3>Visibilidade e Dashboard</h3>
+                                                </div>
+                                                <div className={styles.settingsGrid}>
+                                                    <div className={styles.settingCard}>
+                                                        <div className={styles.settingInfo}>
+                                                            <strong>Exibir no Dashboard</strong>
+                                                            <p>Se desativado, este banco e seu saldo não serão somados nos totais da página inicial.</p>
+                                                        </div>
+                                                        <button 
+                                                            className={`${styles.toggleSwitch} ${account.includeInTotals !== false ? styles.active : ''}`}
+                                                            onClick={() => updateSetting('includeInTotals', account.includeInTotals === false)}
+                                                            disabled={savingSettings}
+                                                        >
+                                                            <div className={styles.switchThumb} />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className={styles.settingCard}>
+                                                        <div className={styles.settingInfo}>
+                                                            <strong>Ocultar Valor</strong>
+                                                            <p>O saldo deste banco aparecerá mascarado (ex: ••••) em todas as telas por padrão.</p>
+                                                        </div>
+                                                        <button 
+                                                            className={`${styles.toggleSwitch} ${account.hideBalance ? styles.active : ''}`}
+                                                            onClick={() => updateSetting('hideBalance', !account.hideBalance)}
+                                                            disabled={savingSettings}
+                                                        >
+                                                            <div className={styles.switchThumb} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.settingsSection}>
+                                                <div className={styles.sectionHeader}>
+                                                    <FiShield />
+                                                    <h3>Segurança e Acesso</h3>
+                                                </div>
+                                                <div className={styles.settingsGrid}>
+                                                    <div className={styles.settingCard}>
+                                                        <div className={styles.settingInfo}>
+                                                            <FiLock className={styles.settingIcon} />
+                                                            <div>
+                                                                <strong>Credencial de Acesso (PIN)</strong>
+                                                                <p>{account.pin ? 'PIN de 4 dígitos configurado e ativo.' : 'Proteja o acesso aos dados deste banco com um PIN de 4 dígitos.'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            className={styles.settingActionBtn}
+                                                            onClick={() => {
+                                                                const isUpdate = !!account.pin;
+                                                                setPinStep(isUpdate ? 'verify' : 'new');
+                                                                setPinModalConfig({ 
+                                                                    title: isUpdate ? 'Mudar PIN' : 'Configurar PIN',
+                                                                    description: isUpdate ? 'Para sua segurança, informe o PIN atual para autorizar a mudança.' : 'Crie um PIN de 4 dígitos para este banco'
+                                                                });
+                                                                setShowPinModal(true);
+                                                            }}
+                                                        >
+                                                            {account.pin ? 'Mudar PIN' : 'Configurar'}
+                                                        </button>
+                                                    </div>
+
+                                                    {account.pin && (
+                                                        <div className={`${styles.settingCard} ${styles.dangerCard}`}>
+                                                            <div className={styles.settingInfo}>
+                                                                <strong>Remover Proteção</strong>
+                                                                <p>Desativar a exigência de PIN para este banco.</p>                                                            </div>
+                                                            <button 
+                                                                className={styles.settingActionBtnDanger}
+                                                                onClick={() => {
+                                                                    if (confirm('Tem certeza que deseja remover o PIN de segurança deste banco?')) {
+                                                                        updateSetting('pin', null);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Remover
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </motion.div>
@@ -884,6 +1086,26 @@ export default function BankDetailPage() {
                 </div>
             </main>
             <Dock />
+
+            {/* Numeric Keypad Modal */}
+            <NumericKeypad 
+                key={pinStep}
+                isOpen={showPinModal}
+                onClose={() => setShowPinModal(false)}
+                onConfirm={handlePinConfirm}
+                title={pinModalConfig.title}
+                description={pinModalConfig.description}
+                variant={pinStep === 'verify' ? 'security' : 'default'}
+            />
+
+            {/* Initial Unlock Keypad */}
+            <NumericKeypad 
+                isOpen={showInitialUnlock}
+                onClose={() => router.push('/banks')}
+                onConfirm={handleInitialUnlock}
+                title="Conta Protegida"
+                description={`Digite o PIN para acessar ${account?.nickname || account?.bankName}`}
+            />
 
             {/* Card Modal */}
             <CardModal

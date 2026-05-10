@@ -16,7 +16,8 @@ import bankAccountService from '@/services/bankAccountService';
 import { goalsAPI } from '@/services/api';
 import styles from './BankAccountsWidget.module.css';
 
-const formatCurrency = (value) => {
+const formatCurrency = (value, hide = false) => {
+    if (hide) return 'R$ ••••••';
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -41,11 +42,13 @@ export default function BankAccountsWidget() {
                 goalsAPI.list().catch(() => [])
             ]);
 
-            console.log('🏦 [WIDGET] Accounts:', accountsResponse);
-            console.log('🏦 [WIDGET] Goals:', goalsResponse);
+            const filteredAccounts = (accountsResponse?.data || accountsResponse || [])
+                .filter(acc => acc.includeInTotals !== false);
+            
+            const calculatedTotal = filteredAccounts.reduce((sum, acc) => sum + (parseFloat(acc.balance) || 0), 0);
 
-            setAccounts(accountsResponse?.data || accountsResponse || []);
-            setTotalBalance(balanceResponse?.data?.totalBalance || balanceResponse?.totalBalance || 0);
+            setAccounts(filteredAccounts);
+            setTotalBalance(calculatedTotal);
             setGoals(goalsResponse?.data || goalsResponse || []);
             setError(null);
         } catch (err) {
@@ -117,10 +120,12 @@ export default function BankAccountsWidget() {
             {/* Total Balance */}
             <div className={styles.totalBalance}>
                 <span className={styles.totalLabel}>Saldo Total</span>
-                <span className={styles.totalValue}>{formatCurrency(totalBalance)}</span>
+                <span className={styles.totalValue}>
+                    {formatCurrency(totalBalance, accounts.some(a => a.hideBalance))}
+                </span>
                 {totalReserved > 0 && (
                     <span className={styles.reservedBadge}>
-                        <FiTarget /> {formatCurrency(totalReserved)} em metas
+                        <FiTarget /> {formatCurrency(totalReserved, accounts.some(a => a.hideBalance))} em metas
                     </span>
                 )}
             </div>
@@ -179,11 +184,11 @@ export default function BankAccountsWidget() {
                                             <span
                                                 className={`${styles.balance} ${parseFloat(account.balance) >= 0 ? styles.positive : styles.negative}`}
                                             >
-                                                {formatCurrency(account.balance)}
+                                                {formatCurrency(account.balance, account.hideBalance)}
                                             </span>
                                             {reserved > 0 && (
                                                 <span className={styles.accountReserved}>
-                                                    {formatCurrency(reserved)} reservado
+                                                    {formatCurrency(reserved, account.hideBalance)} reservado
                                                 </span>
                                             )}
                                         </div>

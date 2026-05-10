@@ -5,11 +5,11 @@ import { motion } from 'framer-motion';
 import styles from './DicebearSelector.module.css';
 
 const SKIN_TONES = {
-    'apricot': 'Branco',
-    'coast': 'Pardo Claro',
-    'mellow': 'Pardo',
-    'topaz': 'Negro',
-    'salmon': 'Avermelhado'
+    'f9c9b6': 'Branco',
+    'ac6651': 'Pardo Claro',
+    '8d5524': 'Pardo',
+    '3c2e18': 'Negro',
+    'ffdbac': 'Claro'
 };
 
 const BACKGROUND_COLORS = {
@@ -32,7 +32,7 @@ const FEMININE_HAIR = ['full', 'pixie', 'turban'];
 export default function DicebearSelector({ value, onChange }) {
     // Parse existing URL or set defaults
     const [seed, setSeed] = useState(() => Math.random().toString(36).substring(7));
-    const [skinTone, setSkinTone] = useState('apricot');
+    const [skinTone, setSkinTone] = useState('f9c9b6');
     const [bgColor, setBgColor] = useState('b6e3f4');
     const [gender, setGender] = useState('masculino');
     
@@ -102,11 +102,21 @@ export default function DicebearSelector({ value, onChange }) {
     return (
         <div className={styles.selectorContainer}>
             <div className={styles.previewSection}>
-                <img 
-                    src={generateUrl(seed, skinTone, bgColor, hairOption)} 
-                    alt="Preview do Avatar" 
-                    className={styles.avatarPreview}
-                />
+                <div className={styles.avatarWrapper}>
+                    <img 
+                        key={generateUrl(seed, skinTone, bgColor, hairOption)}
+                        src={generateUrl(seed, skinTone, bgColor, hairOption)} 
+                        alt="Preview do Avatar" 
+                        className={styles.avatarPreview}
+                        width="140"
+                        height="140"
+                        onLoad={() => console.log('Avatar loaded')}
+                        onError={(e) => {
+                            console.error('Avatar load error', e);
+                            e.target.src = `https://api.dicebear.com/9.x/initials/svg?seed=${seed}`;
+                        }}
+                    />
+                </div>
                 <button type="button" className={styles.randomizeBtn} onClick={handleSeedChange}>
                     🎲 Sortear Rosto
                 </button>

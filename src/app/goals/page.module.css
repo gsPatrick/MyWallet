@@ -41,6 +41,80 @@
     margin-bottom: var(--spacing-xl);
 }
 
+/* Bank Filter */
+.bankFilterBar {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.bankFilterBar::-webkit-scrollbar {
+    display: none;
+}
+
+.bankFilterBtn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.bankFilterBtn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-medium);
+}
+
+.bankFilterBtn.active {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--bank-color, var(--accent-primary));
+}
+
+.bankFilterBtn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--bank-color, var(--accent-primary));
+    border-radius: 3px 3px 0 0;
+}
+
+.bankFilterIcon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.bankFilterLetter {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.65rem;
+}
+
 .summaryCard {
     display: flex;
     align-items: center;

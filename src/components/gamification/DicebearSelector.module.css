@@ -20,14 +20,23 @@
     flex-shrink: 0;
 }
 
-.avatarPreview {
+.avatarWrapper {
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    object-fit: cover;
+    overflow: hidden;
+    background: var(--bg-tertiary);
     border: 3px solid var(--border-light);
-    background: var(--bg-secondary);
     box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatarPreview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .randomizeBtn {

@@ -77,11 +77,22 @@
     flex-direction: column;
 }
 
+.bankNameRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .bankName {
     font-size: 1.125rem;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
+}
+
+.lockIcon {
+    font-size: 1rem;
+    color: var(--accent-warning);
 }
 
 /* Force dark text in light mode if variables fail context */

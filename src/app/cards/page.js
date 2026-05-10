@@ -1145,70 +1145,67 @@ export default function CardsPage() {
                                         ? cards
                                         : bankFilter === 'NONE'
                                             ? cards.filter(c => !c.bankAccountId)
-                                            : cards.filter(c => c.bankAccountId === bankFilter);
+                                            : cards.filter(c => String(c.bankAccountId) === String(bankFilter));
 
-                                    return filteredCards.length > 0 ? (
-                                        filteredCards.map((card) => {
-                                            // Resolve dynamic icon/color from dictionary
-                                            let dictionaryEntry = null;
+                                    return (
+                                        <>
+                                            {filteredCards.map((card) => {
+                                                // Resolve dynamic icon/color from dictionary
+                                                let dictionaryEntry = null;
 
-                                            // 1. Try via linked bank account
-                                            if (card.bankAccountId) {
-                                                const successBank = bankAccounts.find(b => b.id === card.bankAccountId);
-                                                if (successBank) {
-                                                    dictionaryEntry = cardBanks.banks[successBank.bankCode?.toLowerCase()] ||
-                                                        Object.values(cardBanks.banks).find(b => b.name === successBank.bankName);
+                                                // 1. Try via linked bank account
+                                                if (card.bankAccountId) {
+                                                    const successBank = bankAccounts.find(b => String(b.id) === String(card.bankAccountId));
+                                                    if (successBank) {
+                                                        dictionaryEntry = cardBanks.banks[successBank.bankCode?.toLowerCase()] ||
+                                                            Object.values(cardBanks.banks).find(b => b.name === successBank.bankName);
+                                                    }
                                                 }
-                                            }
 
-                                            // 2. Try matching card name/bankName
-                                            if (!dictionaryEntry) {
-                                                const findEntry = (text) => {
-                                                    if (!text) return null;
-                                                    const normalized = text.toLowerCase();
-                                                    return Object.values(cardBanks.banks).find(b =>
-                                                        normalized.includes(b.name.toLowerCase()) ||
-                                                        (b.keywords && b.keywords.some(k => normalized.includes(k)))
-                                                    );
-                                                };
+                                                // 2. Try matching card name/bankName
+                                                if (!dictionaryEntry) {
+                                                    const findEntry = (text) => {
+                                                        if (!text) return null;
+                                                        const normalized = text.toLowerCase();
+                                                        return Object.values(cardBanks.banks).find(b =>
+                                                            normalized.includes(b.name.toLowerCase()) ||
+                                                            (b.keywords && b.keywords.some(k => normalized.includes(k)))
+                                                        );
+                                                    };
 
-                                                // Try bankName first
-                                                dictionaryEntry = findEntry(card.bankName);
+                                                    // Try bankName first
+                                                    dictionaryEntry = findEntry(card.bankName);
 
-                                                // If generic 'Outro' or not found, try card nickname (e.g. user named card "Santander")
-                                                if (!dictionaryEntry || dictionaryEntry.name === 'Outro') {
-                                                    const entryByName = findEntry(card.name);
-                                                    if (entryByName) dictionaryEntry = entryByName;
+                                                    // If generic 'Outro' or not found, try card nickname (e.g. user named card "Santander")
+                                                    if (!dictionaryEntry || dictionaryEntry.name === 'Outro') {
+                                                        const entryByName = findEntry(card.name);
+                                                        if (entryByName) dictionaryEntry = entryByName;
+                                                    }
                                                 }
-                                            }
 
-                                            const displayIcon = dictionaryEntry?.icon;
-                                            const displayColor = card.color || dictionaryEntry?.color || '#1a1a2e';
+                                                const displayIcon = dictionaryEntry?.icon;
+                                                const displayColor = card.color || dictionaryEntry?.color || '#1a1a2e';
 
-                                            return (
-                                                <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>
-                                                    <CreditCard
-                                                        name={card.name}
-                                                        brand={card.brand}
-                                                        lastFourDigits={card.lastFourDigits}
-                                                        creditLimit={card.creditLimit}
-                                                        availableLimit={card.availableLimit}
-                                                        closingDay={card.closingDay}
-                                                        dueDay={card.dueDay}
-                                                        color={displayColor}
-                                                        holderName={card.holderName || "NOME DO TITULAR"}
-                                                        validThru="12/28"
-                                                        icon={displayIcon}
-                                                    />
-                                                    <span className={styles.cardHint}>Clique para ver a fatura</span>
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className={styles.emptyCards}>
-                                            <FiCreditCard style={{ fontSize: '2rem', opacity: 0.4 }} />
-                                            <p>Nenhum cartão {bankFilter !== 'ALL' ? 'neste banco' : 'cadastrado'}</p>
-                                        </div>
+                                                return (
+                                                    <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>
+                                                        <CreditCard
+                                                            name={card.name}
+                                                            brand={card.brand}
+                                                            lastFourDigits={card.lastFourDigits}
+                                                            creditLimit={card.creditLimit}
+                                                            availableLimit={card.availableLimit}
+                                                            closingDay={card.closingDay}
+                                                            dueDay={card.dueDay}
+                                                            color={displayColor}
+                                                            holderName={card.holderName || "NOME DO TITULAR"}
+                                                            validThru="12/28"
+                                                            icon={displayIcon}
+                                                        />
+                                                        <span className={styles.cardHint}>Clique para ver a fatura</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
                                     );
                                 })()}
                                 {/* Always show Ghost Card to add more */}

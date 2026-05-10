@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FiTarget, FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi';
+import { FiTarget, FiEdit2, FiTrash2, FiArrowRight, FiLock } from 'react-icons/fi';
 import styles from './BankAccountCard.module.css';
 
 export default function BankAccountCard({
@@ -16,7 +16,10 @@ export default function BankAccountCard({
     onClick,
     onEdit,
     onDelete,
+    hideBalance = false,
+    isLocked = false
 }) {
+    const isValueHidden = hideBalance || isLocked;
     // Calculate percentages for the bar
     const totalFunds = Math.max(parseFloat(balance) || 0, 0);
     const safeReserved = Math.max(parseFloat(reservedAmount) || 0, 0);
@@ -29,6 +32,7 @@ export default function BankAccountCard({
     const availableAmount = totalFunds - safeReserved;
 
     const formatCurrency = (value) => {
+        if (isValueHidden) return 'R$ ••••••';
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL',
@@ -64,7 +68,10 @@ export default function BankAccountCard({
 
                         </div>
                         <div className={styles.bankNameGroup}>
-                            <span className={styles.bankName}>{bankName}</span>
+                            <div className={styles.bankNameRow}>
+                                <span className={styles.bankName}>{bankName}</span>
+                                {isLocked && <FiLock className={styles.lockIcon} />}
+                            </div>
                             <span className={styles.accountType}>Conta Corrente</span>
                         </div>
                     </div>

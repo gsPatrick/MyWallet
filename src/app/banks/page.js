@@ -14,14 +14,16 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
     FiPlus, FiEdit2, FiTrash2, FiRefreshCw, FiChevronRight, FiChevronLeft,
     FiDollarSign, FiCreditCard, FiActivity, FiX, FiCheck,
-    FiArrowRight, FiArrowLeft, FiBriefcase, FiUser, FiTarget
+    FiArrowRight, FiArrowLeft, FiBriefcase, FiUser, FiTarget, FiLock
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
 import AppShell from '@/components/AppShell';
 import BankAccountCard from '@/components/ui/BankAccountCard/BankAccountCard';
 import GhostCard from '@/components/ui/GhostCard';
+import NumericKeypad from '@/components/ui/NumericKeypad';
 import { useProfiles } from '@/contexts/ProfileContext';
+import { usePrivacy } from '@/contexts/PrivacyContext';
 import bankAccountService from '@/services/bankAccountService';
 import { goalsAPI } from '@/services/api';
 import cardBanksData from '@/data/cardBanks.json';
@@ -64,6 +66,30 @@ function BanksContent() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedAccountId, setSelectedAccountId] = useState(null);
+
+    const { isBankUnlocked, unlockBank } = usePrivacy();
+    const [showUnlockKeypad, setShowUnlockKeypad] = useState(false);
+    const [bankToUnlock, setBankToUnlock] = useState(null);
+
+    const handleBankClick = (account) => {
+        if (account.pin && !isBankUnlocked(account.id)) {
+            setBankToUnlock(account);
+            setShowUnlockKeypad(true);
+        } else {
+            router.push(`/banks/${account.id}`);
+        }
+    };
+
+    const handleUnlockConfirm = (pin) => {
+        if (pin === bankToUnlock.pin) {
+            unlockBank(bankToUnlock.id);
+            setShowUnlockKeypad(false);
+            router.push(`/banks/${bankToUnlock.id}`);
+            setBankToUnlock(null);
+        } else {
+            alert('PIN incorreto!');
+        }
+    };
 
     // Modal states
     const [showAddModal, setShowAddModal] = useState(false);
@@ -434,6 +460,7 @@ function BanksContent() {
 
                                     const displayIcon = dictionaryEntry?.icon || account.icon;
                                     const displayColor = dictionaryEntry?.color || account.color || '#6366f1';
+                                    const isLocked = account.pin && !isBankUnlocked(account.id);
 
                                     return (
                                         <div key={account.id} className={styles.accountWrapper}>
@@ -446,9 +473,11 @@ function BanksContent() {
                                                 color={displayColor}
                                                 holderName={profiles.find(p => p.id === account.profileId)?.name || 'TITULAR'}
                                                 icon={displayIcon}
-                                                onClick={() => router.push(`/banks/${account.id}`)}
+                                                onClick={() => handleBankClick(account)}
                                                 onEdit={() => handleEdit(account)}
                                                 onDelete={() => handleDelete(account.id)}
+                                                hideBalance={account.hideBalance}
+                                                isLocked={isLocked}
                                             />
                                             <div className={styles.accountActionsRow}>
                                                 {/* Actions could go here, but they are inside the detail page now */}
@@ -799,6 +828,15 @@ function BanksContent() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Unlock Keypad */}
+            <NumericKeypad 
+                isOpen={showUnlockKeypad}
+                onClose={() => setShowUnlockKeypad(false)}
+                onConfirm={handleUnlockConfirm}
+                title="Desbloquear Banco"
+                description={`Digite o PIN para acessar ${bankToUnlock?.nickname || bankToUnlock?.bankName}`}
+            />
         </AppShell >
     );
 }

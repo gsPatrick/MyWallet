@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import {
     FiTrendingUp, FiTrendingDown, FiDollarSign, FiRepeat, FiLayers,
-    FiPlus, FiX, FiClock, FiCheck, FiCreditCard
+    FiPlus, FiX, FiClock, FiCheck, FiCreditCard, FiArrowRight
 } from 'react-icons/fi';
 import Modal, { AlertModal } from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import CategoryModal from '@/components/modals/CategoryModal';
 import BankAccountModal from '@/components/modals/BankAccountModal';
-import { transactionsAPI, cardsAPI, budgetsAPI } from '@/services/api';
+import { transactionsAPI, cardsAPI, budgetsAPI, goalsAPI } from '@/services/api';
+import { useNotification } from '@/contexts/NotificationContext';
 import categoriesService from '@/services/categoriesService';
 import bankAccountService from '@/services/bankAccountService';
 import subscriptionIcons from '@/data/subscriptionIcons.json';
@@ -30,7 +31,22 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
     const [showIconPicker, setShowIconPicker] = useState(false);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showBankModal, setShowBankModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('transaction'); // transaction, transfer
     const [feedback, setFeedback] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
+    const { addNotification } = useNotification();
+    const [goals, setGoals] = useState([]);
+
+    const [transferData, setTransferData] = useState({
+        fromAccountId: '',
+        toAccountId: '',
+        toProfileId: '',
+        destinationType: 'INTERNAL', // INTERNAL, EXTERNAL
+        externalName: '',
+        amount: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+    });
+    const [transferLoading, setTransferLoading] = useState(false);
 
     // Data Lists
     const [categoryList, setCategoryList] = useState([]);
@@ -112,10 +128,11 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
 
     const loadData = async () => {
         try {
-            const [cats, banks, cardsRes] = await Promise.all([
+            const [cats, banks, cardsRes, goalsRes] = await Promise.all([
                 categoriesService.list(),
                 bankAccountService.list(),
-                cardsAPI.list()
+                cardsAPI.list(),
+                goalsAPI.list().catch(() => [])
             ]);
 
             // Ensure categoryList is always an array
@@ -124,12 +141,14 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
 
             setBankAccounts(banks?.data || banks || []);
             setCards(cardsRes?.data || cardsRes || []);
+            setGoals(goalsRes?.data || goalsRes || []);
 
             // Set default bank account if exists
             const banksData = banks?.data || banks || [];
             if (banksData.length > 0) {
                 const defaultAcc = banksData.find(a => a.isDefault) || banksData[0];
                 setNewTransaction(prev => ({ ...prev, bankAccountId: defaultAcc.id }));
+                setTransferData(prev => ({ ...prev, fromAccountId: defaultAcc.id }));
             }
         } catch (error) {
             console.error('Error loading data for Quick Transaction:', error);
@@ -137,6 +156,7 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
     };
 
     const resetForm = () => {
+        const defaultBankId = bankAccounts.find(a => a.isDefault)?.id || bankAccounts[0]?.id || '';
         setNewTransaction({
             description: '',
             amount: '',
@@ -146,9 +166,9 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             date: new Date().toISOString().split('T')[0],
             status: 'COMPLETED',
             paymentMethod: 'PIX',
-            source: 'OTHER', // MANUAL, IMPORT, CARD
+            source: 'OTHER',
             sourceType: 'Débito/Dinheiro',
-            bankAccountId: bankAccounts.find(a => a.isDefault)?.id || bankAccounts[0]?.id || '',
+            bankAccountId: defaultBankId,
             cardId: '',
             installments: '',
             frequency: 'MONTHLY',
@@ -157,7 +177,100 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             brandKey: '',
             autoDetectedBrand: false
         });
+        setTransferData({
+            fromAccountId: defaultBankId,
+            toAccountId: '',
+            toProfileId: '',
+            destinationType: 'INTERNAL',
+            externalName: '',
+            amount: '',
+            description: '',
+            date: new Date().toISOString().split('T')[0],
+        });
         setTransactionMode('single');
+        setActiveTab('transaction');
+    };
+
+    const handleTransfer = async () => {
+        try {
+            if (!transferData.fromAccountId || !transferData.amount) {
+                setFeedback({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Campos Obrigatórios',
+                    message: 'Preencha os campos obrigatórios: Origem e Valor',
+                    onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+                });
+                return;
+            }
+
+            if (transferData.destinationType === 'INTERNAL' && !transferData.toAccountId) {
+                setFeedback({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Destino Obrigatório',
+                    message: 'Selecione a conta de destino',
+                    onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+                });
+                return;
+            }
+
+            if (transferData.destinationType === 'EXTERNAL' && !transferData.externalName) {
+                setFeedback({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Nome Obrigatório',
+                    message: 'Digite o nome da pessoa para quem você está transferindo',
+                    onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+                });
+                return;
+            }
+
+            setTransferLoading(true);
+
+            if (transferData.destinationType === 'INTERNAL') {
+                await bankAccountService.createInternalTransfer({
+                    fromBankAccountId: transferData.fromAccountId,
+                    toBankAccountId: transferData.toAccountId,
+                    amount: parseFloat(transferData.amount),
+                    description: transferData.description || 'Transferência interna',
+                    date: transferData.date
+                });
+            } else {
+                // External Transfer is essentially an EXPENSE
+                await transactionsAPI.create({
+                    type: 'EXPENSE',
+                    description: `Transferência: ${transferData.externalName}${transferData.description ? ` - ${transferData.description}` : ''}`,
+                    amount: transferData.amount,
+                    bankAccountId: transferData.fromAccountId,
+                    date: transferData.date,
+                    paymentMethod: 'PIX', // Default for external transfers
+                    source: 'OTHER',
+                    sourceType: 'Transferência'
+                });
+            }
+
+            addNotification({
+                type: 'success',
+                title: 'Transferência Realizada',
+                message: 'Sua transferência foi registrada com sucesso!',
+                duration: 4000
+            });
+
+            onSuccess?.();
+            onClose();
+        } catch (error) {
+            console.error('Erro na transferência:', error);
+            setFeedback({
+                isOpen: true,
+                type: 'error',
+                title: 'Erro na Transferência',
+                message: error.response?.data?.message || 'Erro ao realizar transferência',
+                onConfirm: () => setFeedback(prev => ({ ...prev, isOpen: false }))
+            });
+        } finally {
+            setTransferLoading(false);
+        }
     };
 
     const handleAmountChange = (e) => {
@@ -292,12 +405,29 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             <Modal
                 isOpen={isOpen}
                 onClose={onClose}
-                title="Nova Transação"
+                title={activeTab === 'transaction' ? 'Nova Transação' : 'Transferência'}
                 size="md"
             >
+                <div className={styles.tabs}>
+                    <button 
+                        className={`${styles.tab} ${activeTab === 'transaction' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('transaction')}
+                    >
+                        <FiDollarSign /> Transação
+                    </button>
+                    <button 
+                        className={`${styles.tab} ${activeTab === 'transfer' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('transfer')}
+                    >
+                        <FiArrowRight /> Transferência
+                    </button>
+                </div>
+
                 <div className={styles.formGrid}>
-                    {/* Transaction Type */}
-                    <div className={styles.typeToggle}>
+                    {activeTab === 'transaction' && (
+                        <>
+                            {/* Transaction Type */}
+                            <div className={styles.typeToggle}>
                         <button
                             className={`${styles.typeBtn} ${newTransaction.type === 'INCOME' ? styles.income : ''}`}
                             onClick={() => setNewTransaction(prev => ({ ...prev, type: 'INCOME' }))}
@@ -681,8 +811,124 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                             Criar Transação
                         </Button>
                     </div>
+                        </>
+                    )}
+
+                    {activeTab === 'transfer' && (
+                        <>
+                            {/* Transfer Form */}
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>De (Conta de Origem)</label>
+                        <select
+                            className={styles.selectInput}
+                            value={transferData.fromAccountId}
+                            onChange={(e) => setTransferData(prev => ({ ...prev, fromAccountId: e.target.value }))}
+                        >
+                            <option value="">Selecione a conta...</option>
+                            {bankAccounts.map(acc => (
+                                <option key={acc.id} value={acc.id}>
+                                    {acc.nickname || acc.bankName} - {formatCurrency(acc.balance)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className={styles.transferIndicator}>
+                        <FiArrowRight size={24} />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>Para (Destino)</label>
+                        <div className={styles.destTypeToggle}>
+                            <button 
+                                type="button"
+                                className={`${styles.destTypeBtn} ${transferData.destinationType === 'INTERNAL' ? styles.active : ''}`}
+                                onClick={() => setTransferData(prev => ({ ...prev, destinationType: 'INTERNAL' }))}
+                            >
+                                Minha Conta
+                            </button>
+                            <button 
+                                type="button"
+                                className={`${styles.destTypeBtn} ${transferData.destinationType === 'EXTERNAL' ? styles.active : ''}`}
+                                onClick={() => setTransferData(prev => ({ ...prev, destinationType: 'EXTERNAL' }))}
+                            >
+                                Outra Pessoa
+                            </button>
+                        </div>
+
+                        {transferData.destinationType === 'INTERNAL' ? (
+                            <select
+                                className={styles.selectInput}
+                                value={transferData.toAccountId}
+                                onChange={(e) => setTransferData(prev => ({ ...prev, toAccountId: e.target.value }))}
+                            >
+                                <option value="">Selecione a conta de destino...</option>
+                                {bankAccounts
+                                    .filter(acc => acc.id !== transferData.fromAccountId)
+                                    .map(acc => (
+                                        <option key={acc.id} value={acc.id}>
+                                            {acc.nickname || acc.bankName} - {formatCurrency(acc.balance)}
+                                        </option>
+                                    ))}
+                            </select>
+                        ) : (
+                            <Input
+                                placeholder="Nome da pessoa ou descrição..."
+                                value={transferData.externalName}
+                                onChange={(e) => setTransferData(prev => ({ ...prev, externalName: e.target.value }))}
+                                fullWidth
+                            />
+                        )}
+                    </div>
+
+                    <div className={styles.formRow}>
+                        <Input
+                            label="Valor"
+                            type="text"
+                            placeholder="0,00"
+                            leftIcon={<FiDollarSign />}
+                            value={transferData.amount}
+                            onChange={(e) => {
+                                let value = e.target.value.replace(/\D/g, '');
+                                value = (Number(value) / 100).toFixed(2);
+                                setTransferData(prev => ({ ...prev, amount: value }));
+                            }}
+                        />
+                        <Input
+                            label="Data"
+                            type="date"
+                            value={transferData.date}
+                            onChange={(e) => setTransferData(prev => ({ ...prev, date: e.target.value }))}
+                        />
+                    </div>
+
+                    <Input
+                        label="Descrição (opcional)"
+                        placeholder="Ex: Aluguel, Presente, Jantar..."
+                        value={transferData.description}
+                        onChange={(e) => setTransferData(prev => ({ ...prev, description: e.target.value }))}
+                        fullWidth
+                    />
+
+                    <div className={styles.modalActions}>
+                        <Button variant="secondary" onClick={onClose}>
+                            Cancelar
+                        </Button>
+                        <Button 
+                            onClick={handleTransfer}
+                            disabled={transferLoading}
+                        >
+                            {transferLoading ? (
+                                <><FiRefreshCw className={styles.spinner} /> Transferindo...</>
+                            ) : (
+                                <><FiCheck /> Confirmar Transferência</>
+                            )}
+                        </Button>
+                    </div>
+                        </>
+                    )}
                 </div>
-            </Modal>
+    </Modal>
 
             {/* Icon Picker Modal - reusing Modal because why not, but standardizing as quick modal sub-modal */}
             <Modal

@@ -6,6 +6,7 @@ const PrivacyContext = createContext();
 
 export function PrivacyProvider({ children }) {
     const [hideData, setHideData] = useState(false);
+    const [unlockedBanks, setUnlockedBanks] = useState([]);
 
     useEffect(() => {
         const saved = localStorage.getItem('investpro_hide_data');
@@ -22,6 +23,14 @@ export function PrivacyProvider({ children }) {
         });
     };
 
+    const unlockBank = (bankId) => {
+        setUnlockedBanks(prev => [...new Set([...prev, String(bankId)])]);
+    };
+
+    const isBankUnlocked = (bankId) => {
+        return unlockedBanks.includes(String(bankId));
+    };
+
     // Function to mask financial values
     const maskValue = (value) => {
         if (hideData) {
@@ -31,7 +40,13 @@ export function PrivacyProvider({ children }) {
     };
 
     return (
-        <PrivacyContext.Provider value={{ hideData, toggleHideData, maskValue }}>
+        <PrivacyContext.Provider value={{ 
+            hideData, 
+            toggleHideData, 
+            maskValue, 
+            unlockBank, 
+            isBankUnlocked 
+        }}>
             {children}
         </PrivacyContext.Provider>
     );

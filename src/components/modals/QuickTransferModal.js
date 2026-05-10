@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiRefreshCw, FiArrowRight, FiCheck } from 'react-icons/fi';
 import bankAccountService from '@/services/bankAccountService';
-import { goalsAPI } from '@/services/api';
+import { goalsAPI, transactionsAPI } from '@/services/api';
 import { useProfiles } from '@/contexts/ProfileContext';
+import { useNotification } from '@/contexts/NotificationContext';
 import styles from './QuickTransferModal.module.css';
 
 const formatCurrency = (value) => {
@@ -17,6 +18,7 @@ const formatCurrency = (value) => {
 
 export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
     const { profiles } = useProfiles();
+    const { addNotification } = useNotification();
 
     const [accounts, setAccounts] = useState([]);
     const [goals, setGoals] = useState([]);
@@ -27,6 +29,8 @@ export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
         fromAccountId: '',
         toAccountId: '',
         toProfileId: '',
+        destinationType: 'INTERNAL', // INTERNAL, EXTERNAL
+        externalName: '',
         amount: '',
         description: ''
     });
@@ -40,6 +44,8 @@ export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
                 fromAccountId: '',
                 toAccountId: '',
                 toProfileId: '',
+                destinationType: 'INTERNAL',
+                externalName: '',
                 amount: '',
                 description: ''
             });
@@ -108,27 +114,45 @@ export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
 
         try {
             setTransferLoading(true);
-            await bankAccountService.createInternalTransfer({
-                fromBankAccountId: transferData.fromAccountId,
-                toBankAccountId: transferData.toAccountId,
-                toProfileId: transferData.toProfileId || undefined,
-                amount: parseFloat(transferData.amount),
-                description: transferData.description || 'Transferência interna'
-            });
+
+            if (transferData.destinationType === 'INTERNAL') {
+                await bankAccountService.createInternalTransfer({
+                    fromBankAccountId: transferData.fromAccountId,
+                    toBankAccountId: transferData.toAccountId,
+                    toProfileId: transferData.toProfileId || undefined,
+                    amount: parseFloat(transferData.amount),
+                    description: transferData.description || 'Transferência interna'
+                });
+            } else {
+                await transactionsAPI.create({
+                    type: 'EXPENSE',
+                    description: `Transferência: ${transferData.externalName}${transferData.description ? ` - ${transferData.description}` : ''}`,
+                    amount: transferData.amount,
+                    bankAccountId: transferData.fromAccountId,
+                    date: new Date().toISOString().split('T')[0],
+                    paymentMethod: 'PIX',
+                    source: 'OTHER',
+                    sourceType: 'Transferência'
+                });
+            }
 
             onSuccess?.();
             onClose();
 
-            // Gamification Reward Check
-            const hasGoalLinkedToDestination = goals.some(g => g.bankAccountId === transferData.toAccountId && g.status === 'ACTIVE');
-            if (hasGoalLinkedToDestination) {
-                alert('🎉 Transferência realizada com sucesso!\n\nVocê transferiu para uma conta vinculada a metas. Continue assim para atingir seus objetivos e ganhar mais XP!');
-            } else {
-                alert('Transferência realizada com sucesso!');
-            }
+            addNotification({
+                type: 'success',
+                title: 'Transferência Realizada',
+                message: 'Sua transferência foi registrada com sucesso!',
+                duration: 4000
+            });
         } catch (err) {
             console.error('Erro na transferência:', err);
-            alert(err.response?.data?.message || 'Erro ao realizar transferência');
+            addNotification({
+                type: 'error',
+                title: 'Erro na Transferência',
+                message: err.response?.data?.message || 'Erro ao realizar transferência',
+                duration: 5000
+            });
         } finally {
             setTransferLoading(false);
         }
@@ -193,20 +217,48 @@ export default function QuickTransferModal({ isOpen, onClose, onSuccess }) {
                                 {/* To Account */}
                                 <div className={styles.formGroup}>
                                     <label>Para (Conta de Destino)</label>
-                                    <select
-                                        value={transferData.toAccountId}
-                                        onChange={(e) => setTransferData(prev => ({ ...prev, toAccountId: e.target.value }))}
-                                        required
-                                    >
-                                        <option value="">Selecione a conta...</option>
-                                        {allAccountsForTransfer
-                                            .filter(acc => acc.id !== transferData.fromAccountId)
-                                            .map(acc => (
-                                                <option key={acc.id} value={acc.id}>
-                                                    {acc.nickname || acc.bankName} {acc.type === 'CORRETORA' ? '(Corretora)' : ''} - {formatCurrency(acc.balance)}
-                                                </option>
-                                            ))}
-                                    </select>
+                                    
+                                    <div className={styles.destTypeToggle}>
+                                        <button 
+                                            type="button"
+                                            className={`${styles.destTypeBtn} ${transferData.destinationType === 'INTERNAL' ? styles.active : ''}`}
+                                            onClick={() => setTransferData(prev => ({ ...prev, destinationType: 'INTERNAL' }))}
+                                        >
+                                            Minha Conta
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            className={`${styles.destTypeBtn} ${transferData.destinationType === 'EXTERNAL' ? styles.active : ''}`}
+                                            onClick={() => setTransferData(prev => ({ ...prev, destinationType: 'EXTERNAL' }))}
+                                        >
+                                            Outra Pessoa
+                                        </button>
+                                    </div>
+
+                                    {transferData.destinationType === 'INTERNAL' ? (
+                                        <select
+                                            value={transferData.toAccountId}
+                                            onChange={(e) => setTransferData(prev => ({ ...prev, toAccountId: e.target.value }))}
+                                            required
+                                        >
+                                            <option value="">Selecione a conta...</option>
+                                            {allAccountsForTransfer
+                                                .filter(acc => acc.id !== transferData.fromAccountId)
+                                                .map(acc => (
+                                                    <option key={acc.id} value={acc.id}>
+                                                        {acc.nickname || acc.bankName} {acc.type === 'CORRETORA' ? '(Corretora)' : ''} - {formatCurrency(acc.balance)}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={transferData.externalName}
+                                            onChange={(e) => setTransferData(prev => ({ ...prev, externalName: e.target.value }))}
+                                            placeholder="Nome da pessoa ou identificador..."
+                                            required
+                                        />
+                                    )}
                                 </div>
 
                                 {/* Amount */}

@@ -72,6 +72,7 @@ function GoalsContent() {
 
     // Bank accounts from user's profile
     const [bankAccounts, setBankAccounts] = useState([]);
+    const [bankFilter, setBankFilter] = useState('ALL');
 
     // Quick Value Update State
     const [valueModal, setValueModal] = useState({ show: false, goal: null, type: 'add', amount: '' });
@@ -308,191 +309,249 @@ function GoalsContent() {
 
                     {/* Summary - Only show if there are goals */}
                     {goals.length > 0 && (
-                        <motion.div
-                            className={styles.summaryRow}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                        >
-                            <Card variant="glass" className={styles.summaryCard}>
-                                <FiTarget className={styles.summaryIcon} />
-                                <div>
-                                    <span className={styles.summaryLabel}>Total das Metas</span>
-                                    <span className={styles.summaryValue}>{formatCurrency(totalGoals)}</span>
-                                </div>
-                            </Card>
-                            <Card variant="glass" className={styles.summaryCard}>
-                                <FiTrendingUp className={styles.summaryIcon} style={{ color: 'var(--accent-success)' }} />
-                                <div>
-                                    <span className={styles.summaryLabel}>Total Acumulado</span>
-                                    <span className={styles.summaryValue}>{formatCurrency(totalProgress)}</span>
-                                </div>
-                            </Card>
-                            <Card variant="glass" className={styles.summaryCard}>
-                                <div className={styles.progressCircle}>
-                                    <span>{totalGoals > 0 ? ((totalProgress / totalGoals) * 100).toFixed(0) : 0}%</span>
-                                </div>
-                                <div>
-                                    <span className={styles.summaryLabel}>Progresso Geral</span>
-                                    <span className={styles.summaryValue}>{formatCurrency(Math.max(0, totalGoals - totalProgress))}</span>
-                                    <span className={styles.summarySubtext}>restante</span>
-                                </div>
-                            </Card>
-                        </motion.div>
+                        <>
+                            <motion.div
+                                className={styles.summaryRow}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                            >
+                                <Card variant="glass" className={styles.summaryCard}>
+                                    <FiTarget className={styles.summaryIcon} />
+                                    <div>
+                                        <span className={styles.summaryLabel}>Total das Metas</span>
+                                        <span className={styles.summaryValue}>{formatCurrency(totalGoals)}</span>
+                                    </div>
+                                </Card>
+                                <Card variant="glass" className={styles.summaryCard}>
+                                    <FiTrendingUp className={styles.summaryIcon} style={{ color: 'var(--accent-success)' }} />
+                                    <div>
+                                        <span className={styles.summaryLabel}>Total Acumulado</span>
+                                        <span className={styles.summaryValue}>{formatCurrency(totalProgress)}</span>
+                                    </div>
+                                </Card>
+                                <Card variant="glass" className={styles.summaryCard}>
+                                    <div className={styles.progressCircle}>
+                                        <span>{totalGoals > 0 ? ((totalProgress / totalGoals) * 100).toFixed(0) : 0}%</span>
+                                    </div>
+                                    <div>
+                                        <span className={styles.summaryLabel}>Progresso Geral</span>
+                                        <span className={styles.summaryValue}>{formatCurrency(Math.max(0, totalGoals - totalProgress))}</span>
+                                        <span className={styles.summarySubtext}>restante</span>
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Bank Filter Bar */}
+                            <motion.div
+                                className={styles.bankFilterBar}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <button
+                                    className={`${styles.bankFilterBtn} ${bankFilter === 'ALL' ? styles.active : ''}`}
+                                    onClick={() => setBankFilter('ALL')}
+                                >
+                                    <FiCreditCard />
+                                    <span>Todas</span>
+                                </button>
+
+                                <button
+                                    className={`${styles.bankFilterBtn} ${bankFilter === 'NONE' ? styles.active : ''}`}
+                                    onClick={() => setBankFilter('NONE')}
+                                >
+                                    <FiAlertCircle />
+                                    <span>Sem vínculo</span>
+                                </button>
+
+                                {bankAccounts.map(bank => (
+                                    <button
+                                        key={bank.id}
+                                        className={`${styles.bankFilterBtn} ${bankFilter === bank.id ? styles.active : ''}`}
+                                        onClick={() => setBankFilter(bank.id)}
+                                        style={{
+                                            '--bank-color': bank.color || '#6366f1'
+                                        }}
+                                    >
+                                        {bank.icon ? (
+                                            <img src={bank.icon} alt={bank.bankName} className={styles.bankFilterIcon} />
+                                        ) : (
+                                            <span className={styles.bankFilterLetter} style={{ background: bank.color || '#6366f1' }}>
+                                                {(bank.bankName || 'B').charAt(0)}
+                                            </span>
+                                        )}
+                                        <span>{bank.nickname || bank.bankName}</span>
+                                    </button>
+                                ))}
+                            </motion.div>
+                        </>
                     )}
 
                     {/* Goals Grid */}
                     {goals.length === 0 ? renderEmpty() : (
                         <motion.div className={styles.goalsGrid}>
-                            {goals.map((goal, index) => {
-                                const current = parseFloat(goal.currentAmount);
-                                const target = parseFloat(goal.targetAmount);
-                                const progress = target > 0 ? (current / target) * 100 : 0;
-                                const remaining = Math.max(0, target - current);
-
-                                let daysLeftText = 'Sem data';
-                                if (goal.deadline) {
-                                    const diff = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-                                    daysLeftText = diff > 0 ? `${diff} dias restantes` : 'Prazo vencido';
-                                }
-
-                                // Find linked bank account
-                                const linkedBank = goal.bankAccountId
-                                    ? bankAccounts.find(acc => acc.id === goal.bankAccountId)
-                                    : null;
+                            {(() => {
+                                const filteredGoals = bankFilter === 'ALL'
+                                    ? goals
+                                    : bankFilter === 'NONE'
+                                        ? goals.filter(g => !g.bankAccountId)
+                                        : goals.filter(g => String(g.bankAccountId) === String(bankFilter));
 
                                 return (
-                                    <motion.div
-                                        key={goal.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.1 * (index + 1) }}
-                                        className={styles.goalCardWrapper} // Added wrapper class for hover effects maybe?
-                                    >
-                                        <Card
-                                            className={styles.goalCard}
-                                            onClick={() => setSelectedGoal(goal)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <div className={styles.goalHeader}>
-                                                <div
-                                                    className={styles.goalIcon}
-                                                    style={{ background: `${goal.color || '#6366f1'}15`, color: goal.color || '#6366f1' }}
+                                    <>
+                                        {filteredGoals.map((goal, index) => {
+                                            const current = parseFloat(goal.currentAmount);
+                                            const target = parseFloat(goal.targetAmount);
+                                            const progress = target > 0 ? (current / target) * 100 : 0;
+                                            const remaining = Math.max(0, target - current);
+
+                                            let daysLeftText = 'Sem data';
+                                            if (goal.deadline) {
+                                                const diff = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+                                                daysLeftText = diff > 0 ? `${diff} dias restantes` : 'Prazo vencido';
+                                            }
+
+                                            // Find linked bank account
+                                            const linkedBank = goal.bankAccountId
+                                                ? bankAccounts.find(acc => String(acc.id) === String(goal.bankAccountId))
+                                                : null;
+
+                                            return (
+                                                <motion.div
+                                                    key={goal.id}
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.05 * (index + 1) }}
+                                                    className={styles.goalCardWrapper}
                                                 >
-                                                    <FiTarget />
-                                                </div>
-                                                <div className={styles.goalInfo}>
-                                                    <span className={styles.goalName}>{goal.name}</span>
-                                                    <span className={styles.goalCategory}>{categoryMap[goal.category] || goal.category}</span>
-                                                </div>
-                                                <div className={styles.goalActions}>
-                                                    <button
-                                                        className={styles.actionBtn}
-                                                        onClick={(e) => { e.stopPropagation(); openModal(goal); }}
-                                                        title="Editar"
+                                                    <Card
+                                                        className={styles.goalCard}
+                                                        onClick={() => setSelectedGoal(goal)}
+                                                        style={{ cursor: 'pointer' }}
                                                     >
-                                                        <FiEdit2 />
-                                                    </button>
-                                                    <button
-                                                        className={styles.actionBtn}
-                                                        onClick={(e) => { e.stopPropagation(); setHistoryModal({ show: true, goal: goal }); }}
-                                                        title="Histórico"
-                                                    >
-                                                        <FiClock />
-                                                    </button>
-                                                    <div className={styles.quickActions}>
-                                                        <button
-                                                            className={`${styles.miniBtn} ${styles.addBtn}`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setValueModal({ show: true, goal: goal, type: 'add', amount: '' });
-                                                            }}
-                                                            title="Adicionar Valor"
-                                                        >
-                                                            +
-                                                        </button>
-                                                        <button
-                                                            className={`${styles.miniBtn} ${styles.removeBtn}`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setValueModal({ show: true, goal: goal, type: 'remove', amount: '' });
-                                                            }}
-                                                            title="Retirar Valor"
-                                                        >
-                                                            -
-                                                        </button>
-                                                    </div>
-                                                    <button
-                                                        className={`${styles.actionBtn} ${styles.danger}`}
-                                                        onClick={(e) => { e.stopPropagation(); handleDelete(goal.id); }}
-                                                    >
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <span className={`${styles.priorityBadge} ${styles[goal.priority?.toLowerCase() || 'medium']}`}>
-                                                {goal.priority === 'HIGH' ? 'Prioridade Alta' : goal.priority === 'MEDIUM' ? 'Prioridade Média' : 'Prioridade Baixa'}
-                                            </span>
-
-                                            {/* Bank/Account Info */}
-                                            <div className={styles.storageInfo}>
-                                                {linkedBank ? (
-                                                    <div className={styles.linkedAccount}>
-                                                        {linkedBank.icon ? (
-                                                            <img
-                                                                src={linkedBank.icon}
-                                                                alt={linkedBank.bankName}
-                                                                className={styles.bankIcon}
-                                                                onError={(e) => { e.target.style.display = 'none'; }}
-                                                            />
-                                                        ) : (
+                                                        <div className={styles.goalHeader}>
                                                             <div
-                                                                className={styles.bankIconPlaceholder}
-                                                                style={{ background: linkedBank.color || '#6366f1' }}
+                                                                className={styles.goalIcon}
+                                                                style={{ background: `${goal.color || '#6366f1'}15`, color: goal.color || '#6366f1' }}
                                                             >
-                                                                {linkedBank.bankName?.charAt(0) || 'B'}
+                                                                <FiTarget />
                                                             </div>
-                                                        )}
-                                                        <span>{linkedBank.nickname || linkedBank.bankName}</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className={styles.noBank}>
-                                                        <span>Nenhum banco vinculado</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                            <div className={styles.goalInfo}>
+                                                                <span className={styles.goalName}>{goal.name}</span>
+                                                                <span className={styles.goalCategory}>{categoryMap[goal.category] || goal.category}</span>
+                                                            </div>
+                                                            <div className={styles.goalActions}>
+                                                                <button
+                                                                    className={styles.actionBtn}
+                                                                    onClick={(e) => { e.stopPropagation(); openModal(goal); }}
+                                                                    title="Editar"
+                                                                >
+                                                                    <FiEdit2 />
+                                                                </button>
+                                                                <button
+                                                                    className={styles.actionBtn}
+                                                                    onClick={(e) => { e.stopPropagation(); setHistoryModal({ show: true, goal: goal }); }}
+                                                                    title="Histórico"
+                                                                >
+                                                                    <FiClock />
+                                                                </button>
+                                                                <div className={styles.quickActions}>
+                                                                    <button
+                                                                        className={`${styles.miniBtn} ${styles.addBtn}`}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setValueModal({ show: true, goal: goal, type: 'add', amount: '' });
+                                                                        }}
+                                                                        title="Adicionar Valor"
+                                                                    >
+                                                                        +
+                                                                    </button>
+                                                                    <button
+                                                                        className={`${styles.miniBtn} ${styles.removeBtn}`}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setValueModal({ show: true, goal: goal, type: 'remove', amount: '' });
+                                                                        }}
+                                                                        title="Retirar Valor"
+                                                                    >
+                                                                        -
+                                                                    </button>
+                                                                </div>
+                                                                <button
+                                                                    className={`${styles.actionBtn} ${styles.danger}`}
+                                                                    onClick={(e) => { e.stopPropagation(); handleDelete(goal.id); }}
+                                                                >
+                                                                    <FiTrash2 />
+                                                                </button>
+                                                            </div>
+                                                        </div>
 
-                                            <div className={styles.goalProgress}>
-                                                <div className={styles.progressHeader}>
-                                                    <span>{formatCurrency(current)}</span>
-                                                    <span>{formatCurrency(target)}</span>
-                                                </div>
-                                                <div className={styles.progressBar}>
-                                                    <motion.div
-                                                        className={styles.progressFill}
-                                                        style={{ background: goal.color || '#6366f1' }}
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${Math.min(100, progress)}%` }}
-                                                        transition={{ duration: 1, delay: 0.2 }}
-                                                    />
-                                                </div>
-                                                <div className={styles.progressFooter}>
-                                                    <span>{progress.toFixed(0)}% concluído</span>
-                                                    <span>{formatCurrency(remaining)} restante</span>
-                                                </div>
-                                            </div>
+                                                        <span className={`${styles.priorityBadge} ${styles[goal.priority?.toLowerCase() || 'medium']}`}>
+                                                            {goal.priority === 'HIGH' ? 'Prioridade Alta' : goal.priority === 'MEDIUM' ? 'Prioridade Média' : 'Prioridade Baixa'}
+                                                        </span>
 
-                                            <div className={styles.goalDeadline}>
-                                                <FiCalendar />
-                                                <span>
-                                                    {daysLeftText} • {goal.deadline ? formatDate(goal.deadline) : 'Sem data fixa'}
-                                                </span>
-                                            </div>
-                                        </Card>
-                                    </motion.div>
+                                                        {/* Bank/Account Info */}
+                                                        <div className={styles.storageInfo}>
+                                                            {linkedBank ? (
+                                                                <div className={styles.linkedAccount}>
+                                                                    {linkedBank.icon ? (
+                                                                        <img
+                                                                            src={linkedBank.icon}
+                                                                            alt={linkedBank.bankName}
+                                                                            className={styles.bankIcon}
+                                                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                                                        />
+                                                                    ) : (
+                                                                        <div
+                                                                            className={styles.bankIconPlaceholder}
+                                                                            style={{ background: linkedBank.color || '#6366f1' }}
+                                                                        >
+                                                                            {linkedBank.bankName?.charAt(0) || 'B'}
+                                                                        </div>
+                                                                    )}
+                                                                    <span>{linkedBank.nickname || linkedBank.bankName}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className={styles.noBank}>
+                                                                    <span>Nenhum banco vinculado</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className={styles.goalProgress}>
+                                                            <div className={styles.progressHeader}>
+                                                                <span>{formatCurrency(current)}</span>
+                                                                <span>{formatCurrency(target)}</span>
+                                                            </div>
+                                                            <div className={styles.progressBar}>
+                                                                <motion.div
+                                                                    className={styles.progressFill}
+                                                                    style={{ background: goal.color || '#6366f1' }}
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${Math.min(100, progress)}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 }}
+                                                                />
+                                                            </div>
+                                                            <div className={styles.progressFooter}>
+                                                                <span>{progress.toFixed(0)}% concluído</span>
+                                                                <span>{formatCurrency(remaining)} restante</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className={styles.goalDeadline}>
+                                                            <FiCalendar />
+                                                            <span>
+                                                                {daysLeftText} • {goal.deadline ? formatDate(goal.deadline) : 'Sem data fixa'}
+                                                            </span>
+                                                        </div>
+                                                    </Card>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </>
                                 );
-                            })}
+                            })()}
                             {/* Always show Ghost Goal at the end */}
                             <GhostGoal onClick={() => openModal()} />
                         </motion.div>

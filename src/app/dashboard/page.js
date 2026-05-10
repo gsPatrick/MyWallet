@@ -100,7 +100,7 @@ export default function DashboardPage() {
                 transactionsAPI.list({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0] }),
                 dashboardAPI.getSummary().catch(() => ({})),
                 budgetsAPI.getCurrentAllocations().catch(() => ({ data: { allocations: [] } })),
-                bankAccountService.getTotalBalance().catch(() => ({ data: { totalBalance: 0 } }))
+                bankAccountService.list().catch(() => ({ data: [] }))
             ]);
             setPortfolioData(portfolioRes);
             setOpenFinanceAccounts(accountsRes?.data || accountsRes || []);
@@ -108,7 +108,13 @@ export default function DashboardPage() {
             setTransactions(transactionsRes?.data?.transactions || transactionsRes || []);
             setDashboardSummary(summaryRes?.data || summaryRes || {});
             setBudgets(budgetsRes?.data?.allocations || budgetsRes?.allocations || []);
-            setBankAccountsTotal(bankBalanceRes?.data?.totalBalance || 0);
+            
+            // Calculate manual bank accounts total respecting includeInTotals
+            const allBankAccounts = bankBalanceRes?.data || bankBalanceRes || [];
+            const filteredBankAccounts = allBankAccounts.filter(acc => acc.includeInTotals !== false);
+            const calculatedTotal = filteredBankAccounts.reduce((sum, acc) => sum + (parseFloat(acc.balance) || 0), 0);
+            
+            setBankAccountsTotal(calculatedTotal);
 
             // Load brokers list for filter
             try {
