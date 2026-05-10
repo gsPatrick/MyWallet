@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     FiPlus, FiTarget, FiCalendar, FiTrendingUp, FiEdit2, FiTrash2,
-    FiDollarSign, FiFlag, FiLink, FiHome, FiLoader, FiAlertCircle, FiClock
+    FiDollarSign, FiFlag, FiLink, FiHome, FiLoader, FiAlertCircle, FiClock,
+    FiCreditCard
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -127,8 +128,14 @@ function GoalsContent() {
         }
     };
 
-    const totalGoals = goals.reduce((sum, g) => sum + parseFloat(g.targetAmount), 0);
-    const totalProgress = goals.reduce((sum, g) => sum + parseFloat(g.currentAmount), 0);
+    const displayGoals = bankFilter === 'ALL'
+        ? goals
+        : bankFilter === 'NONE'
+            ? goals.filter(g => !g.bankAccountId)
+            : goals.filter(g => String(g.bankAccountId) === String(bankFilter));
+
+    const totalGoals = displayGoals.reduce((sum, g) => sum + (parseFloat(g.targetAmount) || 0), 0);
+    const totalProgress = displayGoals.reduce((sum, g) => sum + (parseFloat(g.currentAmount) || 0), 0);
 
     const getLinkedAccount = (accountId) => accounts.find(a => a.id === accountId);
 
@@ -391,17 +398,8 @@ function GoalsContent() {
                     {/* Goals Grid */}
                     {goals.length === 0 ? renderEmpty() : (
                         <motion.div className={styles.goalsGrid}>
-                            {(() => {
-                                const filteredGoals = bankFilter === 'ALL'
-                                    ? goals
-                                    : bankFilter === 'NONE'
-                                        ? goals.filter(g => !g.bankAccountId)
-                                        : goals.filter(g => String(g.bankAccountId) === String(bankFilter));
-
-                                return (
-                                    <>
-                                        {filteredGoals.map((goal, index) => {
-                                            const current = parseFloat(goal.currentAmount);
+                            {displayGoals.map((goal, index) => {
+                                const current = parseFloat(goal.currentAmount);
                                             const target = parseFloat(goal.targetAmount);
                                             const progress = target > 0 ? (current / target) * 100 : 0;
                                             const remaining = Math.max(0, target - current);
@@ -549,9 +547,6 @@ function GoalsContent() {
                                                 </motion.div>
                                             );
                                         })}
-                                    </>
-                                );
-                            })()}
                             {/* Always show Ghost Goal at the end */}
                             <GhostGoal onClick={() => openModal()} />
                         </motion.div>

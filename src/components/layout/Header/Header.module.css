@@ -322,13 +322,13 @@
     color: var(--text-tertiary);
     margin-bottom: 8px;
 }
-
+ 
 .currentProfileBadge {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
-    background: var(--accent-primary-light);
+    padding: 8px 0; /* Remove horizontal padding to align with buttons below */
+    background: transparent; /* Remove background to avoid alignment issues */
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 600;

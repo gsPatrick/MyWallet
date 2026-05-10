@@ -562,6 +562,7 @@ export default function CardsPage() {
                                     holderName={selectedCard?.holderName || "NOME DO TITULAR"}
                                     validThru="12/28"
                                     icon={selectedCard.bankIcon}
+                                    brandIcon={selectedCard.brandIcon}
                                 />
 
                                 {/* Action Buttons - Bank Style */}
@@ -1200,6 +1201,7 @@ export default function CardsPage() {
                                                             holderName={card.holderName || "NOME DO TITULAR"}
                                                             validThru="12/28"
                                                             icon={displayIcon}
+                                                            brandIcon={card.brandIcon || cardBanks.brands[card.brand.toLowerCase()]?.icon}
                                                         />
                                                         <span className={styles.cardHint}>Clique para ver a fatura</span>
                                                     </div>

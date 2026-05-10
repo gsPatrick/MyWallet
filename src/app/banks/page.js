@@ -103,7 +103,8 @@ function BanksContent() {
         nickname: '',
         type: 'CONTA_CORRENTE',
         initialBalance: '',
-        includeInTotals: true
+        includeInTotals: true,
+        hideBalance: false
     });
 
     // Transfer states
@@ -190,7 +191,8 @@ function BanksContent() {
             color: selectedBank?.color,
             icon: selectedBank?.icon,
             initialBalance: parseFloat(formData.initialBalance) || 0,
-            includeInTotals: formData.includeInTotals
+            includeInTotals: formData.includeInTotals,
+            hideBalance: formData.hideBalance
         };
 
         try {
@@ -227,7 +229,8 @@ function BanksContent() {
             nickname: account.nickname || '',
             type: account.type || 'CONTA_CORRENTE',
             initialBalance: account.balance || 0,
-            includeInTotals: account.includeInTotals !== undefined ? account.includeInTotals : true
+            includeInTotals: account.includeInTotals !== undefined ? account.includeInTotals : true,
+            hideBalance: account.hideBalance || false
         });
         setShowAddModal(true);
     };
@@ -241,7 +244,8 @@ function BanksContent() {
             nickname: '',
             type: 'CONTA_CORRENTE',
             initialBalance: '',
-            includeInTotals: true
+            includeInTotals: true,
+            hideBalance: false
         });
         setTransferData({
             fromAccountId: '',
@@ -647,7 +651,20 @@ function BanksContent() {
                                             onChange={handleInputChange}
                                         />
                                         <span>Contabilizar no saldo total da dashboard</span>
-                                        <small className={styles.checkboxHint}>Desmarque para ocultar contas de investimento ou reservas do cálculo geral.</small>
+                                    </label>
+                                </div>
+ 
+                                {/* Hide Balance */}
+                                <div className={styles.formGroupCheckbox}>
+                                    <label className={styles.checkboxLabel}>
+                                        <input
+                                            type="checkbox"
+                                            name="hideBalance"
+                                            checked={formData.hideBalance}
+                                            onChange={handleInputChange}
+                                        />
+                                        <span>Ocultar saldo por padrão</span>
+                                        <small className={styles.checkboxHint}>O saldo aparecerá mascarado (••••) em todas as telas.</small>
                                     </label>
                                 </div>
 

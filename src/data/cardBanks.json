@@ -168,7 +168,7 @@
     "brands": {
         "visa": {
             "name": "Visa",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg",
+            "icon": "/bandeiras-cartao/visa.png",
             "color": "#1A1F71"
         },
         "mastercard": {
@@ -178,7 +178,7 @@
         },
         "elo": {
             "name": "Elo",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Elo_card_association_logo_-_black_text.svg/1200px-Elo_card_association_logo_-_black_text.svg.png",
+            "icon": "/bandeiras-cartao/elo.png",
             "color": "#000000"
         },
         "amex": {

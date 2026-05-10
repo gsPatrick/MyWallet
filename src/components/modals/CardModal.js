@@ -132,9 +132,11 @@ export default function CardModal({
             // Auto-select default bank account if available
             const defaultBank = bankAccounts.find(b => b.isDefault) || bankAccounts[0];
             if (defaultBank) {
+                // Always use the stable ID - never fall back to undefined _index
+                const stableBankId = defaultBank.id ?? null;
                 setForm({
                     ...defaultForm,
-                    bankAccountId: defaultBank.id || defaultBank._index,
+                    bankAccountId: stableBankId,
                     bankName: defaultBank.nickname || defaultBank.bankName,
                     bankIcon: defaultBank.icon || null,
                     color: defaultBank.color || '#1a1a2e',
@@ -147,10 +149,12 @@ export default function CardModal({
         }
     }, [editingCard, isOpen, bankAccounts]);
 
-    const handleSelectBankAccount = (account, idx) => {
+    const handleSelectBankAccount = (account) => {
+        // Always use the stable ID from the account object
+        const stableBankId = account.id ?? null;
         setForm(prev => ({
             ...prev,
-            bankAccountId: account.id || idx,
+            bankAccountId: stableBankId,
             bankName: account.nickname || account.bankName,
             bankIcon: account.icon || null,
             color: account.color || prev.color,
@@ -212,10 +216,10 @@ export default function CardModal({
     // Get current brand info
     const currentBrand = brands.find(b => b.key === form.brand);
 
-    // Get selected bank account for display (using string-safe comparison)
+    // Get selected bank account for display — match by stable ID
     const selectedBankAccount = bankAccounts.find(
-        (b, idx) => String(b.id || idx) === String(form.bankAccountId)
-    ) || bankAccounts.find(b => String(b.id) === String(form.bankAccountId)) || bankAccounts.find(b => b.isDefault) || bankAccounts[0];
+        b => form.bankAccountId !== null && form.bankAccountId !== undefined && String(b.id) === String(form.bankAccountId)
+    ) || bankAccounts.find(b => b.isDefault) || bankAccounts[0];
 
     return (
         <>
@@ -265,11 +269,11 @@ export default function CardModal({
                                             <>
                                                 {bankAccounts.map((account, idx) => (
                                                     <button
-                                                        key={idx}
+                                                        key={account.id || idx}
                                                         type="button"
-                                                        className={`${styles.bankDropdownItem} ${(account.id || idx) === form.bankAccountId ? styles.selected : ''
+                                                        className={`${styles.bankDropdownItem} ${String(account.id) === String(form.bankAccountId) ? styles.selected : ''
                                                             }`}
-                                                        onClick={() => handleSelectBankAccount(account, idx)}
+                                                        onClick={() => handleSelectBankAccount(account)}
                                                     >
                                                         {account.icon ? (
                                                             <img src={account.icon} alt={account.bankName} className={styles.dropdownIcon} />

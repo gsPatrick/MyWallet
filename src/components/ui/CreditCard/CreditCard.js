@@ -18,6 +18,7 @@ export default function CreditCard({
     holderName = 'NOME DO TITULAR',
     validThru = '12/28',
     icon = null, // New prop for bank logo
+    brandIcon = null, // New prop for brand logo (e.g. Visa, Mastercard)
     onClick,
 }) {
     const [iconError, setIconError] = useState(false);
@@ -54,20 +55,33 @@ export default function CreditCard({
 
     // Brand logos
     const renderBrandLogo = () => {
+        // If brandIcon is provided (URL or local path), use it
+        if (brandIcon && (brandIcon.startsWith('http') || brandIcon.startsWith('/'))) {
+            return (
+                <img
+                    src={brandIcon}
+                    alt={brand}
+                    className={styles.brandImage}
+                    style={{
+                        height: '23px',
+                        objectFit: 'contain',
+                        filter: brand.toUpperCase() === 'VISA' && textColor === 'white' ? 'none' : 'none' // Visa logo usually looks better as is
+                    }}
+                />
+            );
+        }
+
         switch (brand.toUpperCase()) {
             case 'VISA':
                 return <span className={styles.visaLogo}>VISA</span>;
             case 'MASTERCARD':
-                return (
-                    <div className={styles.mastercardLogo}>
-                        <div className={styles.mcCircle} style={{ background: '#EB001B' }} />
-                        <div className={styles.mcCircle} style={{ background: '#F79E1B' }} />
-                    </div>
-                );
+                return <span className={styles.brandText}>Mastercard</span>;
             case 'ELO':
                 return <span className={styles.brandText}>elo</span>;
             case 'AMEX':
                 return <span className={styles.brandText}>AMEX</span>;
+            case 'HIPERCARD':
+                return <span className={styles.brandText} style={{ color: '#822124', fontWeight: 'bold' }}>Hipercard</span>;
             default:
                 return <FiCreditCard className={styles.brandIcon} />;
         }

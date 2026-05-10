@@ -147,6 +147,8 @@ export const authAPI = {
     updateProfile: (data) => api.put('/auth/me', data),
     changePassword: (currentPassword, newPassword) =>
         api.put('/auth/change-password', { currentPassword, newPassword }),
+    verifyPIN: (pin) => api.post('/auth/verify-pin', { pin }),
+    updatePIN: (oldPin, newPin) => api.put('/auth/update-pin', { oldPin, newPin }),
 };
 
 // Dashboard API

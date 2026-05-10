@@ -13,6 +13,7 @@ import Dock from '@/components/layout/Dock';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
+import NumericKeypad from '@/components/ui/NumericKeypad';
 import { DicebearSelector } from '@/components/gamification';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -113,6 +114,11 @@ export default function SettingsPage() {
 
     // Delete form
     const [deleteForm, setDeleteForm] = useState({ password: '', reason: '' });
+
+    // PIN states
+    const [showPINModal, setShowPINModal] = useState(false);
+    const [pinStep, setPinStep] = useState('verify_old'); // 'verify_old', 'set_new', 'confirm_new'
+    const [tempPINs, setTempPINs] = useState({ old: '', new: '', confirm: '' });
 
     // Saving states
     const [saving, setSaving] = useState(false);
@@ -229,6 +235,53 @@ export default function SettingsPage() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handlePINConfirm = async (digits) => {
+        if (pinStep === 'verify_old') {
+            setSaving(true);
+            try {
+                // Verify old PIN with API
+                const isValid = await authAPI.verifyPIN(digits);
+                if (isValid) {
+                    setTempPINs(prev => ({ ...prev, old: digits }));
+                    setPinStep('set_new');
+                } else {
+                    alert('PIN antigo incorreto');
+                }
+            } catch (error) {
+                alert(error.error || 'Erro ao verificar PIN');
+            } finally {
+                setSaving(false);
+            }
+        } else if (pinStep === 'set_new') {
+            setTempPINs(prev => ({ ...prev, new: digits }));
+            setPinStep('confirm_new');
+        } else if (pinStep === 'confirm_new') {
+            if (digits !== tempPINs.new) {
+                alert('Os PINs não coincidem');
+                setPinStep('set_new');
+                return;
+            }
+
+            setSaving(true);
+            try {
+                await authAPI.updatePIN(tempPINs.old, digits);
+                setShowPINModal(false);
+                alert('PIN alterado com sucesso!');
+                loadAllData();
+            } catch (error) {
+                alert(error.error || 'Erro ao alterar PIN');
+            } finally {
+                setSaving(false);
+            }
+        }
+    };
+
+    const handleOpenPINChange = () => {
+        setPinStep('verify_old');
+        setTempPINs({ old: '', new: '', confirm: '' });
+        setShowPINModal(true);
     };
 
     const handleChangePassword = async () => {
@@ -431,12 +484,20 @@ export default function SettingsPage() {
                             <h2 className={styles.sectionTitle}>Segurança</h2>
                             <Card className={styles.settingCard}>
                                 <div className={styles.securityItem}>
-                                    <FiShield className={styles.securityIcon} />
+                                    <FiLock className={styles.securityIcon} />
                                     <div className={styles.securityInfo}>
-                                        <span className={styles.settingLabel}>Alterar Senha</span>
-                                        <span className={styles.settingDesc}>{getPasswordAge()}</span>
+                                        <span className={styles.settingLabel}>Senha de Acesso</span>
+                                        <span className={styles.settingDesc}>Senha principal para login</span>
                                     </div>
                                     <Button variant="ghost" size="sm" onClick={() => setShowPasswordModal(true)}>Alterar</Button>
+                                </div>
+                                <div className={styles.securityItem}>
+                                    <FiSmartphone className={styles.securityIcon} />
+                                    <div className={styles.securityInfo}>
+                                        <span className={styles.settingLabel}>PIN de Acesso Rápido</span>
+                                        <span className={styles.settingDesc}>4 dígitos para desbloqueio rápido</span>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={handleOpenPINChange}>Alterar PIN</Button>
                                 </div>
                             </Card>
                         </motion.section>
@@ -1008,6 +1069,22 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </Modal>
+            
+            {/* PIN Change Keypad */}
+            <NumericKeypad
+                isOpen={showPINModal}
+                onClose={() => setShowPINModal(false)}
+                onConfirm={handlePINConfirm}
+                title={
+                    pinStep === 'verify_old' ? 'PIN Atual' :
+                    pinStep === 'set_new' ? 'Novo PIN' : 'Confirme o PIN'
+                }
+                description={
+                    pinStep === 'verify_old' ? 'Digite seu PIN atual para prosseguir' :
+                    pinStep === 'set_new' ? 'Escolha um novo PIN de 4 dígitos' : 'Digite o novo PIN novamente'
+                }
+                variant={pinStep === 'verify_old' ? 'security' : 'default'}
+            />
         </div>
     );
 }

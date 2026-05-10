@@ -77,16 +77,32 @@ export default function BankAccountModal({ isOpen, onClose, onSuccess, initialDa
         setLoading(true);
 
         try {
-            const bankInfo = cardBanksData.banks[formData.bankKey] || { name: 'Outro', color: '#64748b' };
+            const bankInfo = cardBanksData.banks[formData.bankKey];
 
+            // Build payload — preserve existing icon/color when bank wasn't changed
+            // or when selected bank is 'other' (not in dictionary)
             const payload = {
-                bankName: bankInfo.name,
-                nickname: formData.nickname || bankInfo.name,
+                bankName: bankInfo?.name || initialData?.bankName || 'Outro',
+                nickname: formData.nickname || bankInfo?.name || initialData?.nickname || 'Conta',
                 type: formData.type,
-                balance: parseFloat(formData.initialBalance || 0),
-                color: bankInfo.color,
-                icon: bankInfo.icon
+                color: bankInfo?.color || initialData?.color || '#64748b',
+                // Only update icon if a real bankInfo was found (i.e. user picked a known bank)
+                // Otherwise preserve existing icon from initialData
+                icon: bankInfo?.icon !== undefined
+                    ? (bankInfo.icon || null)
+                    : (initialData?.icon ?? null),
             };
+
+            // Only include balance for creation (not update — balance is managed by transactions)
+            if (!initialData) {
+                payload.balance = parseFloat(formData.initialBalance || 0);
+                payload.initialBalance = parseFloat(formData.initialBalance || 0);
+            }
+
+            // Include bankCode only if a known bank
+            if (bankInfo) {
+                payload.bankCode = formData.bankKey;
+            }
 
             let result;
             if (initialData) {
@@ -95,8 +111,6 @@ export default function BankAccountModal({ isOpen, onClose, onSuccess, initialDa
                 result = await bankAccountService.create(payload);
             }
 
-            // bankAccountService returns the API response.
-            // If the interceptor is working correctly, 'result' is the body { message, data: account }
             const savedAccount = result?.data || result;
 
             if (onSuccess) onSuccess(savedAccount);

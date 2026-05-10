@@ -101,6 +101,8 @@ const handleCurrencyInput = (value) => {
     return cleaned;
 };
 
+const generateTempId = () => `temp_${Math.random().toString(36).substring(2, 11)}`;
+
 // Format currency for display (add thousand separators)
 const formatCurrencyDisplay = (value) => {
     if (!value) return '';
@@ -337,6 +339,7 @@ export default function ProfileWizard({ onComplete }) {
     const [personalBanks, setPersonalBanks] = useState(savedState?.personalBanks || [
         // Auto-default wallet
         {
+            id: 'default_wallet_personal',
             bankKey: 'custom',
             bankName: 'Carteira',
             nickname: 'MyWallet (Pessoal)',
@@ -352,6 +355,7 @@ export default function ProfileWizard({ onComplete }) {
     const [businessBanks, setBusinessBanks] = useState(savedState?.businessBanks || [
         // Auto-default wallet
         {
+            id: 'default_wallet_business',
             bankKey: 'custom',
             bankName: 'Carteira',
             nickname: 'MyWallet (Empresa)',
@@ -490,11 +494,14 @@ export default function ProfileWizard({ onComplete }) {
         const setCards = currentProfileContext === 'personal' ? setPersonalCards : setBusinessCards;
 
         if (editingCard?._index !== undefined) {
+            // Preserve stable ID on edit
             const updated = [...cards];
-            updated[editingCard._index] = cardData;
+            const existingId = cards[editingCard._index]?.id || generateTempId();
+            updated[editingCard._index] = { ...cardData, id: existingId };
             setCards(updated);
         } else {
-            setCards([...cards, cardData]);
+            // Assign a stable temp ID on creation
+            setCards([...cards, { ...cardData, id: generateTempId() }]);
         }
         setShowCardModal(false);
         setEditingCard(null);
@@ -520,11 +527,14 @@ export default function ProfileWizard({ onComplete }) {
         const setSubs = currentProfileContext === 'personal' ? setPersonalSubs : setBusinessSubs;
 
         if (editingSub?._index !== undefined) {
+            // Preserve stable ID on edit
             const updated = [...subs];
-            updated[editingSub._index] = subData;
+            const existingId = subs[editingSub._index]?.id || generateTempId();
+            updated[editingSub._index] = { ...subData, id: existingId };
             setSubs(updated);
         } else {
-            setSubs([...subs, subData]);
+            // Assign a stable temp ID on creation
+            setSubs([...subs, { ...subData, id: generateTempId() }]);
         }
         setShowSubModal(false);
         setEditingSub(null);
@@ -552,12 +562,13 @@ export default function ProfileWizard({ onComplete }) {
         if (bankData._index !== undefined) {
             // Editing existing
             const updated = [...banks];
-            updated[bankData._index] = { ...bankData, isDefault: banks[bankData._index]?.isDefault };
+            const existingId = banks[bankData._index].id || generateTempId();
+            updated[bankData._index] = { ...bankData, id: existingId, isDefault: banks[bankData._index]?.isDefault };
             setBanks(updated);
         } else {
             // Adding new - if first, set as default
             const isFirst = banks.length === 0;
-            setBanks([...banks, { ...bankData, isDefault: isFirst }]);
+            setBanks([...banks, { ...bankData, id: generateTempId(), isDefault: isFirst }]);
         }
         setShowBankModal(false);
         setEditingBank(null);

@@ -127,11 +127,18 @@ export default function BankAccountModal({
     const handleSave = () => {
         const selectedBank = banksArray.find(b => b.key === selectedBankKey);
 
+        // Preserve existing icon if:
+        // - No known bank was selected (selectedBank not found), AND
+        // - The editing bank already had an icon
+        const resolvedIcon = selectedBank?.icon !== undefined
+            ? (selectedBank.icon || null)
+            : (editingBank?.icon ?? null);
+
         const bankData = {
             bankKey: selectedBankKey || 'custom',
-            bankName: selectedBank?.name || 'Carteira',
+            bankName: selectedBank?.name || editingBank?.bankName || 'Carteira',
             nickname: nickname || selectedBank?.name || 'Minha Conta',
-            icon: selectedBank?.icon || null,
+            icon: resolvedIcon,
             color: color,
             balance: parseCurrencyValue(balance),
             isCustom: isCustom,
