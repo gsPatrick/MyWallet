@@ -333,13 +333,16 @@ export default function BankDetailPage() {
                 }
 
                 case 'statement': {
-                    const { data } = await reportsAPI.getStatement(
+                    const statementRes = await reportsAPI.getStatement(
                         selectedYear, 
                         selectedMonth, 
                         accountId,
                         cardIds || undefined
                     );
-                    setStatement(data.data || { summary: { openingBalance: 0, totalIncome: 0, totalExpense: 0, closingBalance: 0 }, transactions: [] });
+                    // statementRes = { data: { period, summary, transactions, transactionCount } }
+                    // (Axios interceptor already stripped the outer response.data)
+                    const stmtData = statementRes?.data || statementRes;
+                    setStatement(stmtData || { summary: { openingBalance: 0, totalIncome: 0, totalExpense: 0, closingBalance: 0 }, transactions: [] });
                     break;
                 }
 
