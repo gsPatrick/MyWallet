@@ -114,6 +114,7 @@ export default function CardsPage() {
     const [loadingTransactions, setLoadingTransactions] = useState(false);
     const [showDeleteCardModal, setShowDeleteCardModal] = useState(false);
     const [subscriptionCardFilter, setSubscriptionCardFilter] = useState('ALL'); // ALL or cardId
+    const [bankFilter, setBankFilter] = useState('ALL'); // ALL or bankAccountId
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
 
@@ -1093,72 +1094,127 @@ export default function CardsPage() {
 
                     {/* My Cards Tab */}
                     {activeTab === 'cards' && !selectedCard && (
-                        <motion.div className={styles.cardsGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                            {cards.length > 0 ? (
-                                cards.map((card) => {
-                                    // Resolve dynamic icon/color from dictionary
-                                    let dictionaryEntry = null;
+                        <>
+                            {/* Bank Filter */}
+                            {bankAccounts.length > 0 && (
+                                <motion.div
+                                    className={styles.bankFilterBar}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.15 }}
+                                >
+                                    <button
+                                        className={`${styles.bankFilterBtn} ${bankFilter === 'ALL' ? styles.active : ''}`}
+                                        onClick={() => setBankFilter('ALL')}
+                                    >
+                                        <FiCreditCard />
+                                        <span>Todos</span>
+                                    </button>
+                                    {bankAccounts.map(bank => (
+                                        <button
+                                            key={bank.id}
+                                            className={`${styles.bankFilterBtn} ${bankFilter === bank.id ? styles.active : ''}`}
+                                            onClick={() => setBankFilter(bank.id)}
+                                            style={{
+                                                '--bank-color': bank.color || '#6366f1'
+                                            }}
+                                        >
+                                            {bank.icon ? (
+                                                <img src={bank.icon} alt={bank.bankName} className={styles.bankFilterIcon} />
+                                            ) : (
+                                                <span className={styles.bankFilterLetter} style={{ background: bank.color || '#6366f1' }}>
+                                                    {(bank.bankName || 'B').charAt(0)}
+                                                </span>
+                                            )}
+                                            <span>{bank.nickname || bank.bankName}</span>
+                                        </button>
+                                    ))}
+                                    <button
+                                        className={`${styles.bankFilterBtn} ${bankFilter === 'NONE' ? styles.active : ''}`}
+                                        onClick={() => setBankFilter('NONE')}
+                                    >
+                                        <span className={styles.bankFilterLetter} style={{ background: '#6b7280' }}>?</span>
+                                        <span>Sem Banco</span>
+                                    </button>
+                                </motion.div>
+                            )}
 
-                                    // 1. Try via linked bank account
-                                    if (card.bankAccountId) {
-                                        const successBank = bankAccounts.find(b => b.id === card.bankAccountId);
-                                        if (successBank) {
-                                            dictionaryEntry = cardBanks.banks[successBank.bankCode?.toLowerCase()] ||
-                                                Object.values(cardBanks.banks).find(b => b.name === successBank.bankName);
-                                        }
-                                    }
+                            <motion.div className={styles.cardsGrid} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                {(() => {
+                                    const filteredCards = bankFilter === 'ALL'
+                                        ? cards
+                                        : bankFilter === 'NONE'
+                                            ? cards.filter(c => !c.bankAccountId)
+                                            : cards.filter(c => c.bankAccountId === bankFilter);
 
-                                    // 2. Try matching card name/bankName
-                                    if (!dictionaryEntry) {
-                                        const findEntry = (text) => {
-                                            if (!text) return null;
-                                            const normalized = text.toLowerCase();
-                                            return Object.values(cardBanks.banks).find(b =>
-                                                normalized.includes(b.name.toLowerCase()) ||
-                                                (b.keywords && b.keywords.some(k => normalized.includes(k)))
+                                    return filteredCards.length > 0 ? (
+                                        filteredCards.map((card) => {
+                                            // Resolve dynamic icon/color from dictionary
+                                            let dictionaryEntry = null;
+
+                                            // 1. Try via linked bank account
+                                            if (card.bankAccountId) {
+                                                const successBank = bankAccounts.find(b => b.id === card.bankAccountId);
+                                                if (successBank) {
+                                                    dictionaryEntry = cardBanks.banks[successBank.bankCode?.toLowerCase()] ||
+                                                        Object.values(cardBanks.banks).find(b => b.name === successBank.bankName);
+                                                }
+                                            }
+
+                                            // 2. Try matching card name/bankName
+                                            if (!dictionaryEntry) {
+                                                const findEntry = (text) => {
+                                                    if (!text) return null;
+                                                    const normalized = text.toLowerCase();
+                                                    return Object.values(cardBanks.banks).find(b =>
+                                                        normalized.includes(b.name.toLowerCase()) ||
+                                                        (b.keywords && b.keywords.some(k => normalized.includes(k)))
+                                                    );
+                                                };
+
+                                                // Try bankName first
+                                                dictionaryEntry = findEntry(card.bankName);
+
+                                                // If generic 'Outro' or not found, try card nickname (e.g. user named card "Santander")
+                                                if (!dictionaryEntry || dictionaryEntry.name === 'Outro') {
+                                                    const entryByName = findEntry(card.name);
+                                                    if (entryByName) dictionaryEntry = entryByName;
+                                                }
+                                            }
+
+                                            const displayIcon = dictionaryEntry?.icon;
+                                            const displayColor = card.color || dictionaryEntry?.color || '#1a1a2e';
+
+                                            return (
+                                                <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>
+                                                    <CreditCard
+                                                        name={card.name}
+                                                        brand={card.brand}
+                                                        lastFourDigits={card.lastFourDigits}
+                                                        creditLimit={card.creditLimit}
+                                                        availableLimit={card.availableLimit}
+                                                        closingDay={card.closingDay}
+                                                        dueDay={card.dueDay}
+                                                        color={displayColor}
+                                                        holderName={card.holderName || "NOME DO TITULAR"}
+                                                        validThru="12/28"
+                                                        icon={displayIcon}
+                                                    />
+                                                    <span className={styles.cardHint}>Clique para ver a fatura</span>
+                                                </div>
                                             );
-                                        };
-
-                                        // Try bankName first
-                                        dictionaryEntry = findEntry(card.bankName);
-
-                                        // If generic 'Outro' or not found, try card nickname (e.g. user named card "Santander")
-                                        if (!dictionaryEntry || dictionaryEntry.name === 'Outro') {
-                                            const entryByName = findEntry(card.name);
-                                            if (entryByName) dictionaryEntry = entryByName;
-                                        }
-                                    }
-
-                                    const displayIcon = dictionaryEntry?.icon;
-                                    const displayColor = card.color || dictionaryEntry?.color || '#1a1a2e';
-
-                                    return (
-                                        <div key={card.id} className={styles.cardWrapper} onClick={() => handleCardClick(card, 'manual')}>
-                                            <CreditCard
-                                                name={card.name}
-                                                brand={card.brand}
-                                                lastFourDigits={card.lastFourDigits}
-                                                creditLimit={card.creditLimit}
-                                                availableLimit={card.availableLimit}
-                                                closingDay={card.closingDay}
-                                                dueDay={card.dueDay}
-                                                color={displayColor}
-                                                holderName={card.holderName || "NOME DO TITULAR"}
-                                                validThru="12/28"
-                                                icon={displayIcon}
-                                            />
-                                            <span className={styles.cardHint}>Clique para ver a fatura</span>
+                                        })
+                                    ) : (
+                                        <div className={styles.emptyCards}>
+                                            <FiCreditCard style={{ fontSize: '2rem', opacity: 0.4 }} />
+                                            <p>Nenhum cartão {bankFilter !== 'ALL' ? 'neste banco' : 'cadastrado'}</p>
                                         </div>
                                     );
-                                })
-                            ) : (
-                                <GhostCard onClick={() => openCardModal()} />
-                            )}
-                            {/* Always show Ghost Card as the last item to add more if list is not empty */}
-                            {cards.length > 0 && (
-                                <GhostCard label="Adicionar outro" onClick={() => openCardModal()} />
-                            )}
-                        </motion.div>
+                                })()}
+                                {/* Always show Ghost Card to add more */}
+                                <GhostCard label={cards.length > 0 ? "Adicionar outro" : undefined} onClick={() => openCardModal()} />
+                            </motion.div>
+                        </>
                     )}
 
                     {/* Open Finance Tab */}

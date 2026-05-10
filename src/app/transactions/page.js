@@ -945,6 +945,25 @@ function TransactionsContent() {
                                                                 <FiLayers /> {tx.installments.current}/{tx.installments.total}
                                                             </span>
                                                         )}
+                                                        {/* Payment Method Badge */}
+                                                        {(() => {
+                                                            const pm = tx.paymentMethod || tx.sourceType;
+                                                            if (!pm || pm === 'OTHER') return null;
+                                                            const methodMap = {
+                                                                'PIX': { label: 'PIX', cls: 'pix' },
+                                                                'CREDIT_CARD': { label: 'Crédito', cls: 'credit' },
+                                                                'DEBIT_CARD': { label: 'Débito', cls: 'debit' },
+                                                                'CASH': { label: 'Dinheiro', cls: 'cash' },
+                                                                'BOLETO': { label: 'Boleto', cls: 'boleto' },
+                                                            };
+                                                            const info = methodMap[pm];
+                                                            if (!info) return null;
+                                                            return (
+                                                                <span className={`${styles.paymentMethodBadge} ${styles[info.cls] || ''}`}>
+                                                                    {info.label}
+                                                                </span>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 </div>
                                                 <div className={styles.transactionAmount}>

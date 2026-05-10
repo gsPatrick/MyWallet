@@ -321,3 +321,50 @@
     height: 32px;
     object-fit: contain;
 }
+
+/* Payment Method Selector */
+.paymentMethodSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.paymentMethodGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.paymentMethodBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.625rem 0.5rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-light);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.paymentMethodBtn:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+}
+
+.paymentMethodBtn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.paymentMethodEmoji {
+    font-size: 1.25rem;
+    line-height: 1;
+}

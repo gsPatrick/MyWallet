@@ -46,7 +46,7 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
         categoryId: '',
         date: new Date().toISOString().split('T')[0],
         status: 'COMPLETED',
-        paymentMethod: 'MONEY',
+        paymentMethod: 'PIX',
         source: 'OTHER', // MANUAL, IMPORT, CARD
         sourceType: 'Débito/Dinheiro', // Débito, Crédito, Dinheiro
         bankAccountId: '',
@@ -145,7 +145,7 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             categoryId: '',
             date: new Date().toISOString().split('T')[0],
             status: 'COMPLETED',
-            paymentMethod: 'MONEY',
+            paymentMethod: 'PIX',
             source: 'OTHER', // MANUAL, IMPORT, CARD
             sourceType: 'Débito/Dinheiro',
             bankAccountId: bankAccounts.find(a => a.isDefault)?.id || bankAccounts[0]?.id || '',
@@ -208,6 +208,7 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
             if (payload.cardId) {
                 payload.source = 'CARD';
                 payload.sourceType = 'Crédito';
+                payload.paymentMethod = 'CREDIT_CARD';
                 payload.bankAccountId = null; // Card transactions might not link directly to bank account immediately
             }
 
@@ -412,10 +413,10 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                         </div>
                     </div>
 
-                    {/* Bank Account Selector - Conditional Visibility */}
+                    {/* Bank Account & Payment Method Selectors */}
                     {transactionMode === 'single' && (
                         <div className={styles.formRow}>
-                            <div className={styles.inputGroup} style={{ width: '100%' }}>
+                            <div className={styles.inputGroup}>
                                 <div className={styles.labelWithAction}>
                                     <label className={styles.inputLabel}>Conta/Banco</label>
                                     <button type="button" className={styles.addCategoryBtn} onClick={() => setShowBankModal(true)}>
@@ -479,6 +480,62 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                                         )}
                                     </select>
                                 </div>
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label className={styles.inputLabel}>Método de Pagamento</label>
+                                <select
+                                    className={styles.selectInput}
+                                    value={newTransaction.cardId ? `CARD_${newTransaction.cardId}` : newTransaction.paymentMethod}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        // Check if it's a card ID (starts with CARD_)
+                                        if (val.startsWith('CARD_')) {
+                                            const cardId = val.replace('CARD_', '');
+                                            setNewTransaction(prev => ({ ...prev, paymentMethod: 'CREDIT_CARD', cardId }));
+                                        } else {
+                                            setNewTransaction(prev => ({ ...prev, paymentMethod: val, cardId: '' }));
+                                        }
+                                    }}
+                                >
+                                    <option value="PIX">PIX</option>
+                                    <option value="DEBIT_CARD">Cartão de Débito</option>
+                                    <option value="CASH">Dinheiro</option>
+                                    <option value="BOLETO">Boleto</option>
+                                    {/* Cartões do banco selecionado */}
+                                    {(() => {
+                                        const bankCards = newTransaction.bankAccountId
+                                            ? cards.filter(c => c.bankAccountId === newTransaction.bankAccountId)
+                                            : [];
+                                        const otherCards = newTransaction.bankAccountId
+                                            ? cards.filter(c => c.bankAccountId && c.bankAccountId !== newTransaction.bankAccountId)
+                                            : cards;
+                                        const unlinkedCards = cards.filter(c => !c.bankAccountId);
+
+                                        return (
+                                            <>
+                                                {bankCards.length > 0 && (
+                                                    <optgroup label="Cartões deste banco">
+                                                        {bankCards.map(c => (
+                                                            <option key={c.id} value={`CARD_${c.id}`}>
+                                                                {c.name} •••• {c.lastFourDigits}
+                                                            </option>
+                                                        ))}
+                                                    </optgroup>
+                                                )}
+                                                {unlinkedCards.length > 0 && (
+                                                    <optgroup label="Outros cartões">
+                                                        {unlinkedCards.map(c => (
+                                                            <option key={c.id} value={`CARD_${c.id}`}>
+                                                                {c.name} •••• {c.lastFourDigits}
+                                                            </option>
+                                                        ))}
+                                                    </optgroup>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+                                    <option value="OTHER">Outro</option>
+                                </select>
                             </div>
                         </div>
                     )}

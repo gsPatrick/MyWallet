@@ -799,6 +799,48 @@
     border: 1px solid var(--border-light);
 }
 
+.paymentMethodBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.625rem;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+}
+
+.paymentMethodBadge.pix {
+    background: rgba(20, 184, 166, 0.12);
+    color: #14b8a6;
+}
+
+.paymentMethodBadge.cash {
+    background: rgba(234, 179, 8, 0.12);
+    color: #eab308;
+}
+
+.paymentMethodBadge.boleto {
+    background: rgba(100, 116, 139, 0.12);
+    color: #94a3b8;
+}
+
+.paymentMethodBadge.wire {
+    background: rgba(6, 182, 212, 0.12);
+    color: #06b6d4;
+}
+
+.paymentMethodBadge.debit {
+    background: rgba(168, 85, 247, 0.12);
+    color: #a855f7;
+}
+
+.paymentMethodBadge.credit {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
 /* Recurring/Installment Sections */
 .recurringSection,
 .installmentSection,
