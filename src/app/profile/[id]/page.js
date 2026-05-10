@@ -215,10 +215,10 @@ export default function ProfilePage() {
                     >
                         <div className={styles.avatarSection}>
                             <div className={styles.avatarWrapper}>
-                                <Avatar
-                                    skinTone={profile?.avatarSkinTone || 'pardo'}
-                                    gender={profile?.avatarGender || 'masculino'}
-                                    size="xlarge"
+                                <img
+                                    src={profile?.user?.avatar || user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${profile?.user?.id || user?.id || profile?.user?.email || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
+                                    alt="Avatar"
+                                    style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover' }}
                                 />
                                 <div
                                     className={styles.levelBadge}

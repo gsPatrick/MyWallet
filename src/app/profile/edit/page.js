@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FiArrowLeft, FiSave, FiLock, FiCheck, FiAlertCircle } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
-import { AvatarSelector } from '@/components/gamification';
 import gamificationService from '@/services/gamificationService';
+import { authAPI } from '@/services/api';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import styles from './page.module.css';
@@ -21,8 +21,7 @@ export default function ProfileEditPage() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        avatarSkinTone: 'pardo',
-        avatarGender: 'masculino'
+        avatar: ''
     });
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -43,8 +42,7 @@ export default function ProfileEditPage() {
                 setFormData({
                     name: response.data.user?.name || '',
                     email: response.data.user?.email || '',
-                    avatarSkinTone: response.data.avatarSkinTone || 'pardo',
-                    avatarGender: response.data.avatarGender || 'masculino'
+                    avatar: response.data.user?.avatar || ''
                 });
             }
         } catch (error) {
@@ -54,26 +52,17 @@ export default function ProfileEditPage() {
         }
     };
 
-    const handleAvatarChange = ({ skinTone, gender }) => {
-        setFormData(prev => ({
-            ...prev,
-            avatarSkinTone: skinTone,
-            avatarGender: gender
-        }));
-    };
-
     const handleSaveProfile = async () => {
         setSaving(true);
         setMessage({ type: '', text: '' });
 
         try {
-            const response = await gamificationService.updateProfile({
+            const response = await authAPI.updateMe({
                 name: formData.name,
-                avatarSkinTone: formData.avatarSkinTone,
-                avatarGender: formData.avatarGender
+                avatar: formData.avatar
             });
 
-            if (response.success) {
+            if (response.data) {
                 setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
             }
         } catch (error) {
@@ -148,10 +137,24 @@ export default function ProfileEditPage() {
                 {/* Avatar Section */}
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Avatar</h2>
-                    <AvatarSelector
-                        value={{ skinTone: formData.avatarSkinTone, gender: formData.avatarGender }}
-                        onChange={handleAvatarChange}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                        <img 
+                            src={formData.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`} 
+                            alt="Avatar" 
+                            style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-light)' }}
+                        />
+                        <Button 
+                            variant="secondary" 
+                            onClick={() => {
+                                const randomSeed = Math.random().toString(36).substring(7);
+                                const newAvatar = `https://api.dicebear.com/9.x/micah/svg?seed=${randomSeed}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`;
+                                setFormData(prev => ({ ...prev, avatar: newAvatar }));
+                            }} 
+                            type="button"
+                        >
+                            Gerar Novo Avatar
+                        </Button>
+                    </div>
                 </section>
 
                 {/* Profile Section */}
