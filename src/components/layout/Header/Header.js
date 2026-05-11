@@ -288,11 +288,9 @@ export default function Header({ leftContent, rightContent }) {
                                                 <div className={styles.profileSection}>
                                                     <span className={styles.profileSectionLabel}>Perfil Ativo</span>
                                                     <div className={styles.currentProfileBadge}>
-                                                        <img
-                                                            src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
-                                                            alt="Avatar"
-                                                            className={styles.profileAvatar}
-                                                        />
+                                                        <span className={styles.profileIcon}>
+                                                            {currentProfile.type === 'BUSINESS' ? <FiBriefcase /> : <FiUser />}
+                                                        </span>
                                                         <span>{currentProfile.name}</span>
                                                     </div>
                                                 </div>
@@ -318,11 +316,9 @@ export default function Header({ leftContent, rightContent }) {
                                                                 }, 1000);
                                                             }}
                                                         >
-                                                            <img
-                                                            src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${profile.id}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
-                                                            alt={profile.name}
-                                                            className={styles.profileAvatar}
-                                                        />
+                                                            <span className={styles.profileIcon}>
+                                                                {profile.type === 'BUSINESS' ? <FiBriefcase /> : <FiUser />}
+                                                            </span>
                                                             <span>Trocar para {profile.name}</span>
                                                         </button>
                                                     ))}
@@ -332,7 +328,12 @@ export default function Header({ leftContent, rightContent }) {
 
                                         <div className={styles.divider} />
                                         <Link href="/profile/me" className={styles.menuItem}>
-                                            <FiUser /> Perfil
+                                            <img
+                                                src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
+                                                alt="Perfil"
+                                                className={styles.profileAvatar}
+                                            />
+                                            Perfil
                                         </Link>
                                         <Link href="/settings" className={styles.menuItem}>
                                             <FiSettings /> Configurações

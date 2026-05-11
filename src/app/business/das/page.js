@@ -71,6 +71,8 @@ export default function DasPage() {
     const [showOverdueModal, setShowOverdueModal] = useState(false);
     const [overdueSetup, setOverdueSetup] = useState([]); // [{ month, year, amount, selected }]
     const [savingOverdue, setSavingOverdue] = useState(false);
+    const [overdueYear, setOverdueYear] = useState(new Date().getFullYear());
+    const [overdueBaseValue, setOverdueBaseValue] = useState(75.60);
 
     // Summary
     const [summary, setSummary] = useState(null);
@@ -138,22 +140,11 @@ export default function DasPage() {
                 // Check if first-time visit: if there are NO guides at all and config exists, show overdue modal
                 const hasSavedValue = profileSettings.dasValue || profileData.dasValue;
                 if (guidesRes.length === 0 && hasSavedValue) {
-                    // Build overdue options for past months
-                    const today = new Date();
-                    const currentMonth = today.getMonth() + 1;
-                    const currentYear = today.getFullYear();
                     const baseVal = parseFloat(hasSavedValue) || 75.60;
-                    const months = [];
-
-                    // Generate past months of this year
-                    for (let m = 1; m < currentMonth; m++) {
-                        months.push({ month: m, year: currentYear, amount: baseVal.toFixed(2), selected: false });
-                    }
-
-                    if (months.length > 0) {
-                        setOverdueSetup(months);
-                        setShowOverdueModal(true);
-                    }
+                    setOverdueBaseValue(baseVal);
+                    // Build months for the current year initially
+                    buildOverdueMonths(new Date().getFullYear(), baseVal);
+                    setShowOverdueModal(true);
                 }
 
             } catch (err) {
@@ -226,6 +217,31 @@ export default function DasPage() {
         setOverdueSetup(prev => prev.map((item, i) =>
             i === index ? { ...item, amount: value } : item
         ));
+    };
+
+    // Build overdue months based on selected year
+    const buildOverdueMonths = (selectedYear, baseVal) => {
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+        const val = baseVal || overdueBaseValue;
+        const months = [];
+
+        if (selectedYear < currentYear) {
+            // Past year: all 12 months
+            for (let m = 1; m <= 12; m++) {
+                months.push({ month: m, year: selectedYear, amount: val.toFixed(2), selected: false });
+            }
+        } else if (selectedYear === currentYear) {
+            // Current year: only past months
+            for (let m = 1; m < currentMonth; m++) {
+                months.push({ month: m, year: selectedYear, amount: val.toFixed(2), selected: false });
+            }
+        }
+        // Future years: no months to show
+
+        setOverdueSetup(months);
+        setOverdueYear(selectedYear);
     };
 
     // Calculate displayed guides (Pure UI Status Logic)
@@ -572,14 +588,74 @@ export default function DasPage() {
                     }}>
                         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>
                             <strong style={{ color: 'var(--text-primary)' }}>Bem-vindo à Central do DAS!</strong><br />
-                            Selecione os meses que estão <strong>atrasados</strong> e ajuste o valor de cada um (incluindo multa/juros se aplicável).
+                            Escolha o <strong>ano</strong>, selecione os meses <strong>atrasados</strong> e ajuste o valor de cada um.
                         </p>
+                    </div>
+
+                    {/* Year Selector */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '12px',
+                        marginBottom: '16px',
+                        padding: '10px',
+                        background: 'var(--bg-secondary)',
+                        borderRadius: '10px'
+                    }}>
+                        <button
+                            onClick={() => buildOverdueMonths(overdueYear - 1)}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--text-primary)',
+                                fontSize: '1.2rem',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <FiChevronLeft />
+                        </button>
+                        <span style={{
+                            fontSize: '1.1rem',
+                            fontWeight: 700,
+                            color: 'var(--text-primary)',
+                            minWidth: '60px',
+                            textAlign: 'center'
+                        }}>
+                            {overdueYear}
+                        </span>
+                        <button
+                            onClick={() => {
+                                if (overdueYear < new Date().getFullYear()) {
+                                    buildOverdueMonths(overdueYear + 1);
+                                }
+                            }}
+                            disabled={overdueYear >= new Date().getFullYear()}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: overdueYear >= new Date().getFullYear() ? 'not-allowed' : 'pointer',
+                                color: overdueYear >= new Date().getFullYear() ? 'var(--text-tertiary)' : 'var(--text-primary)',
+                                fontSize: '1.2rem',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                opacity: overdueYear >= new Date().getFullYear() ? 0.3 : 1
+                            }}
+                        >
+                            <FiChevronRight />
+                        </button>
                     </div>
 
                     <div style={{ maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {overdueSetup.map((item, index) => (
                             <div
-                                key={item.month}
+                                key={`${item.month}-${item.year}`}
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
