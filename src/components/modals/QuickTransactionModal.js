@@ -473,6 +473,7 @@ export default function QuickTransactionModal({ isOpen, onClose, onSuccess }) {
                     <Input
                         label="Descrição"
                         placeholder="Ex: Supermercado, Netflix, iPhone..."
+                        helperText="Dica: Digite nomes como Netflix ou Amazon e o sistema identificará automaticamente o logo e valores."
                         value={newTransaction.description}
                         onChange={(e) => setNewTransaction(prev => ({ ...prev, description: e.target.value }))}
                         fullWidth

@@ -973,6 +973,21 @@ export default function ProfileWizard({ onComplete }) {
                             businessCardIdMap.set(i.toString(), createdCard.id);
                             
                             console.log('💳 [WIZARD] Created business card:', card.name, '-> ID:', createdCard.id);
+
+                            // Save Imported Transactions for Business Card
+                            if (card.id && importedTransactions.has(card.id) && createdCard?.id) {
+                                const txs = importedTransactions.get(card.id);
+                                console.log(`💾 [WIZARD] Saving ${txs.length} transactions for Business Card ${createdCard.name}...`);
+                                await importAPI.confirmImport({
+                                    data: {
+                                        bank: { id: createdCard.id },
+                                        transactions: txs
+                                    },
+                                    type: 'CREDIT_CARD',
+                                    dryRun: false,
+                                    overrideTargetId: createdCard.id
+                                });
+                            }
                         }
                     } catch (e) {
                         console.error('Error creating business card:', e);

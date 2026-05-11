@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiPlus, FiCreditCard, FiCalendar, FiRepeat, FiEdit2, FiTrash2,
     FiX, FiDollarSign, FiTag, FiClock, FiLink, FiChevronLeft, FiChevronRight,
     FiBarChart2, FiSliders, FiShoppingBag, FiCoffee, FiHome, FiTruck, FiMusic, FiFilm,
-    FiFileText
+    FiFileText, FiServer, FiBriefcase
 } from 'react-icons/fi';
 import Header from '@/components/layout/Header';
 import Dock from '@/components/layout/Dock';
@@ -24,8 +25,9 @@ import FutureFeatureModal from '@/components/modals/FutureFeatureModal';
 import InvoicePaymentModal from '@/components/modals/InvoicePaymentModal';
 import { usePrivateCurrency } from '@/components/ui/PrivateValue';
 import { formatDate } from '@/utils/formatters';
-import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI, bankAccountsAPI } from '@/services/api';
+import { cardsAPI, subscriptionsAPI, openFinanceAPI, transactionsAPI, bankAccountsAPI, importAPI } from '@/services/api';
 import invoiceService, { getStatusInfo, formatInvoicePeriod } from '@/services/invoiceService';
+import { detectBrand } from '@/utils/brandDetection';
 import cardBanks from '@/data/cardBanks.json';
 import subscriptionData from '@/data/subscriptionIcons.json';
 import styles from './page.module.css';
@@ -85,6 +87,16 @@ const mockManualInvoice = {
 
 // Invoice state
 export default function CardsPage() {
+    return (
+        <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Carregando cartões...</div>}>
+            <CardsContent />
+        </Suspense>
+    );
+}
+
+function CardsContent() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     // Privacy-aware formatting
     const { formatCurrency } = usePrivateCurrency();
 
@@ -126,7 +138,7 @@ export default function CardsPage() {
     const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
 
     useEffect(() => {
-        const loadData = async () => {
+        const loadInitialData = async () => {
             setIsLoading(true);
             try {
                 const [cardsRes, subsRes, banksRes] = await Promise.all([
@@ -134,20 +146,28 @@ export default function CardsPage() {
                     subscriptionsAPI.list(),
                     bankAccountsAPI.list()
                 ]);
-                console.log('💳 [CARDS PAGE] Cards from API:', cardsRes?.data);
-                console.log('📋 [CARDS PAGE] Subscriptions from API:', subsRes?.data);
-                console.log('🏦 [CARDS PAGE] Bank Accounts from API:', banksRes?.data);
-                setCards(cardsRes?.data || []);
+                const loadedCards = cardsRes?.data || [];
+                setCards(loadedCards);
                 setSubscriptions(subsRes?.data || []);
                 setBankAccounts(banksRes?.data || []);
+
+                // ✅ AUTO-SELECT CARD FROM URL
+                const cardIdFromUrl = searchParams.get('cardId');
+                if (cardIdFromUrl && loadedCards.length > 0) {
+                    const cardToSelect = loadedCards.find(c => String(c.id) === String(cardIdFromUrl));
+                    if (cardToSelect) {
+                        console.log('💳 [CARDS PAGE] Auto-selecting card from URL:', cardIdFromUrl);
+                        handleCardClick(cardToSelect);
+                    }
+                }
             } catch (error) {
                 console.error("Error loading cards:", error);
             } finally {
                 setIsLoading(false);
             }
         };
-        loadData();
-    }, []);
+        loadInitialData();
+    }, [searchParams]);
 
     const totalSubscriptions = subscriptions.reduce((sum, s) => sum + parseFloat(s.amount), 0);
     const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -460,6 +480,8 @@ export default function CardsPage() {
         if (desc.includes('mercado') || desc.includes('supermercado') || desc.includes('carrefour')) return <FiShoppingBag />;
         if (desc.includes('restaurante') || desc.includes('ifood') || desc.includes('padaria')) return <FiCoffee />;
         if (desc.includes('aluguel') || desc.includes('condominio')) return <FiHome />;
+        if (desc.includes('hostinger') || desc.includes('aws') || desc.includes('vercel') || desc.includes('server')) return <FiServer />;
+        if (desc.includes('das') || desc.includes('mei') || desc.includes('imposto') || desc.includes('receita')) return <FiBriefcase />;
         return <FiCreditCard />;
     };
 
@@ -748,21 +770,34 @@ export default function CardsPage() {
                                                 <div key={dateGroup} className={styles.txGroup}>
                                                     <div className={styles.txGroupHeader}>{dateGroup}</div>
                                                     <div className={styles.transactionsList}>
-                                                        {txs.map(tx => (
-                                                            <div key={tx.id} className={styles.txItem}>
-                                                                <div className={styles.txIcon}>
-                                                                    {getCategoryIcon(tx.description)}
+                                                        {txs.map(tx => {
+                                                            const detectedBrand = detectBrand(tx.description);
+                                                            return (
+                                                                <div key={tx.id} className={styles.txItem}>
+                                                                    <div 
+                                                                        className={styles.txIcon}
+                                                                        style={{ 
+                                                                            backgroundColor: (tx.imageUrl || tx.icon || detectedBrand?.icon) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                                                            color: (tx.imageUrl || tx.icon || detectedBrand?.icon) ? 'inherit' : 'var(--text-tertiary)'
+                                                                        }}
+                                                                    >
+                                                                        {(tx.imageUrl || tx.icon || detectedBrand?.icon) ? (
+                                                                            <img src={tx.imageUrl || tx.icon || detectedBrand?.icon} alt={tx.description} />
+                                                                        ) : (
+                                                                            getCategoryIcon(tx.description)
+                                                                        )}
+                                                                    </div>
+                                                                    <div className={styles.txInfo}>
+                                                                        <span className={styles.txDesc}>{tx.description}</span>
+                                                                        <span className={styles.txTime}>
+                                                                            {formatDate(tx.date)}
+                                                                            {tx.installments && <span className={styles.installment}>{tx.currentInstallment}/{tx.installments}</span>}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className={styles.txAmount}>{formatCurrency(tx.amount)}</span>
                                                                 </div>
-                                                                <div className={styles.txInfo}>
-                                                                    <span className={styles.txDesc}>{tx.description}</span>
-                                                                    <span className={styles.txTime}>
-                                                                        {formatDate(tx.date)}
-                                                                        {tx.installments && <span className={styles.installment}>{tx.currentInstallment}/{tx.installments}</span>}
-                                                                    </span>
-                                                                </div>
-                                                                <span className={styles.txAmount}>{formatCurrency(tx.amount)}</span>
-                                                            </div>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
                                             ))

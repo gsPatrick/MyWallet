@@ -306,21 +306,12 @@ export default function BankDetailPage() {
     const getBankCards = useCallback((allCards, accountData) => {
         if (!accountData || !allCards) return [];
         return allCards.filter(card => {
-            // 1. Vínculo direto por ID
+            // 1. Vínculo direto por ID (Triple Lock)
             if (String(card.bankAccountId) === String(accountId)) return true;
             
-            // 2. Se já estiver vinculado a OUTRA conta, ignorar
-            if (card.bankAccountId && String(card.bankAccountId) !== String(accountId)) return false;
-            
-            // 3. Fallback por nome para cartões órfãos
-            const accName = (accountData.bankName || "").toLowerCase().trim();
-            const accNick = (accountData.nickname || "").toLowerCase().trim();
-            const cardBank = (card.bankName || card.name || "").toLowerCase().trim();
-            
-            return (
-                (accName && (cardBank.includes(accName) || accName.includes(cardBank))) ||
-                (accNick && (cardBank.includes(accNick) || accNick.includes(cardBank)))
-            );
+            // 2. Se já estiver vinculado a OUTRA conta ou não tiver vínculo, ignorar
+            // Não fazemos mais fallback por nome para evitar vazamento entre Perfil Pessoal/Empresa (ex: Nubank vs Nubank)
+            return false;
         });
     }, [accountId]);
 

@@ -9,6 +9,8 @@ import Dock from '@/components/layout/Dock';
 import Button from '@/components/ui/Button';
 import { reportsAPI } from '@/services/api';
 import { formatCurrency } from '@/utils/formatters';
+import { detectBrand } from '@/utils/brandDetection';
+import { FiMusic, FiFilm, FiTruck, FiShoppingBag, FiCoffee, FiHome, FiCreditCard, FiServer, FiBriefcase } from 'react-icons/fi';
 import styles from './page.module.css';
 
 const MONTHS = [
@@ -146,6 +148,22 @@ export default function StatementPage() {
         return transactions.reduce((sum, t) => {
             return sum + (t.type === 'INCOME' ? t.amount : -t.amount);
         }, 0);
+    };
+
+    // Get icon for transaction category fallback
+    const getCategoryIcon = (description, categoryName) => {
+        const desc = description?.toLowerCase() || '';
+        const cat = categoryName?.toLowerCase() || '';
+
+        if (desc.includes('spotify') || desc.includes('music') || cat.includes('música')) return <FiMusic />;
+        if (desc.includes('netflix') || desc.includes('amazon') || desc.includes('disney') || cat.includes('streaming')) return <FiFilm />;
+        if (desc.includes('uber') || desc.includes('99') || desc.includes('taxi') || cat.includes('transporte')) return <FiTruck />;
+        if (desc.includes('mercado') || desc.includes('supermercado') || desc.includes('carrefour') || cat.includes('mercado')) return <FiShoppingBag />;
+        if (desc.includes('restaurante') || desc.includes('ifood') || desc.includes('padaria') || cat.includes('alimentação')) return <FiCoffee />;
+        if (desc.includes('aluguel') || desc.includes('condominio') || cat.includes('moradia')) return <FiHome />;
+        if (desc.includes('hostinger') || desc.includes('aws') || desc.includes('vercel') || desc.includes('server')) return <FiServer />;
+        if (desc.includes('das') || desc.includes('mei') || desc.includes('imposto') || desc.includes('receita')) return <FiBriefcase />;
+        return <FiCreditCard />;
     };
 
     const exportToPDF = async () => {
@@ -292,17 +310,44 @@ export default function StatementPage() {
                                         </div>
 
                                         <div className={styles.dayTransactions}>
-                                            {items.map((t, idx) => (
-                                                <div key={t.id} className={styles.transaction}>
-                                                    <div className={styles.txTime}>{t.time || '--:--'}</div>
-                                                    <div className={styles.txContent}>
-                                                        <span className={styles.txDesc}>{t.description}</span>
+                                            {items.map((t, idx) => {
+                                                const detected = detectBrand(t.description);
+                                                const brandIcon = detected?.icon;
+                                                const categoryIcon = t.category?.icon || getCategoryIcon(t.description, t.category?.name);
+                                                const launchTime = t.createdAt ? new Date(t.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+
+                                                return (
+                                                    <div key={t.id} className={styles.transaction}>
+                                                        <div className={styles.txMainInfo}>
+                                                            <div className={styles.txIcon} style={{ background: detected?.color ? `${detected.color}20` : 'rgba(255,255,255,0.05)' }}>
+                                                                {brandIcon ? (
+                                                                    <img src={brandIcon} alt={detected.name} />
+                                                                ) : (
+                                                                    <span style={{ color: t.category?.color || 'var(--text-tertiary)' }}>
+                                                                        {categoryIcon}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className={styles.txDetails}>
+                                                                <div className={styles.txTimeRow}>
+                                                                    <span className={styles.txTime}>{launchTime}</span>
+                                                                    <span className={styles.txTag}>
+                                                                        {t.origin === 'CARD' ? (
+                                                                            `${t.sourceName} ${t.lastFourDigits ? `(**** ${t.lastFourDigits})` : ''}`
+                                                                        ) : (
+                                                                            t.sourceName || 'Geral'
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <span className={styles.txDesc}>{t.description}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`${styles.txAmount} ${t.type === 'INCOME' ? styles.credit : styles.debit}`}>
+                                                            {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
+                                                        </div>
                                                     </div>
-                                                    <div className={`${styles.txAmount} ${t.type === 'INCOME' ? styles.credit : styles.debit}`}>
-                                                        {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </motion.div>
                                 );

@@ -295,6 +295,26 @@
     gap: var(--spacing-md);
 }
 
+.txIcon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    color: var(--text-tertiary);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.txIcon img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
 .monthSelector button {
     width: 36px;
     height: 36px;

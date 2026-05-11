@@ -364,6 +364,18 @@
             "category": "SOFTWARE",
             "defaultAmount": 19.00
         },
+        "hostinger": {
+            "name": "Hostinger",
+            "icon": "/transacoes/hostinger.png",
+            "color": "#673DE6",
+            "category": "SOFTWARE",
+            "defaultAmount": 35.00,
+            "keywords": [
+                "hostinger",
+                "servidor hostinger",
+                "hostinger*"
+            ]
+        },
         "geforce_now": {
             "name": "GeForce NOW",
             "icon": "https://www.adrenaline.com.br/wp-content/uploads/2023/01/geforce-now3-1.jpg",
@@ -767,7 +779,7 @@
         },
         "mcdonalds": {
             "name": "McDonald's",
-            "icon": "https://yt3.googleusercontent.com/m2N3G5IuofYk3Lld7t1jKxUMrJZzpYLul6P0nE-MGKmLKN7qvC6Ocf8YMKw6UEXmaO8wVa2Dvck=s900-c-k-c0x00ffffff-no-rj",
+            "icon": "/transacoes/mcdonalds.png",
             "color": "#FFC72C",
             "category": "FOOD",
             "keywords": [
@@ -880,7 +892,7 @@
         },
         "shopee": {
             "name": "Shopee",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopee_logo.svg/1442px-Shopee_logo.svg.png",
+            "icon": "/transacoes/Shopee.png",
             "color": "#EE4D2D",
             "category": "SHOPPING",
             "keywords": [
@@ -1302,6 +1314,18 @@
                 "mercado bitcoin",
                 "mercadobitcoin",
                 "mb"
+            ]
+        },
+        "das": {
+            "name": "DAS MEI",
+            "icon": "/transacoes/das-mei.png",
+            "color": "#005CA9",
+            "category": "UTILITIES",
+            "keywords": [
+                "das mei",
+                "das-mei",
+                "simples nacional",
+                "das"
             ]
         }
     },

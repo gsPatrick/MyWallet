@@ -19,7 +19,7 @@
         },
         "bradesco": {
             "name": "Bradesco",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Banco_Bradesco_logo_%282021%29.svg/200px-Banco_Bradesco_logo_%282021%29.svg.png",
+            "icon": "/bancos/banco-bradesco.png",
             "color": "#CC092F",
             "keywords": [
                 "bradesco",
@@ -47,7 +47,7 @@
         },
         "caixa": {
             "name": "Caixa",
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Caixa_Econ%C3%B4mica_Federal_logo.svg/1200px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png",
+            "icon": "/bancos/banco-caixa.png",
             "color": "#005CA9"
         },
         "inter": {
