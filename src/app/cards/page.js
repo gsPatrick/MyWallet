@@ -306,9 +306,40 @@ function CardsContent() {
             setCurrentInvoiceData(invoiceRes);
             setInvoiceHistory(historyRes?.invoices || []);
 
-            // Filter subscriptions for this card (using loose equality for ID safety)
-            const cardSubs = subscriptions.filter(s => String(s.cardId) === String(card.id));
-            setCardSubscriptions(cardSubs);
+            // Filter subscriptions for this card
+            // 1. Directly linked by cardId
+            const directSubs = subscriptions.filter(s => String(s.cardId) === String(card.id));
+            
+            // 2. Detect from transactions using subscription keywords
+            const transactions = txRes?.data?.transactions || [];
+            const allSubEntries = Object.entries(subscriptionData.subscriptions || {});
+            const detectedSubNames = new Set(directSubs.map(s => s.name));
+            const detectedFromTx = [];
+
+            for (const tx of transactions) {
+                const desc = (tx.description || '').toLowerCase();
+                for (const [key, subInfo] of allSubEntries) {
+                    if (detectedSubNames.has(subInfo.name)) continue;
+                    const keywords = subInfo.keywords || [key];
+                    const matched = keywords.some(kw => desc.includes(kw.toLowerCase()));
+                    if (matched) {
+                        detectedSubNames.add(subInfo.name);
+                        // Check if this sub exists in the full subscriptions list (unlinked)
+                        const existingSub = subscriptions.find(s => s.name === subInfo.name && !s.cardId);
+                        detectedFromTx.push(existingSub || {
+                            id: `detected-${key}`,
+                            name: subInfo.name,
+                            amount: tx.amount || subInfo.defaultAmount || 0,
+                            icon: subInfo.icon,
+                            color: subInfo.color,
+                            billingCycle: 'MONTHLY',
+                            isDetected: true
+                        });
+                    }
+                }
+            }
+
+            setCardSubscriptions([...directSubs, ...detectedFromTx]);
         } catch (error) {
             console.error("Error loading card data:", error);
             setCardTransactions([]);
