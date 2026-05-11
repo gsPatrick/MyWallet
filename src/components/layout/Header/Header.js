@@ -23,24 +23,33 @@ import {
     FiCreditCard,
     FiBriefcase,
     FiRefreshCw,
-    FiDatabase
+    FiDatabase,
+    FiRepeat
 } from 'react-icons/fi';
 import { BsBank2 } from 'react-icons/bs';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfiles } from '@/contexts/ProfileContext';
-import { notificationsAPI } from '@/services/api';
+import { notificationsAPI, cardsAPI } from '@/services/api';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
+import QuickTransactionModal from '@/components/modals/QuickTransactionModal';
+import QuickGoalModal from '@/components/modals/QuickGoalModal';
+import QuickTransferModal from '@/components/modals/QuickTransferModal';
+import SubscriptionModal from '@/components/modals/SubscriptionModal';
+import { subscriptionsAPI } from '@/services/api';
 import styles from './Header.module.css';
 
 const quickActions = [
-    { id: 'new-transaction', href: '/transactions?new=true', icon: FiPlus, label: 'Nova Transação', color: '#22c55e' },
-    { id: 'new-goal', href: '/goals?new=true', icon: FiTarget, label: 'Nova Meta', color: '#8b5cf6' },
-    { id: 'profile', href: '/settings', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
+    { id: 'new-transaction', href: null, icon: FiPlus, label: 'Nova Transação', color: '#22c55e', isModal: 'transaction' },
+    { id: 'new-subscription', href: null, icon: FiRepeat, label: 'Nova Assinatura', color: '#8b5cf6', isModal: 'subscription' },
+    { id: 'new-goal', href: null, icon: FiTarget, label: 'Nova Meta', color: '#f59e0b', isModal: 'goal' },
+    { id: 'new-transfer', href: null, icon: FiRepeat, label: 'Nova Transferência', color: '#0ea5e9', isModal: 'transfer' },
+    { id: 'profile', href: '/profile/me', icon: FiUser, label: 'Perfil', color: '#3b82f6' },
     { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartão', color: '#f59e0b' },
     { id: 'banks', href: '/banks', icon: BsBank2, label: 'Bancos', color: '#0ea5e9' },
     { id: 'budget', href: '/budget-allocation', icon: FiSliders, label: 'Orçamento', color: '#ec4899' },
     { id: 'statements', href: '/settings/statement', icon: FiFileText, label: 'Extratos', color: '#14b8a6' },
+    { id: 'logout', href: null, icon: FiLogOut, label: 'Sair', color: '#ef4444', isLogout: true },
 ];
 
 // DAS shortcut for BUSINESS profiles only
@@ -55,6 +64,13 @@ export default function Header({ leftContent, rightContent }) {
     const [showQuickActions, setShowQuickActions] = useState(false);
     const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
     const [profileSwitching, setProfileSwitching] = useState({ isActive: false, type: null });
+
+    // Quick Action Modal States
+    const [showTransactionModal, setShowTransactionModal] = useState(false);
+    const [showGoalModal, setShowGoalModal] = useState(false);
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    const [cardsForSub, setCardsForSub] = useState([]);
 
     // Notifications State
     const [notifications, setNotifications] = useState([]);
@@ -83,8 +99,28 @@ export default function Header({ leftContent, rightContent }) {
     useEffect(() => {
         if (user) {
             fetchNotifications();
+            // Load cards for subscription modal
+            cardsAPI.list().then(res => setCardsForSub(res?.data || [])).catch(() => {});
         }
     }, [user]);
+
+    // Quick Action Modal Handlers
+    const handleOpenModal = (type) => {
+        setShowQuickActions(false);
+        if (type === 'transaction') setShowTransactionModal(true);
+        if (type === 'goal') setShowGoalModal(true);
+        if (type === 'transfer') setShowTransferModal(true);
+        if (type === 'subscription') setShowSubscriptionModal(true);
+    };
+
+    const handleSubscriptionSave = async (payload) => {
+        try {
+            await subscriptionsAPI.create(payload);
+            setShowSubscriptionModal(false);
+        } catch (error) {
+            console.error('Error creating subscription:', error);
+        }
+    };
 
     const handleMarkRead = async (id) => {
         try {
@@ -252,9 +288,11 @@ export default function Header({ leftContent, rightContent }) {
                                                 <div className={styles.profileSection}>
                                                     <span className={styles.profileSectionLabel}>Perfil Ativo</span>
                                                     <div className={styles.currentProfileBadge}>
-                                                        <span className={styles.profileIcon}>
-                                                            {currentProfile.type === 'BUSINESS' ? <FiBriefcase /> : <FiUser />}
-                                                        </span>
+                                                        <img
+                                                            src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${user?.id || user?.email || 'default'}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
+                                                            alt="Avatar"
+                                                            className={styles.profileAvatar}
+                                                        />
                                                         <span>{currentProfile.name}</span>
                                                     </div>
                                                 </div>
@@ -280,9 +318,11 @@ export default function Header({ leftContent, rightContent }) {
                                                                 }, 1000);
                                                             }}
                                                         >
-                                                            <span className={styles.profileIcon}>
-                                                                {profile.type === 'BUSINESS' ? <FiBriefcase /> : <FiUser />}
-                                                            </span>
+                                                            <img
+                                                            src={user?.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${profile.id}&radius=50&backgroundColor=b6e3f4,ffd5dc,d1d4f9,c0aede,ffdfbf`}
+                                                            alt={profile.name}
+                                                            className={styles.profileAvatar}
+                                                        />
                                                             <span>Trocar para {profile.name}</span>
                                                         </button>
                                                     ))}
@@ -343,6 +383,39 @@ export default function Header({ leftContent, rightContent }) {
                             <div className={styles.quickActionsGrid}>
                                 {quickActions.map((action) => {
                                     const Icon = action.icon;
+
+                                    // Logout action
+                                    if (action.isLogout) {
+                                        return (
+                                            <button
+                                                key={action.id}
+                                                className={styles.quickActionItem}
+                                                onClick={() => { setShowQuickActions(false); logout(); }}
+                                            >
+                                                <div className={styles.quickActionIcon} style={{ background: `${action.color}20`, color: action.color }}>
+                                                    <Icon />
+                                                </div>
+                                                <span>{action.label}</span>
+                                            </button>
+                                        );
+                                    }
+
+                                    // Modal actions
+                                    if (action.isModal) {
+                                        return (
+                                            <button
+                                                key={action.id}
+                                                className={styles.quickActionItem}
+                                                onClick={() => handleOpenModal(action.isModal)}
+                                            >
+                                                <div className={styles.quickActionIcon} style={{ background: `${action.color}20`, color: action.color }}>
+                                                    <Icon />
+                                                </div>
+                                                <span>{action.label}</span>
+                                            </button>
+                                        );
+                                    }
+
                                     return (
                                         <Link
                                             key={action.id}
@@ -375,6 +448,29 @@ export default function Header({ leftContent, rightContent }) {
                     </>
                 )}
             </AnimatePresence>
+
+            {/* Quick Action Modals */}
+            <QuickTransactionModal
+                isOpen={showTransactionModal}
+                onClose={() => setShowTransactionModal(false)}
+                onSuccess={() => {}}
+            />
+            <QuickGoalModal
+                isOpen={showGoalModal}
+                onClose={() => setShowGoalModal(false)}
+                onSuccess={() => {}}
+            />
+            <QuickTransferModal
+                isOpen={showTransferModal}
+                onClose={() => setShowTransferModal(false)}
+                onSuccess={() => {}}
+            />
+            <SubscriptionModal
+                isOpen={showSubscriptionModal}
+                onClose={() => setShowSubscriptionModal(false)}
+                onSave={handleSubscriptionSave}
+                cards={cardsForSub}
+            />
         </>
     );
 }
