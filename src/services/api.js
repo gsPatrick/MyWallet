@@ -339,6 +339,7 @@ export const dasAPI = {
     payGuide: (guideId, data) => api.post(`/das/pay/${guideId}`, data),
     getSummary: () => api.get('/das/summary'),
     ensureGuides: () => api.post('/das/ensure'),
+    markOverdue: (overdueMonths) => api.post('/das/mark-overdue', { overdueMonths }),
 };
 
 // Bank Accounts API
