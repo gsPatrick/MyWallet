@@ -15,8 +15,14 @@ export default function AudioAssistant() {
     const wakeWordDetected = useRef(false);
 
     useEffect(() => {
+        // LOG DIAGNÓSTICO
+        console.log("[AudioAssistant] Component mounted or updated.");
+        console.log("[AudioAssistant] User exists?", !!user);
+        console.log("[AudioAssistant] Audio enabled?", user?.audioAssistantEnabled);
+
         // Se não estiver logado ou não tiver a opção ativada, desabilita
         if (!user || !user.audioAssistantEnabled) {
+            console.log("[AudioAssistant] Desativado pelo usuário ou não autenticado. Parando...");
             if (recognitionRef.current) {
                 recognitionRef.current.stop();
             }
@@ -25,10 +31,12 @@ export default function AudioAssistant() {
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            console.warn("Speech Recognition API não é suportada por este navegador.");
+            console.error("[AudioAssistant] Speech Recognition API não é suportada por este navegador!");
+            alert("Atenção: Seu navegador não suporta reconhecimento de voz (tente Chrome ou Edge).");
             return;
         }
 
+        console.log("[AudioAssistant] Instanciando SpeechRecognition...");
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = false;
@@ -36,16 +44,17 @@ export default function AudioAssistant() {
         recognitionRef.current = recognition;
 
         recognition.onstart = () => {
-            console.log("🎙️ Audio Assistant escutando em background...");
+            console.log("🎙️ [AudioAssistant] Speech API startado e escutando em background...");
         };
 
         recognition.onresult = (event) => {
             const current = event.resultIndex;
             const transcript = event.results[current][0].transcript.trim().toLowerCase();
             
-            console.log("🎙️ Transcrição detectada:", transcript);
+            console.log("🎙️ [AudioAssistant] Transcrição detectada:", transcript);
 
             if (wakeWordDetected.current) {
+                console.log("[AudioAssistant] Processando comando direto...");
                 // Se já detectou a wake word e está aguardando o comando
                 processCommand(transcript);
                 wakeWordDetected.current = false;
@@ -54,7 +63,7 @@ export default function AudioAssistant() {
             } else {
                 // Verifica se o texto contém as palavras de ativação
                 if (transcript.includes('my wallet') || transcript.includes('mai wallet') || transcript.includes('mywallet')) {
-                    console.log("🔊 Wake word detectada! Escutando comando...");
+                    console.log("🔊 [AudioAssistant] Wake word detectada! Entrando no modo de escuta ativa...");
                     wakeWordDetected.current = true;
                     setIsListening(true);
                     
@@ -63,7 +72,7 @@ export default function AudioAssistant() {
                     
                     // Se não falar nada em 5 segundos, cancela o estado
                     timeoutRef.current = setTimeout(() => {
-                        console.log("⏰ Tempo esgotado para o comando.");
+                        console.log("⏰ [AudioAssistant] Tempo esgotado (5s) para dizer o comando.");
                         wakeWordDetected.current = false;
                         setIsListening(false);
                     }, 5000);
@@ -72,6 +81,7 @@ export default function AudioAssistant() {
         };
 
         recognition.onerror = (event) => {
+            console.error("[AudioAssistant] Erro no reconhecimento:", event.error, event);
             // Ignorar erro de no-speech e tentar recomeçar
             if (event.error !== 'no-speech') {
                 wakeWordDetected.current = false;
@@ -80,30 +90,40 @@ export default function AudioAssistant() {
         };
 
         recognition.onend = () => {
+            console.log("[AudioAssistant] onend chamado. A API de voz parou de escutar.");
             // Reinicia imediatamente para continuar escutando no background
             if (user && user.audioAssistantEnabled) {
                 try {
+                    console.log("[AudioAssistant] Tentando reiniciar...");
                     recognition.start();
                 } catch (e) {
-                    // Ignore already started errors
+                    console.error("[AudioAssistant] Falha ao reiniciar (provavelmente já está rodando):", e);
                 }
             }
         };
 
         const startAssistant = async () => {
+            console.log("[AudioAssistant] Chamando getUserMedia para forçar permissão do microfone...");
             try {
                 // Solicitar permissão de áudio explicitamente para o navegador mostrar o popup
-                await navigator.mediaDevices.getUserMedia({ audio: true });
-                recognition.start();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log("[AudioAssistant] getUserMedia SUCESSO! stream ativo:", stream.active);
+                try {
+                    recognition.start();
+                    console.log("[AudioAssistant] recognition.start() chamado com sucesso!");
+                } catch(e) {
+                    console.warn("[AudioAssistant] start() ignorado (já rodando):", e.message);
+                }
             } catch (err) {
-                console.error("Permissão do microfone negada ou falha ao iniciar:", err);
-                alert("Para usar o Assistente de Voz, é necessário permitir o uso do microfone no navegador.");
+                console.error("❌ [AudioAssistant] getUserMedia falhou - Permissão do microfone negada ou erro HTTPS:", err);
+                alert(`Erro de Microfone: ${err.message || 'Permissão negada'}. Verifique se você está acessando por HTTPS ou Localhost.`);
             }
         };
 
         startAssistant();
 
         return () => {
+            console.log("[AudioAssistant] Limpando effects...");
             if (recognitionRef.current) {
                 recognitionRef.current.onend = null; // Prevenir loop
                 recognitionRef.current.stop();
