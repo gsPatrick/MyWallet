@@ -85,16 +85,23 @@ export default function AudioAssistant() {
                 try {
                     recognition.start();
                 } catch (e) {
-                    console.error("Falha ao reiniciar reconhecimento:", e);
+                    // Ignore already started errors
                 }
             }
         };
 
-        try {
-            recognition.start();
-        } catch (e) {
-            console.error("Falha ao iniciar reconhecimento:", e);
-        }
+        const startAssistant = async () => {
+            try {
+                // Solicitar permissão de áudio explicitamente para o navegador mostrar o popup
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                recognition.start();
+            } catch (err) {
+                console.error("Permissão do microfone negada ou falha ao iniciar:", err);
+                alert("Para usar o Assistente de Voz, é necessário permitir o uso do microfone no navegador.");
+            }
+        };
+
+        startAssistant();
 
         return () => {
             if (recognitionRef.current) {

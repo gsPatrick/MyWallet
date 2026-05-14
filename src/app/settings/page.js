@@ -72,7 +72,7 @@ const PLAN_PRICES = {
 
 export default function SettingsPage() {
     const { theme, setTheme, accentColor, setAccentColor } = useTheme();
-    const { user: authUser, logout } = useAuth();
+    const { user: authUser, logout, updateUser } = useAuth();
     const ai = useAI();
     const [activeTab, setActiveTab] = useState('account');
     const [isMobile, setIsMobile] = useState(false);
@@ -697,6 +697,10 @@ export default function SettingsPage() {
                                             try {
                                                 const res = await settingsAPI.updateProfile({ audioAssistantEnabled: newVal });
                                                 setUser(res.data);
+                                                updateUser({ audioAssistantEnabled: newVal });
+                                                if (newVal) {
+                                                    alert("Assistente de Voz Ativado! Diga 'My Wallet' no microfone e tente falar um comando financeiro.");
+                                                }
                                             } catch(e) {
                                                 alert("Erro ao atualizar a configuração.");
                                             }
