@@ -679,6 +679,35 @@ export default function SettingsPage() {
                             </Card>
                         </motion.section>
 
+                        {/* Audio Assistant */}
+                        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                            <h2 className={styles.sectionTitle}>Assistente de Voz (MyWallet AI)</h2>
+                            <Card className={styles.settingCard}>
+                                <div className={styles.toggleItem}>
+                                    <div className={styles.toggleInfo}>
+                                        <span className={styles.toggleLabel}>Ativar Comando de Voz ("My Wallet")</span>
+                                        <span className={styles.toggleDesc}>
+                                            Ative para o app escutar seus comandos. Diga "My Wallet" e depois fale a transação (ex: "My Wallet, adicione um gasto de 50 reais com Uber").
+                                        </span>
+                                    </div>
+                                    <button
+                                        className={`${styles.toggle} ${user?.audioAssistantEnabled ? styles.on : ''}`}
+                                        onClick={async () => {
+                                            const newVal = !user?.audioAssistantEnabled;
+                                            try {
+                                                const res = await settingsAPI.updateProfile({ audioAssistantEnabled: newVal });
+                                                setUser(res.data);
+                                            } catch(e) {
+                                                alert("Erro ao atualizar a configuração.");
+                                            }
+                                        }}
+                                    >
+                                        <span className={styles.toggleKnob} />
+                                    </button>
+                                </div>
+                            </Card>
+                        </motion.section>
+
                         {/* Open Finance */}
                         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                             <h2 className={styles.sectionTitle}>Open Finance</h2>

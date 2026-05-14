@@ -238,6 +238,9 @@ export default function ProfileWizard({ onComplete }) {
     const [showImport, setShowImport] = useState(false);
     const [importContext, setImportContext] = useState(null); // 'personal' or 'business'
 
+    // Assistant State
+    const [audioAssistantEnabled, setAudioAssistantEnabled] = useState(savedState?.audioAssistantEnabled || false);
+
     const handleImportFinish = (result) => {
         // result = { success, entity, detectedSubscriptions }
         const entity = result?.entity || result?.bankAccount;
@@ -663,6 +666,8 @@ export default function ProfileWizard({ onComplete }) {
         } else if (step === 'subs_business') {
             setStep('brokers'); // Go to brokers step before submit
         } else if (step === 'brokers') {
+            setStep('assistants');
+        } else if (step === 'assistants') {
             await submitWizard();
         } else {
             onComplete?.();
@@ -728,7 +733,8 @@ export default function ProfileWizard({ onComplete }) {
                         initialBalance: parseCurrencyValue(businessBalance)
                     }
                 },
-                defaultProfileType: defaultProfile
+                defaultProfileType: defaultProfile,
+                audioAssistantEnabled
             };
 
             console.log('📝 [WIZARD] SETUP DATA TO SEND:', JSON.stringify(setupData, null, 2));
@@ -1962,6 +1968,59 @@ export default function ProfileWizard({ onComplete }) {
                                 <p className={styles.hint}>
                                     💡 Você já tem a "MyWallet Investimentos" como padrão. Adicione outras corretoras se desejar.
                                 </p>
+                            </motion.div>
+                        )}
+
+                        {/* STEP: Assistants */}
+                        {step === 'assistants' && (
+                            <motion.div
+                                key="assistants"
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                className={styles.stepContent}
+                            >
+                                <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, #8B5CF6, #6366F1)' }}>
+                                    🎙️
+                                </div>
+                                <h2>Assistente de Voz MyWallet</h2>
+                                <p className={styles.description}>
+                                    O Assistente de Voz nativo permite registrar transações e comandos rápidos sem usar as mãos.
+                                </p>
+
+                                <div className={styles.itemsList} style={{ marginTop: '20px' }}>
+                                    <div className={styles.itemRow} style={{ padding: '24px', flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                            <div className={styles.itemInfo}>
+                                                <strong style={{ fontSize: '1.1rem' }}>Ativar Comando de Voz</strong>
+                                                <span>Diga "My Wallet" a qualquer momento para ativar a escuta.</span>
+                                            </div>
+                                            <button
+                                                className={`${styles.toggle} ${audioAssistantEnabled ? styles.on : ''}`}
+                                                style={{ 
+                                                    width: '48px', height: '26px', borderRadius: '13px', 
+                                                    background: audioAssistantEnabled ? '#3b82f6' : '#e2e8f0',
+                                                    position: 'relative', border: 'none', cursor: 'pointer',
+                                                    transition: 'all 0.3s'
+                                                }}
+                                                onClick={() => setAudioAssistantEnabled(!audioAssistantEnabled)}
+                                            >
+                                                <span style={{
+                                                    position: 'absolute', top: '2px', left: audioAssistantEnabled ? '24px' : '2px',
+                                                    width: '22px', height: '22px', borderRadius: '50%',
+                                                    background: 'white', transition: 'all 0.3s'
+                                                }} />
+                                            </button>
+                                        </div>
+                                        <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '16px', borderRadius: '12px', color: '#3b82f6', width: '100%', fontSize: '0.95rem' }}>
+                                            <strong style={{ display: 'block', marginBottom: '8px' }}>💡 Como usar:</strong>
+                                            1. Ative a opção acima e permita o uso do microfone.<br/>
+                                            2. Enquanto a aba do MyWallet estiver aberta, basta dizer <strong>"My Wallet"</strong>.<br/>
+                                            3. O app emitirá um "beep" e você terá 5 segundos para falar seu comando.<br/>
+                                            <em>Exemplo: "Adicionar um almoço no iFood de 45 reais na minha conta."</em>
+                                        </div>
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
 

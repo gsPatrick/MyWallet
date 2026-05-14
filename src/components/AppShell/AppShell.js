@@ -21,6 +21,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import ProfileWizard from '@/components/Onboarding/ProfileWizard';
 import OfflineTransition from '@/components/ui/OfflineTransition';
 import ChatInterface from '@/components/chat/ChatInterface';
+import AudioAssistant from '@/components/Assistant/AudioAssistant';
 
 // Offline states
 const OFFLINE_STATE = {
@@ -158,5 +159,10 @@ export default function AppShell({ children }) {
         return <>{children}</>;
     }
 
-    return <>{children}</>;
+    return (
+        <>
+            {children}
+            <AudioAssistant />
+        </>
+    );
 }
