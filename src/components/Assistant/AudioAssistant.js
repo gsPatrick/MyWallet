@@ -170,14 +170,33 @@ export default function AudioAssistant() {
         }
     };
 
-    if (!isListening && !isProcessing && !feedback) return null;
+    if (!user?.audioAssistantEnabled) return null;
 
     return (
         <div className={styles.overlay}>
-            <div className={styles.container}>
-                {isListening && (
+            <div className={styles.container} onClick={() => {
+                // Ao clicar manualmente, tenta iniciar ou pedir permissão
+                if (!isListening) {
+                    setIsListening(true);
+                    wakeWordDetected.current = true;
+                    setFeedback({ type: 'info', message: 'Pode falar seu comando agora...' });
+                    try { recognitionRef.current?.start(); } catch(e) {}
+                    
+                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                    timeoutRef.current = setTimeout(() => {
+                        wakeWordDetected.current = false;
+                        setIsListening(false);
+                        setFeedback(null);
+                    }, 5000);
+                }
+            }}>
+                {/* Ícone fixo mostrando que o assistente está ativado */}
+                <div className={`${styles.pulsingMic} ${isListening ? styles.activeMic : styles.idleMic}`}>
+                    🎙️
+                </div>
+
+                {isListening && !isProcessing && (
                     <div className={styles.listeningState}>
-                        <div className={styles.pulsingMic}>🎙️</div>
                         <span>Ouvindo comando...</span>
                     </div>
                 )}
@@ -187,7 +206,7 @@ export default function AudioAssistant() {
                         <span>{feedback?.message || 'Processando...'}</span>
                     </div>
                 )}
-                {feedback && !isProcessing && (
+                {feedback && !isProcessing && !isListening && (
                     <div className={`${styles.feedbackState} ${styles[feedback.type]}`}>
                         {feedback.type === 'success' && '✅ '}
                         {feedback.type === 'error' && '❌ '}

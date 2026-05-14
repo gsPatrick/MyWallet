@@ -37,7 +37,21 @@
 
 .pulsingMic {
     font-size: 1.2rem;
+}
+
+.activeMic {
     animation: pulse 1.5s infinite;
+}
+
+.idleMic {
+    opacity: 0.6;
+    filter: grayscale(100%);
+    cursor: pointer;
+}
+
+.idleMic:hover {
+    opacity: 1;
+    filter: grayscale(0%);
 }
 
 @keyframes pulse {
