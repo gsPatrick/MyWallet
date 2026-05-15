@@ -219,7 +219,7 @@ export default function AudioAssistantModal({ isOpen, onClose }) {
                                 )}
                             </div>
 
-                            {!isListening && !isProcessing && !feedback?.type !== 'success' && (
+                            {!isListening && !isProcessing && feedback?.type !== 'success' && (
                                 <button 
                                     className={styles.retryBtn}
                                     onClick={() => {

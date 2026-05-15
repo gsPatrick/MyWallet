@@ -62,7 +62,10 @@ export default function AppShell({ children }) {
     // Global Audio Assistant Modal State
     const [showAudioModal, setShowAudioModal] = useState(false);
     useEffect(() => {
-        const handleOpenAudio = () => setShowAudioModal(true);
+        const handleOpenAudio = () => {
+            console.log('[AppShell] Received open-audio-assistant event!');
+            setShowAudioModal(true);
+        };
         window.addEventListener('open-audio-assistant', handleOpenAudio);
         return () => window.removeEventListener('open-audio-assistant', handleOpenAudio);
     }, []);
