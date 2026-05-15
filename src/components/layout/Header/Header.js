@@ -24,7 +24,8 @@ import {
     FiBriefcase,
     FiRefreshCw,
     FiDatabase,
-    FiRepeat
+    FiRepeat,
+    FiMic
 } from 'react-icons/fi';
 import { BsBank2 } from 'react-icons/bs';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -41,6 +42,7 @@ import styles from './Header.module.css';
 
 const quickActions = [
     { id: 'new-transaction', href: null, icon: FiPlus, label: 'Nova Transação', color: '#22c55e', isModal: 'transaction' },
+    { id: 'audio-assistant', href: null, icon: FiMic, label: 'Comando de Voz', color: '#f43f5e', isModal: 'audio' },
     { id: 'new-subscription', href: null, icon: FiRepeat, label: 'Nova Assinatura', color: '#8b5cf6', isModal: 'subscription' },
     { id: 'new-goal', href: null, icon: FiTarget, label: 'Nova Meta', color: '#f59e0b', isModal: 'goal' },
     { id: 'new-transfer', href: null, icon: FiRepeat, label: 'Nova Transferência', color: '#0ea5e9', isModal: 'transfer' },
@@ -111,6 +113,7 @@ export default function Header({ leftContent, rightContent }) {
         if (type === 'goal') setShowGoalModal(true);
         if (type === 'transfer') setShowTransferModal(true);
         if (type === 'subscription') setShowSubscriptionModal(true);
+        if (type === 'audio') window.dispatchEvent(new CustomEvent('open-audio-assistant'));
     };
 
     const handleSubscriptionSave = async (payload) => {

@@ -21,7 +21,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import ProfileWizard from '@/components/Onboarding/ProfileWizard';
 import OfflineTransition from '@/components/ui/OfflineTransition';
 import ChatInterface from '@/components/chat/ChatInterface';
-import AudioAssistant from '@/components/Assistant/AudioAssistant';
+import AudioAssistantModal from '@/components/Assistant/AudioAssistantModal';
 
 // Offline states
 const OFFLINE_STATE = {
@@ -57,6 +57,14 @@ export default function AppShell({ children }) {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Global Audio Assistant Modal State
+    const [showAudioModal, setShowAudioModal] = useState(false);
+    useEffect(() => {
+        const handleOpenAudio = () => setShowAudioModal(true);
+        window.addEventListener('open-audio-assistant', handleOpenAudio);
+        return () => window.removeEventListener('open-audio-assistant', handleOpenAudio);
     }, []);
 
     // Trigger offline transition
@@ -162,7 +170,7 @@ export default function AppShell({ children }) {
     return (
         <>
             {children}
-            <AudioAssistant />
+            <AudioAssistantModal isOpen={showAudioModal} onClose={() => setShowAudioModal(false)} />
         </>
     );
 }

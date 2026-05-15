@@ -18,6 +18,7 @@ import {
     FiEyeOff,
     FiX,
     FiPlus,
+    FiMic,
     FiDollarSign,
     FiPieChart,
     FiFileText,
@@ -46,7 +47,7 @@ import { FiMessageSquare } from 'react-icons/fi';
 const dockItems = [
     { id: 'dashboard', href: '/dashboard', icon: FiHome, label: 'Dashboard' },
     { id: 'transactions', href: '/transactions', icon: FiList, label: 'Transações' },
-    { id: 'assistant', href: null, icon: FiMessageSquare, label: 'Assistente', mobileOnly: true },
+    { id: 'assistant', href: null, icon: FiMic, label: 'Voz', mobileOnly: true, isAudio: true },
     { id: 'investments', href: '/brokers', icon: FiTrendingUp, label: 'Investimentos' },
     { id: 'cards', href: '/cards', icon: FiCreditCard, label: 'Cartões' },
     { id: 'goals', href: '/goals', icon: FiTarget, label: 'Metas' },
@@ -56,6 +57,7 @@ const dockItems = [
 
 const quickActions = [
     { id: 'new-transaction', href: null, icon: FiPlus, label: 'Nova Transação', color: '#22c55e', isModal: 'transaction' },
+    { id: 'audio-assistant', href: null, icon: FiMic, label: 'Comando de Voz', color: '#f43f5e', isModal: 'audio' },
     { id: 'new-subscription', href: null, icon: FiRepeat, label: 'Nova Assinatura', color: '#8b5cf6', isModal: 'subscription' },
     { id: 'new-goal', href: null, icon: FiTarget, label: 'Nova Meta', color: '#f59e0b', isModal: 'goal' },
     { id: 'new-transfer', href: null, icon: FiRepeat, label: 'Nova Transferência', color: '#0ea5e9', isModal: 'transfer' },
@@ -215,14 +217,14 @@ export default function Dock() {
                         if (item.id === 'assistant') {
                             // Mobile-only Assistant Button
                             return (
-                                <div key={item.id} className={`${styles.dockItemWrapper} ${styles.mobileOnly}`} onClick={() => setShowChat(true)}>
+                                <div key={item.id} className={`${styles.dockItemWrapper} ${styles.mobileOnly}`} onClick={() => window.dispatchEvent(new CustomEvent('open-audio-assistant'))}>
                                     <motion.div
-                                        className={`${styles.dockItem} ${showChat ? styles.active : ''} ${styles.assistantBtn}`}
+                                        className={`${styles.dockItem} ${styles.assistantBtn}`}
                                         whileHover={{ scale: 1.3, y: -8, transition: { type: 'spring', stiffness: 400, damping: 15 } }}
                                         whileTap={{ scale: 1.1 }}
                                     >
                                         <Icon className={styles.icon} />
-                                        <motion.span className={styles.tooltip}>Assistente</motion.span>
+                                        <motion.span className={styles.tooltip}>{item.label}</motion.span>
                                     </motion.div>
                                 </div>
                             );
@@ -357,7 +359,9 @@ export default function Dock() {
                                                 ? handleOpenGoalModal
                                                 : action.isModal === 'transfer'
                                                     ? handleOpenTransferModal
-                                                    : handleOpenSubscriptionModal;
+                                                    : action.isModal === 'audio'
+                                                        ? () => { setShowQuickActions(false); window.dispatchEvent(new CustomEvent('open-audio-assistant')); }
+                                                        : handleOpenSubscriptionModal;
                                         return (
                                             <button
                                                 key={action.id}
